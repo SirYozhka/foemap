@@ -11,7 +11,7 @@ var sector = [null,
     { name: "ГИЛЬДИЯ_6", os: "", pn: 0 },
     { name: "ГИЛЬДИЯ_7", os: "", pn: 0 },
     { name: "ГИЛЬДИЯ_8", os: "", pn: 0 },
-    { name: "нету", os: 0, pn: 0 }, //номер 9 пропускаем
+    { name: "X1X", os: 1, pn: 10 },
     { name: "A4A", os: 1, pn: 10 }, // 10
     { name: "A3A", os: 1, pn: 10 },
     { name: "A2A", os: 1, pn: 10 },
@@ -63,17 +63,21 @@ var sector = [null,
     { name: "F4B", os: 1, pn: 10 },
     { name: "F5C", os: 1, pn: 10 },
     { name: "F4C", os: 1, pn: 10 },
-    { name: "F5D", os: 1, pn: 10 },
-    { name: "X1X", os: 1, pn: 10 }
+    { name: "F5D", os: 1, pn: 10 }
 ];
 
 var container = document.querySelector(".container"); //контейнер сцены
 var div_selected_color = document.querySelector(".color"); //выбранный цвет
 
 var canvas = document.querySelector("canvas"); // "экранный" канвас
-var ctx = canvas.getContext("2d");
 canvas.height = img_height; //вертикальное разрешение
 canvas.width = img_width; //зависит от параметров экрана
+var ctx = canvas.getContext("2d");
+ctx.textAlign = "center";
+ctx.shadowOffsetX = 0.5;
+ctx.shadowOffsetY = 0.5;
+ctx.shadowBlur = 2;
+
 
 let bufer_canvas = new OffscreenCanvas(img_width, img_height); //буферный канвас
 let bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
@@ -92,12 +96,9 @@ mapa.onload = () => {
     bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
     bufer_ctx.drawImage(mapa, 0, 0, canvas.width, canvas.height);
     address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-    ScanAddresses()
-}
-
-function ScanAddresses() { // поиск центров секторов
+    // поиск центров секторов
     let maxX = [], minX = [], maxY = [], minY = [];
-    for (let s = 1; s <= 62; s++) {
+    for (let s = 1; s <= 61; s++) {
         maxX[s] = 0;
         minX[s] = img_width;
         maxY[s] = 0;
@@ -114,7 +115,7 @@ function ScanAddresses() { // поиск центров секторов
             if (y < minY[s]) minY[s] = y;
         }
     }
-    for (let s = 1; s <= 62; s++) {
+    for (let s = 1; s <= 61; s++) {
         sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
         sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
     }
@@ -127,26 +128,27 @@ maps.onload = () => {
     bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
     bufer_ctx.drawImage(maps, 0, 0, canvas.width, canvas.height);
     paints = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-    drawScene();
 }
 
+window.addEventListener("load", () => {
+    drawScene();
+});
+
 function drawScene() { //отрисовка сцены
+    ctx.imageSmoothingEnabled = true;
     ctx.drawImage(bgr, 0, 0, canvas.width, canvas.height); //фон
     ctx.shadowColor = "rgba(255, 255, 255, 1)";
     bufer_ctx.putImageData(paints, 0, 0);
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height); //раскраска из буфера
-    ctx.textAlign = "center";
-    ctx.shadowOffsetX = -1;
-    ctx.shadowOffsetY = 1;
-    ctx.shadowBlur = 4;
+    ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = "white";
     ctx.shadowColor = "rgba(5, 5, 5, 1)";
-    for (let s = 1; s <= 8; s++) {
+    for (let s = 1; s < 9; s++) {
         SectorTextPrint(sector[s], sector[s].x, sector[s].y)
     }
     ctx.fillStyle = "black";
     ctx.shadowColor = "rgba(255, 255, 255, 1)";
-    for (let s = 10; s <= 62; s++) {
+    for (let s = 9; s <= 61; s++) {
         SectorTextPrint(sector[s], sector[s].x, sector[s].y)
     }
     function SectorTextPrint(txt, x, y) {
@@ -171,7 +173,7 @@ container.addEventListener("mousedown", (e) => {
     if (addr < 10) { //клик по штабу - выбор цвета
         div_selected_color.style.backgroundColor = "rgba(" + r + "," + g + "," + b + ",1" + ")";
         selected_color = { r: r, g: g, b: b, a: 155 };
-    } else if (addr < 63) {
+    } else if (addr < 62) {
         if (selected_color.r == r && selected_color.g == g)  //достаточно сравнить два цвета
             color = { r: 0, g: 0, b: 0, a: 0 }; //убрать цвет
         else
@@ -179,20 +181,19 @@ container.addEventListener("mousedown", (e) => {
         fillBackground(addr, color); //покрасить в выбранный цвет штаба
         drawScene();
     }
-    //LOG("" + addr + ": " + selected_color.r + " " + selected_color.g + " " + selected_color.b);
-});
 
-
-function fillBackground(sec, color) {
-    for (var i = 0; i < address.data.length; i += 4) {
-        if (address.data[i] == sec) {
-            paints.data[i + 0] = color.r; //red
-            paints.data[i + 1] = color.g; //green
-            paints.data[i + 2] = color.b; //blue
-            paints.data[i + 3] = color.a; //alfa
+    function fillBackground(sec, color) {
+        for (var i = 0; i < address.data.length; i += 4) {
+            if (address.data[i] == sec) {
+                paints.data[i + 0] = color.r; //red
+                paints.data[i + 1] = color.g; //green
+                paints.data[i + 2] = color.b; //blue
+                paints.data[i + 3] = color.a; //alfa
+            }
         }
     }
-}
+});
+
 
 container.addEventListener("mousemove", (e) => {
     let x = e.offsetX;
@@ -201,17 +202,15 @@ container.addEventListener("mousemove", (e) => {
     let addr = address.data[offset]; //red component = number of address
     if (addr < 10)
         container.style.cursor = "pointer";
-    else if (addr < 63)
+    else if (addr < 62)
         container.style.cursor = "cell";
     else
         container.style.cursor = "default";
     let r = paints.data[offset + 0];
     let g = paints.data[offset + 1];
     let b = paints.data[offset + 2];
-    if (!addr || addr > 62)
+    if (!addr || addr > 61)
         LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба")
     else
-        LAB(sector[addr].name + ": " + r + "." + g + "." + b);
-
-
+        LAB(sector[addr].name);
 });
