@@ -11,59 +11,59 @@ var sector = [null,
     { name: "ГИЛЬДИЯ_6", os: "", pn: 0 },
     { name: "ГИЛЬДИЯ_7", os: "", pn: 0 },
     { name: "ГИЛЬДИЯ_8", os: "", pn: 0 },
-    { name: "X1X", os: 1, pn: 10 },
-    { name: "A4A", os: 1, pn: 10 }, // 10
-    { name: "A3A", os: 1, pn: 10 },
-    { name: "A2A", os: 1, pn: 10 },
-    { name: "A5B", os: 1, pn: 10 },
-    { name: "A4B", os: 1, pn: 10 },
-    { name: "A3B", os: 1, pn: 10 },
-    { name: "A5C", os: 1, pn: 10 },
-    { name: "A4C", os: 1, pn: 10 },
-    { name: "B2A", os: 1, pn: 10 },
-    { name: "B3A", os: 1, pn: 10 }, //19
-    { name: "B4A", os: 1, pn: 10 },
-    { name: "B5A", os: 1, pn: 10 },
-    { name: "B3B", os: 1, pn: 10 },
-    { name: "B4B", os: 1, pn: 10 },
-    { name: "B5B", os: 1, pn: 10 },
-    { name: "B4C", os: 1, pn: 10 },
-    { name: "B5D", os: 1, pn: 10 },
-    { name: "C2A", os: 1, pn: 10 },
-    { name: "C3A", os: 1, pn: 10 },
-    { name: "C4A", os: 1, pn: 10 },
-    { name: "C5A", os: 1, pn: 10 },
-    { name: "C3B", os: 1, pn: 10 },
-    { name: "C4B", os: 1, pn: 10 },
-    { name: "C5C", os: 1, pn: 10 },
-    { name: "C4C", os: 1, pn: 10 },
-    { name: "C5D", os: 1, pn: 10 },
-    { name: "D2A", os: 1, pn: 10 },
-    { name: "D3A", os: 1, pn: 10 },
-    { name: "D4A", os: 1, pn: 10 },
-    { name: "D3B", os: 1, pn: 10 },
-    { name: "D4B", os: 1, pn: 10 },
-    { name: "D5D", os: 1, pn: 10 },
-    { name: "D4C", os: 1, pn: 10 },
-    { name: "D5C", os: 1, pn: 10 },
-    { name: "E2A", os: 1, pn: 10 },
-    { name: "E3A", os: 1, pn: 10 },
-    { name: "E4A", os: 1, pn: 10 },
-    { name: "E5A", os: 1, pn: 10 },
-    { name: "E3B", os: 1, pn: 10 },
-    { name: "E4B", os: 1, pn: 10 },
-    { name: "E5B", os: 1, pn: 10 },
-    { name: "E4C", os: 1, pn: 10 },
-    { name: "E5C", os: 1, pn: 10 },
-    { name: "F2A", os: 1, pn: 10 },
-    { name: "F3A", os: 1, pn: 10 },
-    { name: "F4A", os: 1, pn: 10 },
-    { name: "F5A", os: 1, pn: 10 },
-    { name: "F3B", os: 1, pn: 10 },
-    { name: "F4B", os: 1, pn: 10 },
-    { name: "F5C", os: 1, pn: 10 },
-    { name: "F4C", os: 1, pn: 10 },
-    { name: "F5D", os: 1, pn: 10 }
+    { name: "X1:X", os: 3, pn: 10 },
+    { name: "A4:A", os: 1, pn: 10 }, // 10
+    { name: "A3:A", os: 1, pn: 10 },
+    { name: "A2:A", os: 2, pn: 10 },
+    { name: "A5:B", os: 1, pn: 10 },
+    { name: "A4:B", os: 1, pn: 10 },
+    { name: "A3:B", os: 1, pn: 10 },
+    { name: "A5:C", os: 1, pn: 10 },
+    { name: "A4:C", os: 1, pn: 10 },
+    { name: "B2:A", os: 2, pn: 10 },
+    { name: "B3:A", os: 1, pn: 10 }, //19
+    { name: "B4:A", os: 1, pn: 10 },
+    { name: "B5:A", os: 1, pn: 10 },
+    { name: "B3:B", os: 1, pn: 10 },
+    { name: "B4:B", os: 1, pn: 10 },
+    { name: "B5:B", os: 1, pn: 10 },
+    { name: "B4:C", os: 1, pn: 10 },
+    { name: "B5:D", os: 1, pn: 10 },
+    { name: "C2:A", os: 2, pn: 10 },
+    { name: "C3:A", os: 1, pn: 10 },
+    { name: "C4:A", os: 1, pn: 10 },
+    { name: "C5:A", os: 1, pn: 10 },
+    { name: "C3:B", os: 1, pn: 10 },
+    { name: "C4:B", os: 1, pn: 10 },
+    { name: "C5:C", os: 1, pn: 10 },
+    { name: "C4:C", os: 1, pn: 10 },
+    { name: "C5:D", os: 1, pn: 10 },
+    { name: "D2:A", os: 2, pn: 10 },
+    { name: "D3:A", os: 1, pn: 10 },
+    { name: "D4:A", os: 1, pn: 10 },
+    { name: "D3:B", os: 1, pn: 10 },
+    { name: "D4:B", os: 1, pn: 10 },
+    { name: "D5:D", os: 1, pn: 10 },
+    { name: "D4:C", os: 1, pn: 10 },
+    { name: "D5:C", os: 1, pn: 10 },
+    { name: "E2:A", os: 2, pn: 10 },
+    { name: "E3:A", os: 1, pn: 10 },
+    { name: "E4:A", os: 1, pn: 10 },
+    { name: "E5:A", os: 1, pn: 10 },
+    { name: "E3:B", os: 1, pn: 10 },
+    { name: "E4:B", os: 1, pn: 10 },
+    { name: "E5:B", os: 1, pn: 10 },
+    { name: "E4:C", os: 1, pn: 10 },
+    { name: "E5:C", os: 1, pn: 10 },
+    { name: "F2:A", os: 2, pn: 10 },
+    { name: "F3:A", os: 1, pn: 10 },
+    { name: "F4:A", os: 1, pn: 10 },
+    { name: "F5:A", os: 1, pn: 10 },
+    { name: "F3:B", os: 1, pn: 10 },
+    { name: "F4:B", os: 1, pn: 10 },
+    { name: "F5:C", os: 1, pn: 10 },
+    { name: "F4:C", os: 1, pn: 10 },
+    { name: "F5:D", os: 1, pn: 10 }
 ];
 
 var container = document.querySelector(".container"); //контейнер сцены
@@ -74,9 +74,12 @@ canvas.height = img_height; //вертикальное разрешение
 canvas.width = img_width; //зависит от параметров экрана
 var ctx = canvas.getContext("2d");
 ctx.textAlign = "center";
+ctx.fillStyle = "black";
 ctx.shadowOffsetX = 0.5;
 ctx.shadowOffsetY = 0.5;
 ctx.shadowBlur = 2;
+ctx.shadowColor = "rgba(255, 255, 255, 1)";
+
 
 
 let bufer_canvas = new OffscreenCanvas(img_width, img_height); //буферный канвас
@@ -137,24 +140,19 @@ window.addEventListener("load", () => {
 function drawScene() { //отрисовка сцены
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(bgr, 0, 0, canvas.width, canvas.height); //фон
-    ctx.shadowColor = "rgba(255, 255, 255, 1)";
     bufer_ctx.putImageData(paints, 0, 0);
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height); //раскраска из буфера
     ctx.imageSmoothingEnabled = false;
-    ctx.fillStyle = "white";
-    ctx.shadowColor = "rgba(5, 5, 5, 1)";
     for (let s = 1; s < 9; s++) {
         SectorTextPrint(sector[s], sector[s].x, sector[s].y)
     }
-    ctx.fillStyle = "black";
-    ctx.shadowColor = "rgba(255, 255, 255, 1)";
-    for (let s = 9; s <= 61; s++) {
+    for (let s = 1; s <= 61; s++) {
         SectorTextPrint(sector[s], sector[s].x, sector[s].y)
     }
     function SectorTextPrint(txt, x, y) {
         ctx.font = "bold 16px arial";
         ctx.fillText(txt.name, x, y);
-        ctx.font = "bold 12px arial";
+        ctx.font = "bold 16px arial";
         ctx.fillText(txt.os, x, y + 16);
     }
 }
@@ -170,7 +168,7 @@ container.addEventListener("mousedown", (e) => {
     let g = paints.data[offset + 1];
     let b = paints.data[offset + 2];
     let addr = address.data[offset]; //red component = number of address
-    if (addr < 10) { //клик по штабу - выбор цвета
+    if (addr < 9) { //клик по штабу - выбор цвета
         div_selected_color.style.backgroundColor = "rgba(" + r + "," + g + "," + b + ",1" + ")";
         selected_color = { r: r, g: g, b: b, a: 155 };
     } else if (addr < 62) {

@@ -15,18 +15,17 @@ body {
 
 header {
 	position: relative;
-	height: 5vh;
+	height: 1vh;
 	min-height: 20px;
-	width: 800px;
-	background-color: lightblue;
+	width: 805px;
+	background-color: gray;
 	margin: 0px auto;
 }
 
 main {
-	width: 800px;
-	padding: 5px;
+	width: 805px;
 	height: 95vh;
-	background-color: lightblue;
+	background-color: gray;
 	margin: 0px auto;
 }
 
