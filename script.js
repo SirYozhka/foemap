@@ -178,7 +178,7 @@ container.addEventListener("mousedown", (e) => {
     let addr = address.data[offset]; //red component = number of address
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_gild = addr;
-        selected_color = { r: r, g: g, b: b, a: 155 };
+        selected_color = { r: r, g: g, b: b, a: 205 };
     } else if (addr < 62) {
         if (selected_color.r == r && selected_color.g == g)  //достаточно сравнить два цвета
             color = { r: 0, g: 0, b: 0, a: 0 }; //убрать цвет
