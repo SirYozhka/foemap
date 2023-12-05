@@ -70,23 +70,21 @@ var container = document.querySelector(".container"); //контейнер сц�
 var div_selected_color = document.querySelector(".color"); //выбранный цвет
 
 var canvas = document.querySelector("canvas"); // "экранный" канвас
+var ctx = canvas.getContext("2d");
 canvas.height = img_height; //вертикальное разрешение
 canvas.width = img_width; //зависит от параметров экрана
-var ctx = canvas.getContext("2d");
 ctx.textAlign = "center";
 ctx.fillStyle = "black";
 ctx.shadowOffsetX = 0.5;
 ctx.shadowOffsetY = 0.5;
 ctx.shadowBlur = 2;
-ctx.shadowColor = "rgba(255, 255, 255, 1)";
-
-
 
 let bufer_canvas = new OffscreenCanvas(img_width, img_height); //буферный канвас
 let bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = img_height; //вертикальное разрешение
 bufer_canvas.width = img_width; //зависит от параметров экрана
 
+var selected_gild;
 
 /*************************************************/
 var bgr = new Image();
@@ -143,12 +141,22 @@ function drawScene() { //отрисовка сцены
     bufer_ctx.putImageData(paints, 0, 0);
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height); //раскраска из буфера
     ctx.imageSmoothingEnabled = false;
-    for (let s = 1; s < 9; s++) {
+    for (let s = 1; s <= 9; s++) {
+        if (selected_gild == s) {
+            ctx.fillStyle = "white";
+            ctx.shadowColor = "rgba(5, 5, 5, 1)";
+        } else {
+            ctx.fillStyle = "black";
+            ctx.shadowColor = "rgba(255, 255, 255, 1)";
+        }
         SectorTextPrint(sector[s], sector[s].x, sector[s].y)
     }
-    for (let s = 1; s <= 61; s++) {
+    ctx.fillStyle = "black";
+    ctx.shadowColor = "rgba(255, 255, 255, 1)";
+    for (let s = 10; s <= 61; s++) {
         SectorTextPrint(sector[s], sector[s].x, sector[s].y)
     }
+
     function SectorTextPrint(txt, x, y) {
         ctx.font = "bold 16px arial";
         ctx.fillText(txt.name, x, y);
@@ -169,7 +177,7 @@ container.addEventListener("mousedown", (e) => {
     let b = paints.data[offset + 2];
     let addr = address.data[offset]; //red component = number of address
     if (addr < 9) { //клик по штабу - выбор цвета
-        div_selected_color.style.backgroundColor = "rgba(" + r + "," + g + "," + b + ",1" + ")";
+        selected_gild = addr;
         selected_color = { r: r, g: g, b: b, a: 155 };
     } else if (addr < 62) {
         if (selected_color.r == r && selected_color.g == g)  //достаточно сравнить два цвета
@@ -177,8 +185,8 @@ container.addEventListener("mousedown", (e) => {
         else
             color = selected_color; //покрасить в выбранный цвет штаба
         fillBackground(addr, color); //покрасить в выбранный цвет штаба
-        drawScene();
     }
+    drawScene();
 
     function fillBackground(sec, color) {
         for (var i = 0; i < address.data.length; i += 4) {
