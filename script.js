@@ -8,7 +8,7 @@ const addr = ["", "ШТАБ", "ШТАБ", "ШТАБ", "ШТАБ", "ШТАБ", "�
 ];
 
 var container = document.querySelector(".container"); //контейнер сцены
-var sector_color = document.querySelector(".color"); //выбранный цвет
+var div_selected_color = document.querySelector(".color"); //выбранный цвет
 
 var canvas = document.querySelector("canvas"); // "экранный" канвас
 var ctx = canvas.getContext("2d");
@@ -29,6 +29,7 @@ var address;
 var mapa = new Image();
 mapa.src = "images/mapa.bmp";
 mapa.onload = () => {
+    bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
     bufer_ctx.drawImage(mapa, 0, 0, canvas.width, canvas.height);
     address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
 }
@@ -40,30 +41,30 @@ maps.onload = () => {
     bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
     bufer_ctx.drawImage(maps, 0, 0, canvas.width, canvas.height);
     paints = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(bgr, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bgr, 0, 0, canvas.width, canvas.height); //todo  если не успеет загрузиться - то нет фона
     ctx.drawImage(maps, 0, 0, canvas.width, canvas.height);
 }
 
 var selected_color;
 container.addEventListener("mousedown", (e) => {
+    if (e.button != 0) return; //клик только левой кнопкой
     let x = e.offsetX;
     let y = e.offsetY;
     let offset = (y * img_width + x) * 4;
+    let r = paints.data[offset + 0];
+    let g = paints.data[offset + 1];
+    let b = paints.data[offset + 2];
     let addr = address.data[offset]; //red component = number of address
-    if (addr < 10) {
-        let r = paints.data[offset + 0];
-        let g = paints.data[offset + 1];
-        let b = paints.data[offset + 2];
-        sector_color.style.backgroundColor = "rgba(" + r + "," + g + "," + b + ",1" + ")";
-        selected_color = { r: r, g: g, b: b, a: 255 };
-    } else {
-        if (selected_color && addr < 63 && e.button == 0)
-            if (paints.data[offset + 3] > 100) {
-                fillBackground(addr, { a: 0 });
-            } else
-                fillBackground(addr, selected_color);
-    }
-    //LOG("" + addr + ": x=" + x + " y=" + y + " " + selected_color.r + " " + selected_color.g + " " + selected_color.b);
+    if (addr < 10) { //клик по штабу - выбор цвета
+        div_selected_color.style.backgroundColor = "rgba(" + r + "," + g + "," + b + ",1" + ")";
+        selected_color = { r: r, g: g, b: b, a: 155 };
+    } else if (addr < 63)
+        if (selected_color.r == r && selected_color.g == g)  //достаточно сравнить два цвета
+            fillBackground(addr, { r: 0, g: 0, b: 0, a: 0 }); //убрать цвет
+        else
+            fillBackground(addr, selected_color); //покрасить в выбранный цвет штаба
+
+    //LOG("" + addr + ": " + selected_color.r + " " + selected_color.g + " " + selected_color.b);
 });
 
 
