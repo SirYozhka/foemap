@@ -63,7 +63,8 @@ container.addEventListener("mousedown", (e) => {
             fillBackground(addr, { r: 0, g: 0, b: 0, a: 0 }); //убрать цвет
         else
             fillBackground(addr, selected_color); //покрасить в выбранный цвет штаба
-
+    else
+        LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба")
     //LOG("" + addr + ": " + selected_color.r + " " + selected_color.g + " " + selected_color.b);
 });
 
@@ -96,5 +97,5 @@ container.addEventListener("mousemove", (e) => {
     let r = paints.data[offset + 0];
     let g = paints.data[offset + 1];
     let b = paints.data[offset + 2];
-    LAB(addr + ": x=" + x + " y=" + y + " " + r + " " + g + " " + b);
+    LAB(addr + ": " + r + " " + g + " " + b);
 });

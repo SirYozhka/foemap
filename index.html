@@ -12,8 +12,14 @@
 </head>
 
 <body>
-  <header>
-    <!-- header -->
+  <header> <!-- header -->
+    <!-- DEBUG: индикация -->
+    <div class="label-box"
+      style="position: absolute; top: 0px; left: 10px; font-size: 14px; width:0 auto; color: darkblue;">
+      <script>
+        function LAB(message) { document.querySelector(".label-box").textContent = message; }
+      </script>
+    </div>
   </header>
   <main>
 
@@ -26,14 +32,9 @@
       </canvas>
     </div>
 
+
   </main>
 
-  <!-- DEBUG: индикация -->
-  <div class="label-box" style="position: absolute; top: 0px; right: 50%; font-size: 14px; color: darkblue;">
-    <script>
-      function LAB(message) { document.querySelector(".label-box").textContent = message; }
-    </script>
-  </div>
 
   <!-- DEBUG логирование на экран -->
   <div class="log-box">
