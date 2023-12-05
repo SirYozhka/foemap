@@ -17,13 +17,14 @@ header {
 	position: relative;
 	height: 5vh;
 	min-height: 20px;
-	width: 810px;
+	width: 800px;
 	background-color: lightblue;
 	margin: 0px auto;
 }
 
 main {
-	width: 810px;
+	width: 800px;
+	padding: 5px;
 	height: 95vh;
 	background-color: lightblue;
 	margin: 0px auto;
