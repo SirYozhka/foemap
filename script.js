@@ -208,16 +208,35 @@ container.addEventListener("mousemove", (e) => {
 });
 
 /************************************************/
-const btn_copy = document.querySelector(".copy");
+const btn_copy = document.querySelector(".btn-copy");
 btn_copy.addEventListener("click", () => { copyPicture() })
 
-function copyPicture() {
+function copyPicture() { //todo разобраться
     canvas.toBlob((blob) => {
         let data = [new ClipboardItem({ [blob.type]: blob })];
 
         navigator.clipboard.write(data).then(
-            () => { alert("good"); },
-            (err) => { alert("error"); },
+            () => { alert("карта скопирована в буфер обмена"); },
+            (err) => { alert("error map copy: " + err); },
         );
     });
 };
+
+
+/************** form editor *********************************/
+const btn_edit = document.querySelector(".btn-edit");
+btn_edit.addEventListener("click", () => { editMapSettings() })
+
+const div_edit = document.querySelector(".editor");
+const btn_save = document.querySelector(".btn-save");
+btn_save.addEventListener("click", (e) => { saveMapSettings(e) })
+
+function editMapSettings() {
+    //div_edit.style.visibility = "visible";
+    LAB("реадактороваине секторов в процессе разработки");
+}
+
+function saveMapSettings(e) {
+    e.preventDefault();
+    div_edit.style.visibility = "hidden";
+}
