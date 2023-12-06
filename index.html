@@ -18,6 +18,9 @@
     <button class="copy">copy </button>
   </header>
   <main>
+    <img id="background" src="images/bg.jpg" style="display:none">
+    <img id="addresses" src="images/mapa.bmp" style="display:none">
+    <img id="sectors" src="images/maps.png" style="display:none">
 
     <div class="container">
       <div class="label-box">
@@ -29,6 +32,25 @@
       <canvas>
         <!-- отображение сцены с помошью canvas -->
       </canvas>
+
+      <form class="edit" style="display:none">
+        <fieldset>
+          <legend>Штабы</legend>
+          <label for="user_name">
+            Штаб 1
+            <input type="text" name="text" id="user_name">
+          </label>
+        </fieldset>
+        <fieldset>
+          <legend>Сектора</legend>
+          <label for="user_name">
+            X1X
+            <input type="text" name="text" id="user_name">
+          </label>
+        </fieldset>
+        <button class="save-data">save</button>
+      </form>
+
     </div>
 
 

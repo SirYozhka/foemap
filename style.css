@@ -29,7 +29,7 @@ header {
 	height: 30px;
 	width: 800px;
 	margin: 0px auto;
-	margin-bottom: 5px;
+	margin-bottom: 3px;
 	font-size: 10px;
 	color: lightgoldenrodyellow;
 	border: 1px solid var(--brown);
@@ -87,7 +87,20 @@ canvas {
 }
 
 
-/*************************************************************/
+.edit {
+	position: absolute;
+	top: 30px;
+	left: 100px;
+	line-height: 1.6;
+	padding: 0px 5px 0px 5px;
+	width: 0 auto;
+	color: lightgoldenrodyellow;
+	border: 1px solid var(--brown);
+	border-radius: 2px;
+	background-color: var(--brown);
+	box-shadow: inset 0px 0px 2px 1px lightgoldenrodyellow;
+}
+
 .label-box {
 	position: absolute;
 	top: 3px;
