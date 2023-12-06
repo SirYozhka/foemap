@@ -1,5 +1,6 @@
 "use strict"; //строгий режим
 
+
 const img_width = 800; // (px)
 const img_height = 600; // (px)
 var sector = [null,
@@ -66,11 +67,11 @@ var sector = [null,
     { name: "F5:D", os: 1, pn: 10 }
 ];
 
-var container = document.querySelector(".container"); //контейнер сцены
-var div_selected_color = document.querySelector(".color"); //выбранный цвет
+const container = document.querySelector(".container"); //контейнер сцены
+const div_selected_color = document.querySelector(".color"); //выбранный цвет
 
-var canvas = document.querySelector("canvas"); // "экранный" канвас
-var ctx = canvas.getContext("2d");
+const canvas = document.querySelector("canvas"); // "экранный" канвас
+const ctx = canvas.getContext("2d");
 canvas.height = img_height; //вертикальное разрешение
 canvas.width = img_width; //зависит от параметров экрана
 ctx.textAlign = "center";
@@ -79,8 +80,8 @@ ctx.shadowOffsetX = 0.5;
 ctx.shadowOffsetY = 0.5;
 ctx.shadowBlur = 2;
 
-let bufer_canvas = new OffscreenCanvas(img_width, img_height); //буферный канвас
-let bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
+const bufer_canvas = new OffscreenCanvas(img_width, img_height); //буферный канвас
+const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = img_height; //вертикальное разрешение
 bufer_canvas.width = img_width; //зависит от параметров экрана
 
@@ -165,13 +166,12 @@ function drawScene() { //отрисовка сцены
     }
 }
 
+
 var selected_color;
 container.addEventListener("mousedown", (e) => {
     if (e.button != 0) return; //клик только левой кнопкой
     let color;
-    let x = e.offsetX;
-    let y = e.offsetY;
-    let offset = (y * img_width + x) * 4;
+    let offset = (e.offsetY * img_width + e.offsetX) * 4;
     let r = paints.data[offset + 0];
     let g = paints.data[offset + 1];
     let b = paints.data[offset + 2];
@@ -202,21 +202,34 @@ container.addEventListener("mousedown", (e) => {
 
 
 container.addEventListener("mousemove", (e) => {
-    let x = e.offsetX;
-    let y = e.offsetY;
-    let offset = (y * img_width + x) * 4;
-    let addr = address.data[offset]; //red component = number of address
-    if (addr < 10)
+    var offset = (e.offsetY * img_width + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
+    var addr = address.data[offset]; //получить red component = number of address
+    if (addr < 10) //штабы
         container.style.cursor = "pointer";
-    else if (addr < 62)
+    else if (addr < 62) //сектора
         container.style.cursor = "cell";
-    else
+    else { //окружение
         container.style.cursor = "default";
-    let r = paints.data[offset + 0];
-    let g = paints.data[offset + 1];
-    let b = paints.data[offset + 2];
-    if (!addr || addr > 61)
-        LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба")
-    else
-        LAB(sector[addr].name);
+        return;
+    }
+    LAB(sector[addr].name);
 });
+
+/************************************************/
+const btn = document.querySelector(".btn");
+btn.addEventListener("click", () => { copyPicture() })
+
+function copyPicture() {
+    canvas.toBlob((blob) => {
+        let data = [new ClipboardItem({ [blob.type]: blob })];
+
+        navigator.clipboard.write(data).then(
+            () => {
+                alert("good");
+            },
+            (err) => {
+                alert("error");
+            },
+        );
+    });
+};

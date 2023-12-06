@@ -14,16 +14,18 @@
 <body>
   <header> <!-- header -->
     <!-- DEBUG: индикация -->
-    <div class="label-box"
-      style="position: absolute; top: 0px; left: 10px; font-size: 14px; width:0 auto; color: darkblue;">
-      <script>
-        function LAB(message) { document.querySelector(".label-box").textContent = message; }
-      </script>
-    </div>
+    <button class="edit">edit </button>
+    <button class="copy">copy </button>
   </header>
   <main>
 
     <div class="container">
+      <div class="label-box">
+        клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба
+        <script>
+          function LAB(message) { document.querySelector(".label-box").textContent = message; }
+        </script>
+      </div>
       <canvas>
         <!-- отображение сцены с помошью canvas -->
       </canvas>
