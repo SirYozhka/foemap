@@ -16,6 +16,9 @@
     <!-- DEBUG: индикация -->
     <button class="btn-edit">edit </button>
     <button class="btn-copy">copy </button>
+    <div class="label-box">
+      клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба
+    </div>
   </header>
   <main>
     <img id="background" src="images/bg.jpg" style="display:none">
@@ -23,17 +26,11 @@
     <img id="sectors" src="images/maps.png" style="display:none">
 
     <div class="container">
-      <div class="label-box">
-        клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба
-        <script>
-          function LAB(message) { document.querySelector(".label-box").textContent = message; }
-        </script>
-      </div>
       <canvas>
         <!-- отображение сцены с помошью canvas -->
       </canvas>
 
-      <form class="editor" style="visibility:hidden">
+      <form class="map-editor" style="visibility:hidden">
 
         <fieldset>
           <legend>штабы</legend>
@@ -57,7 +54,12 @@
         <button class="btn-save">save</button>
       </form>
 
+
+      <input type="text" id="guild-field" class="guild-editor" style="visibility:hidden">
+
+
     </div>
+
 
 
   </main>
