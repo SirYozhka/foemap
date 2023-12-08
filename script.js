@@ -24,7 +24,6 @@ bufer_canvas.width = img_width; //зависит от параметров эк�
 
 var selected_color;
 var selected_gild;
-var selected_sector;
 var address;
 var paints;
 var sector = [null,
@@ -157,9 +156,8 @@ function drawScene() { //отрисовка сцены
 
 
 /************************ заливка ************************************/
-canvas.addEventListener("mousedown", (e) => { //клик левой кнопкой - заливка
+canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
-    div_map_editor.style.visibility = "hidden";
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     if (e.button != 0) return; //клик левой кнопкой
     let color;
@@ -195,41 +193,57 @@ canvas.addEventListener("mousedown", (e) => { //клик левой кнопко
 
 
 /****************** редактор подписи сектора ****************************/
-var div_guild_editor = document.querySelector(".guild-editor");
-var inp_guild_editor = document.getElementById("guild-field");
+var editor;
+var sel_addr;
+var inp_name;
+var inp_siege;
 canvas.addEventListener("contextmenu", (e) => { //клик правой кнопкой - редактор надписи
     e.preventDefault();
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     let addr = address.data[offset]; //red component = number of address
+    if (addr > 61) return;
+    sel_addr = addr;
+    if (editor)
+        editor.removeEventListener("keydown", handler, false);
     if (addr < 9) {
-        selected_sector = addr;
-        //div_map_editor.style.visibility = "hidden";
-        div_guild_editor.style.visibility = "visible";
-        let dx = sector[addr].x - 75;
-        if (dx < 0) dx = 2;
-        if (dx + 150 > img_width) dx = img_width - 157;
-        div_guild_editor.style.left = dx + 'px'
-        div_guild_editor.style.top = sector[addr].y - 20 + 'px'
-        inp_guild_editor.value = sector[addr].name;
-        inp_guild_editor.focus();
-        inp_guild_editor.select();
+        editor = document.querySelector(".guild-editor");
+        inp_name = document.querySelectorAll(".name-editor")[0];
+    } else if (addr < 62) {
+        editor = document.querySelector(".sector-editor");
+        inp_name = document.querySelectorAll(".name-editor")[1];
+        inp_siege = document.querySelector(".siege-editor");
     }
-
-
-    inp_guild_editor.addEventListener("keypress", function handler(event) {
-        console.log(event.code);
-        if (event.code === "NumpadEnter" || event.code === "Enter") {
-            event.preventDefault();
-            sector[selected_sector].name = inp_guild_editor.value;
-            div_guild_editor.style.visibility = "hidden";
-            drawScene();
-        }
-        //        inp_guild_editor.removeEventListener('keypress', handler, true)
-        event.stopPropagation()
-    });
-
+    document.querySelector(".guild-editor").style.visibility = "hidden";
+    document.querySelector(".sector-editor").style.visibility = "hidden";
+    editor.style.visibility = "visible";
+    let dx = sector[addr].x - editor.clientWidth / 2;
+    if (dx < 0) dx = 2;
+    if (dx + editor.clientWidth > img_width) dx = img_width - editor.clientWidth - 7;
+    editor.style.left = dx + 'px'
+    editor.style.top = sector[addr].y - 20 + 'px'
+    inp_name.value = sector[addr].name;
+    if (addr < 9) {
+        inp_name.focus();
+        inp_name.select();
+    } else if (addr < 62) {
+        inp_siege.value = sector[addr].os;
+        inp_siege.focus();
+        inp_siege.select();
+    }
 });
 
+container.addEventListener("keydown", (e) => handler(e));
+function handler(event) {
+    if (event.code === "NumpadEnter" || event.code === "Enter") {
+        sector[sel_addr].name = inp_name.value;
+        if (sel_addr > 8)
+            sector[sel_addr].os = inp_siege.value;
+        editor.style.visibility = "hidden";
+        drawScene();
+    } else if (event.code === "Escape") {
+        editor.style.visibility = "hidden";
+    }
+}
 
 
 
@@ -250,7 +264,8 @@ function copyPicture() { //todo разобраться
 
 
 /************ указатель сектора в строку состояния + вид курсора ***********************/
-canvas.addEventListener("mousemove", (e) => {
+canvas.addEventListener("mousemove", (e) => { showName(e) });
+function showName(e) {
     var offset = (e.offsetY * img_width + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
     var addr = address.data[offset]; //получить red component = number of address
     if (addr < 10) //штабы
@@ -262,14 +277,14 @@ canvas.addEventListener("mousemove", (e) => {
         return;
     }
     LAB(sector[addr].name);
-});
+}
 
 function LAB(message) { //вывод в строку состояния
     document.querySelector(".label-box").textContent = message;
 }
 
 
-/************** form map-editor *********************************/
+/************** form map-editor ********************************
 const btn_edit = document.querySelector(".btn-edit");
 btn_edit.addEventListener("click", () => { editMapSettings() })
 
@@ -288,3 +303,4 @@ function saveMapSettings(e) {
     div_map_editor.style.visibility = "hidden";
     LOG("сохранение секторов карты в localStorage");
 }
+*/
