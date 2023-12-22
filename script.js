@@ -25,16 +25,16 @@ bufer_canvas.width = img_width; //зависит от параметров эк�
 var selected_color;
 var selected_gild;
 var address;
-var paints;
+var scene;
 var sector = [null,
-    { name: "Гильдия_1" },
-    { name: "Гильдия_2" },
-    { name: "Гильдия_3" },
-    { name: "Гильдия_4" },
-    { name: "Гильдия_5" },
-    { name: "Гильдия_6" },
-    { name: "Гильдия_7" },
-    { name: "Гильдия_8" },
+    { name: "Гильдия_1", os: 0 },
+    { name: "Гильдия_2", os: 0 },
+    { name: "Гильдия_3", os: 0 },
+    { name: "Гильдия_4", os: 0 },
+    { name: "Гильдия_5", os: 0 },
+    { name: "Гильдия_6", os: 0 },
+    { name: "Гильдия_7", os: 0 },
+    { name: "Гильдия_8", os: 0 },
     { name: "X1X", os: 3 },
     { name: "A4A", os: 1 }, // 10
     { name: "A3A", os: 2 },
@@ -92,45 +92,46 @@ var sector = [null,
 
 /*************************************************/
 window.addEventListener("load", () => {
-    bufer_ctx.drawImage(document.getElementById("sectors"), 0, 0, canvas.width, canvas.height);
-    paints = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+    sectorBazeCreate(); // then
 
-    bufer_ctx.drawImage(document.getElementById("addresses"), 0, 0, canvas.width, canvas.height);
-    address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+    bufer_ctx.drawImage(document.getElementById("scene"), 0, 0, canvas.width, canvas.height);
+    scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-    scanAddressesXY();
+    scanAddressesXY(); //then
+
     drawScene();
+});
 
-    function scanAddressesXY() { // поиск центров секторов - для позиционирования названий
-        let maxX = [], minX = [], maxY = [], minY = [];
-        for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
-            maxX[s] = 0;
-            minX[s] = img_width;
-            maxY[s] = 0;
-            minY[s] = img_height;
-        }
-        for (let i = 0; i < address.data.length; i += 4) {
-            let s = address.data[i];
-            if (s < 62) {
-                let y = ~~(i / 4 / img_width);
-                let x = i / 4 - y * img_width;
-                if (x > maxX[s]) maxX[s] = x;
-                if (y > maxY[s]) maxY[s] = y;
-                if (x < minX[s]) minX[s] = x;
-                if (y < minY[s]) minY[s] = y;
-            }
-        }
-        for (let s = 1; s <= 61; s++) {
-            sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
-            sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+function scanAddressesXY() { // поиск центров секторов - для позиционирования названий
+    bufer_ctx.drawImage(document.getElementById("addresses"), 0, 0, canvas.width, canvas.height);
+    address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height); //then
+    let maxX = [], minX = [], maxY = [], minY = [];
+    for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
+        maxX[s] = 0;
+        minX[s] = img_width;
+        maxY[s] = 0;
+        minY[s] = img_height;
+    }
+    for (let i = 0; i < address.data.length; i += 4) {
+        let s = address.data[i];
+        if (s < 62) {
+            let y = ~~(i / 4 / img_width);
+            let x = i / 4 - y * img_width;
+            if (x > maxX[s]) maxX[s] = x;
+            if (y > maxY[s]) maxY[s] = y;
+            if (x < minX[s]) minX[s] = x;
+            if (y < minY[s]) minY[s] = y;
         }
     }
-
-});
+    for (let s = 1; s <= 61; s++) {
+        sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
+        sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+    }
+}
 
 function drawScene() { //отрисовка сцены
     ctx.drawImage(document.getElementById("background"), 0, 0, canvas.width, canvas.height); //фон
-    bufer_ctx.putImageData(paints, 0, 0);
+    bufer_ctx.putImageData(scene, 0, 0);
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height); //раскраска из буфера
     //надписи секторов
     ctx.fontStretch = "ultra-condensed";
@@ -161,9 +162,9 @@ canvas.addEventListener("mousedown", (e) => {
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     if (e.button != 0) return; //клик левой кнопкой
     let color;
-    let r = paints.data[offset + 0];
-    let g = paints.data[offset + 1];
-    let b = paints.data[offset + 2];
+    let r = scene.data[offset + 0];
+    let g = scene.data[offset + 1];
+    let b = scene.data[offset + 2];
     let addr = address.data[offset]; //red component = number of address
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_gild = addr;
@@ -179,17 +180,19 @@ canvas.addEventListener("mousedown", (e) => {
     }
     drawScene();
 
-    function fillBackground(sec, color) {
-        for (var i = 0; i < address.data.length; i += 4) {
-            if (address.data[i] == sec) {
-                paints.data[i + 0] = color.r; //red
-                paints.data[i + 1] = color.g; //green
-                paints.data[i + 2] = color.b; //blue
-                paints.data[i + 3] = color.a; //alfa
-            }
+});
+
+function fillBackground(sec, color) {
+    for (var i = 0; i < address.data.length; i += 4) {
+        if (address.data[i] == sec) {
+            scene.data[i + 0] = color.r; //red
+            scene.data[i + 1] = color.g; //green
+            scene.data[i + 2] = color.b; //blue
+            scene.data[i + 3] = color.a; //alfa
         }
     }
-});
+}
+
 
 
 /****************** редактор подписи сектора ****************************/
@@ -240,6 +243,7 @@ function handler(event) {
             sector[sel_addr].os = inp_siege.value;
         editor.style.visibility = "hidden";
         drawScene();
+        saveSector(sel_addr);
     } else if (event.code === "Escape") {
         editor.style.visibility = "hidden";
     }
@@ -282,6 +286,70 @@ function showName(e) {
 function LAB(message) { //вывод в строку состояния
     document.querySelector(".label-box").textContent = message;
 }
+
+
+//*************** IndexedDB ****************************************
+const dbName = "foesectors";
+var db; //экземпляр объекта db, где мы сможем хранить открытую базу данных
+
+function saveSector(i) {
+    var txn = db.transaction("sectors", "readwrite");
+    let newItem = { name: sector[i].name, osad: sector[i].os };
+    let request = txn.objectStore("sectors").put(newItem, i);
+    request.onsuccess = function () {
+        LOG("saved : " + sector[i].name + ":" + request.result);
+    };
+    request.onerror = function () {
+        LOG("Transaction SAVE error: " + request.error);
+    };
+}
+
+function sectorBazeCreate() {
+    const version = 1; //версия базы
+    let request = window.indexedDB.open(dbName, version);
+    request.onerror = function () { // база данных не открылась успешно
+        console.log("Database failed to open");
+    };
+    request.onsuccess = function (event) { // база открыта - чтение в масив sectors
+        db = request.result;
+        let txn = db.transaction("sectors");
+        for (let i = 1; i < 62; i++) {
+            let oRequest = txn.objectStore("sectors").get(i);
+            oRequest.onsuccess = (event) => {
+                let myRecord = oRequest.result;
+                sector[i].name = myRecord.name;
+                sector[i].os = myRecord.osad;
+                //LOG("loaded :" + sector[i].name + " = " + sector[i].os);
+            };
+        }
+        LOG("Database opened successfully");
+    };
+    request.onupgradeneeded = function (event) { //создание локальной базы при первом запуске
+        LOG("Database setup. Version: " + version);
+        let db = event.target.result;
+        db.createObjectStore("sectors", { autoIncrement: true });
+        let txn = event.target.transaction;
+        for (let i = 1; i < 62; i++) {
+            let newItem = { name: sector[i].name, osad: sector[i].os };
+            let request = txn.objectStore("sectors").add(newItem);
+            request.onsuccess = function () {
+                //LOG("added :" + i + " = " + sector[i].name);
+            };
+            request.onerror = function () {
+                LOG("Transaction ADD error: " + request.error);
+            };
+        }
+        txn.oncomplete = function () {
+            LOG("Database setup finished.");
+        };
+    };
+}
+
+
+
+
+
+
 
 
 /************** form map-editor ********************************

@@ -15,15 +15,16 @@
   <header> <!-- header -->
     <!-- DEBUG: индикация -->
     <button class="btn-edit" disabled>edit </button>
+    <button class="btn-save">save </button>
     <button class="btn-copy">copy </button>
     <div class="label-box">
       клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба
     </div>
   </header>
   <main>
-    <img id="background" src="images/bg.jpg" style="display:none">
-    <img id="addresses" src="images/mapa.bmp" style="display:none">
-    <img id="sectors" src="images/maps.png" style="display:none">
+    <img id="background" src="images/background.jpg" style="display:none">
+    <img id="addresses" src="images/addresses.bmp" style="display:none">
+    <img id="scene" src="images/scene.png" style="display:none">
 
     <div class="container">
       <canvas>
@@ -34,31 +35,27 @@
       <form class="map-editor" style="visibility:hidden">
         <fieldset>
           <legend>штабы</legend>
-          <label for="shtab1">
-            Штаб 1
-            <input type="text" name="shtab1">
-          </label>
+          Штаб 1
+          <input type="text" id="shtab" name="shtab">
         </fieldset>
         <fieldset>
           <legend>сектора</legend>
-          <label for="user_name">
-            X1X
-            <input type="number" name="osad" value="0" min="0" max="3" step="1">
-            <input type="number" name="points" value="10" min="10" max="100">
-          </label>
+          X1X
+          <input id="os" type="number" name="osad" value="0" min="0" max="3" step="1">
+          <input id="pn" type="number" name="points" value="10" min="10" max="100">
         </fieldset>
         <button class="btn-save">save</button>
       </form>
 
       <!-- редактор названий штабоы гильдий -->
       <div class="guild-editor" style="visibility:hidden">
-        <input type="text" class="name-editor">
+        <input name="ed" type="text" class="name-editor">
       </div>
 
       <!-- редактор секторов и количества мест под осадки -->
       <div class="sector-editor" style="visibility:hidden">
-        <input type="text" class="name-editor">
-        <input type="number" class="siege-editor" min="1" max="3">
+        <input name="nm" type="text" class="name-editor">
+        <input name="os" type="number" class="siege-editor" min="1" max="3">
       </div>
 
     </div>
