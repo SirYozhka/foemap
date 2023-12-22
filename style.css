@@ -16,7 +16,10 @@ html {
 }
 
 body {
-	width: 850px;
+	width: 810px;
+	padding: 5px;
+	background-color: rgb(177, 175, 157);
+	border: 1px solid var(--brown);
 	margin: 0px auto;
 }
 
@@ -70,8 +73,6 @@ button:disabled {
 
 /********************************************************/
 main {
-	width: 820px;
-	height: 95vh;
 	margin: 0px auto;
 }
 

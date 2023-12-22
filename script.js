@@ -92,19 +92,17 @@ var sector = [null,
 
 /*************************************************/
 window.addEventListener("load", () => {
-    sectorBazeCreate(); // then
-
     bufer_ctx.drawImage(document.getElementById("scene"), 0, 0, canvas.width, canvas.height);
     scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+    bufer_ctx.drawImage(document.getElementById("addresses"), 0, 0, canvas.width, canvas.height);
+    address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height); //then
 
-    scanAddressesXY(); //then
-
+    scanSectorCenter(); //then
+    sectorBazeCreate(); // then
     drawScene();
 });
 
-function scanAddressesXY() { // поиск центров секторов - для позиционирования названий
-    bufer_ctx.drawImage(document.getElementById("addresses"), 0, 0, canvas.width, canvas.height);
-    address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height); //then
+function scanSectorCenter() { // поиск центров секторов - для позиционирования названий
     let maxX = [], minX = [], maxY = [], minY = [];
     for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
         maxX[s] = 0;
