@@ -15,37 +15,18 @@
   <header> <!-- header -->
     <!-- DEBUG: индикация -->
     <button class="btn-edit" disabled>edit </button>
-    <button class="btn-save">save </button>
+    <button class="btn-save" disabled>save </button>
     <button class="btn-copy">copy </button>
     <div class="label-box">
       клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба
     </div>
   </header>
-  <main>
-    <img id="background" src="images/background.jpg" style="display:none">
-    <img id="addresses" src="images/addresses.bmp" style="display:none">
-    <img id="scene" src="images/scene.png" style="display:none">
 
+  <main>
     <div class="container">
       <canvas>
         <!-- отображение сцены с помошью canvas -->
       </canvas>
-
-      <!-- редактор в таблице TODO -->
-      <form class="map-editor" style="visibility:hidden">
-        <fieldset>
-          <legend>штабы</legend>
-          Штаб 1
-          <input type="text" id="shtab" name="shtab">
-        </fieldset>
-        <fieldset>
-          <legend>сектора</legend>
-          X1X
-          <input id="os" type="number" name="osad" value="0" min="0" max="3" step="1">
-          <input id="pn" type="number" name="points" value="10" min="10" max="100">
-        </fieldset>
-        <button class="btn-save">save</button>
-      </form>
 
       <!-- редактор названий штабоы гильдий -->
       <div class="guild-editor" style="visibility:hidden">
@@ -59,7 +40,6 @@
       </div>
 
     </div>
-
   </main>
 
 

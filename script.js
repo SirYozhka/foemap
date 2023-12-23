@@ -5,17 +5,11 @@ const img_width = 800; // (px)
 const img_height = 600; // (px)
 
 const container = document.querySelector(".container"); //контейнер сцены
-const div_selected_color = document.querySelector(".color"); //выбранный цвет
 
 const canvas = document.querySelector("canvas"); // "экранный" канвас
 const ctx = canvas.getContext("2d", { alpha: false });
 canvas.height = img_height; //вертикальное разрешение
 canvas.width = img_width; //зависит от параметров экрана
-ctx.textAlign = "center";
-ctx.font = "bold 18px arial";
-ctx.shadowOffsetX = 0;
-ctx.shadowOffsetY = 0;
-ctx.shadowBlur = 8;
 
 const bufer_canvas = new OffscreenCanvas(img_width, img_height); //буферный канвас
 const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
@@ -90,50 +84,133 @@ var sector = [null,
     { name: "F5D", os: 1 }
 ];
 
-/*************************************************/
-window.addEventListener("load", () => {
-    bufer_ctx.drawImage(document.getElementById("scene"), 0, 0, canvas.width, canvas.height);
-    scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-    bufer_ctx.drawImage(document.getElementById("addresses"), 0, 0, canvas.width, canvas.height);
-    address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height); //then
 
-    scanSectorCenter(); //then
-    sectorBazeCreate(); // then
-    drawScene();
+//************************* IndexedDB ****************************************
+const dbName = "foesectors";
+const dbVersion = 1; //версия базы
+var dbData; //экземпляр объекта db, где мы сможем хранить открытую базу данных
+var SectorsDBOpen = new Promise(function (resolve, reject) {
+    let request = window.indexedDB.open(dbName, dbVersion);
+    request.onerror = function () { // база данных не открылась успешно
+        console.log("Database failed to open");
+    };
+    request.onsuccess = function (event) { // база открыта - чтение в масив sectors
+        dbData = request.result;
+        let txn = dbData.transaction("sectors");
+        for (let i = 1; i < 62; i++) {
+            let oRequest = txn.objectStore("sectors").get(i);
+            oRequest.onsuccess = (event) => {
+                let myRecord = oRequest.result;
+                sector[i].name = myRecord.name;
+                sector[i].os = myRecord.osad;
+                //LOG("loaded :" + sector[i].name + " = " + sector[i].os);
+            };
+        }
+        LOG("Database opened successfully");
+    };
+    request.onupgradeneeded = function (event) { //создание локальной базы при первом запуске
+        LOG("Database setup. dbVersion: " + dbVersion);
+        let dbData = event.target.result;
+        dbData.createObjectStore("sectors", { autoIncrement: true });
+        let txn = event.target.transaction;
+        for (let i = 1; i < 62; i++) {
+            let newItem = { name: sector[i].name, osad: sector[i].os };
+            let request = txn.objectStore("sectors").add(newItem);
+            request.onsuccess = function () {
+                //LOG("added :" + i + " = " + sector[i].name);
+            };
+            request.onerror = function () {
+                LOG("Transaction ADD error: " + request.error);
+            };
+        }
+        txn.oncomplete = function () {
+            LOG("Database setup finished.");
+        };
+    };
+    resolve();
 });
 
-function scanSectorCenter() { // поиск центров секторов - для позиционирования названий
-    let maxX = [], minX = [], maxY = [], minY = [];
-    for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
-        maxX[s] = 0;
-        minX[s] = img_width;
-        maxY[s] = 0;
-        minY[s] = img_height;
-    }
-    for (let i = 0; i < address.data.length; i += 4) {
-        let s = address.data[i];
-        if (s < 62) {
-            let y = ~~(i / 4 / img_width);
-            let x = i / 4 - y * img_width;
-            if (x > maxX[s]) maxX[s] = x;
-            if (y > maxY[s]) maxY[s] = y;
-            if (x < minX[s]) minX[s] = x;
-            if (y < minY[s]) minY[s] = y;
-        }
-    }
-    for (let s = 1; s <= 61; s++) {
-        sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
-        sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
-    }
+function saveSector(i) {
+    var txn = dbData.transaction("sectors", "readwrite");
+    let newItem = { name: sector[i].name, osad: sector[i].os };
+    let request = txn.objectStore("sectors").put(newItem, i);
+    request.onsuccess = function () {
+        LOG("saved : " + sector[i].name);
+    };
+    request.onerror = function () {
+        LOG("Transaction SAVE error: " + request.error);
+    };
+
 }
 
-function drawScene() { //отрисовка сцены
-    ctx.drawImage(document.getElementById("background"), 0, 0, canvas.width, canvas.height); //фон
+/************************ инициализация *************************/
+var img_background;
+var loadImages = new Promise(function (resolve, reject) {
+    img_background = new Image();
+    img_background.src = "images/background.jpg";
+    let scene = new Image();
+    scene.src = "images/scene.png";
+    let addresses = new Image();
+    addresses.src = "images/addresses.bmp";
+    resolve({ scene: scene, addresses: addresses });
+});
+
+window.addEventListener("load", () => {
+    loadImages.then((res) => {
+        bufer_ctx.drawImage(res.scene, 0, 0, canvas.width, canvas.height);
+        scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+        bufer_ctx.drawImage(res.addresses, 0, 0, canvas.width, canvas.height);
+        address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height); //then
+
+        // поиск центров секторов - для позиционирования названий
+        let maxX = [], minX = [], maxY = [], minY = [];
+        for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
+            maxX[s] = 0;
+            minX[s] = img_width;
+            maxY[s] = 0;
+            minY[s] = img_height;
+        }
+        for (let i = 0; i < address.data.length; i += 4) {
+            let s = address.data[i];
+            if (s < 62) {
+                let y = ~~(i / 4 / img_width);
+                let x = i / 4 - y * img_width;
+                if (x > maxX[s]) maxX[s] = x;
+                if (y > maxY[s]) maxY[s] = y;
+                if (x < minX[s]) minX[s] = x;
+                if (y < minY[s]) minY[s] = y;
+            }
+        }
+        for (let s = 1; s <= 61; s++) {
+            sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
+            sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+        }
+
+        SectorsDBOpen.then((res) => {
+            drawScene();
+        }, () => {
+            alert("Hren wam!")
+        }
+        );
+    });
+});
+
+/************************ отрисовка сцены *********************************/
+ctx.textAlign = "center";
+ctx.font = "bold 18px arial";
+ctx.shadowOffsetX = 0;
+ctx.shadowOffsetY = 0;
+ctx.shadowBlur = 8;
+function drawScene() {
+    //фон
+    ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
+    //раскраска карты
     bufer_ctx.putImageData(scene, 0, 0);
-    ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height); //раскраска из буфера
-    //надписи секторов
+    ctx.shadowColor = "white";
+    ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
+    //подписи штабов
     ctx.fontStretch = "ultra-condensed";
-    for (let s = 1; s < 9; s++) { //штабы гильдий
+    for (let s = 1; s < 9; s++) {
         if (selected_gild == s) {
             ctx.fillStyle = "white";
             ctx.shadowColor = "black";
@@ -141,11 +218,16 @@ function drawScene() { //отрисовка сцены
             ctx.fillStyle = "black";
             ctx.shadowColor = "white";
         }
+        ctx.shadowBlur = 8;
+        ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
+        ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
         ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
     }
+    //подписи секторов
     ctx.fontStretch = "normal";
     ctx.fillStyle = "black";
     ctx.shadowColor = "white";
+    ctx.shadowBlur = 3;
     for (let s = 9; s <= 61; s++) { //сектора
         ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
         ctx.fillText(sector[s].os, sector[s].x, sector[s].y + 16);
@@ -166,9 +248,9 @@ canvas.addEventListener("mousedown", (e) => {
     let addr = address.data[offset]; //red component = number of address
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_gild = addr;
-        selected_color = { r: r, g: g, b: b, a: 205 };
+        selected_color = { r: r, g: g, b: b, a: 200 };
     } else if (addr < 62 && selected_color) {
-        if (selected_color.r == r && selected_color.g == g)  //достаточно сравнить два цвета
+        if (selected_color.r == r && selected_color.g == g)  //клик по тому же цвету (достаточно сравнить два цвета)
             color = { r: 0, g: 0, b: 0, a: 0 }; //убрать цвет
         else
             color = selected_color; //покрасить в выбранный цвет штаба
@@ -177,7 +259,6 @@ canvas.addEventListener("mousedown", (e) => {
         LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба");
     }
     drawScene();
-
 });
 
 function fillBackground(sec, color) {
@@ -284,89 +365,3 @@ function showName(e) {
 function LAB(message) { //вывод в строку состояния
     document.querySelector(".label-box").textContent = message;
 }
-
-
-//*************** IndexedDB ****************************************
-const dbName = "foesectors";
-var db; //экземпляр объекта db, где мы сможем хранить открытую базу данных
-
-function saveSector(i) {
-    var txn = db.transaction("sectors", "readwrite");
-    let newItem = { name: sector[i].name, osad: sector[i].os };
-    let request = txn.objectStore("sectors").put(newItem, i);
-    request.onsuccess = function () {
-        LOG("saved : " + sector[i].name + ":" + request.result);
-    };
-    request.onerror = function () {
-        LOG("Transaction SAVE error: " + request.error);
-    };
-}
-
-function sectorBazeCreate() {
-    const version = 1; //версия базы
-    let request = window.indexedDB.open(dbName, version);
-    request.onerror = function () { // база данных не открылась успешно
-        console.log("Database failed to open");
-    };
-    request.onsuccess = function (event) { // база открыта - чтение в масив sectors
-        db = request.result;
-        let txn = db.transaction("sectors");
-        for (let i = 1; i < 62; i++) {
-            let oRequest = txn.objectStore("sectors").get(i);
-            oRequest.onsuccess = (event) => {
-                let myRecord = oRequest.result;
-                sector[i].name = myRecord.name;
-                sector[i].os = myRecord.osad;
-                //LOG("loaded :" + sector[i].name + " = " + sector[i].os);
-            };
-        }
-        LOG("Database opened successfully");
-    };
-    request.onupgradeneeded = function (event) { //создание локальной базы при первом запуске
-        LOG("Database setup. Version: " + version);
-        let db = event.target.result;
-        db.createObjectStore("sectors", { autoIncrement: true });
-        let txn = event.target.transaction;
-        for (let i = 1; i < 62; i++) {
-            let newItem = { name: sector[i].name, osad: sector[i].os };
-            let request = txn.objectStore("sectors").add(newItem);
-            request.onsuccess = function () {
-                //LOG("added :" + i + " = " + sector[i].name);
-            };
-            request.onerror = function () {
-                LOG("Transaction ADD error: " + request.error);
-            };
-        }
-        txn.oncomplete = function () {
-            LOG("Database setup finished.");
-        };
-    };
-}
-
-
-
-
-
-
-
-
-/************** form map-editor ********************************
-const btn_edit = document.querySelector(".btn-edit");
-btn_edit.addEventListener("click", () => { editMapSettings() })
-
-const div_map_editor = document.querySelector(".map-editor");
-const btn_save = document.querySelector(".btn-save");
-btn_save.addEventListener("click", (e) => { saveMapSettings(e) })
-
-function editMapSettings() {
-    LAB("реадактороваине секторов в процессе разработки");
-    div_map_editor.style.visibility = "visible";
-    LOG("редактирование секторов карты");
-}
-
-function saveMapSettings(e) {
-    e.preventDefault();
-    div_map_editor.style.visibility = "hidden";
-    LOG("сохранение секторов карты в localStorage");
-}
-*/
