@@ -107,6 +107,7 @@ var SectorsDBOpen = new Promise(function (resolve, reject) {
             };
         }
         LOG("Database opened successfully");
+        resolve();
     };
     request.onupgradeneeded = function (event) { //создание локальной базы при первом запуске
         LOG("Database setup. dbVersion: " + dbVersion);
@@ -127,7 +128,6 @@ var SectorsDBOpen = new Promise(function (resolve, reject) {
             LOG("Database setup finished.");
         };
     };
-    resolve();
 });
 
 function saveSector(i) {
@@ -206,7 +206,7 @@ function drawScene() {
     ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
     //раскраска карты
     bufer_ctx.putImageData(scene, 0, 0);
-    ctx.shadowColor = "white";
+    ctx.shadowColor = "#ffffbb";
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
     //подписи штабов
     ctx.fontStretch = "ultra-condensed";
