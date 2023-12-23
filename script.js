@@ -1,6 +1,5 @@
 "use strict"; //строгий режим
 
-
 const img_width = 800; // (px)
 const img_height = 600; // (px)
 
@@ -16,8 +15,8 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = img_height; //вертикальное разрешение
 bufer_canvas.width = img_width; //зависит от параметров экрана
 
-var selected_color;
-var selected_gild;
+var selected_color; //todo
+var selected_gild; //todo
 var address;
 var scene;
 var sector = [null,
@@ -94,7 +93,7 @@ var SectorsDBOpen = new Promise(function (resolve, reject) {
     request.onerror = function () { // база данных не открылась успешно
         console.log("Database failed to open");
     };
-    request.onsuccess = function (event) { // база открыта - чтение в масив sectors
+    request.onsuccess = function () { // база открыта - чтение в масив sectors
         dbData = request.result;
         let txn = dbData.transaction("sectors");
         for (let i = 1; i < 62; i++) {
@@ -226,6 +225,7 @@ function drawScene() {
         for (let i = 0; i < 3; i++) //для "усиления" тени
             ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
     }
+
     //подписи секторов
     ctx.fontStretch = "normal";
     ctx.fillStyle = "black";

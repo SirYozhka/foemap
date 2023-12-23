@@ -17,8 +17,9 @@ html {
 
 body {
 	width: 810px;
+	height: 100vh;
 	padding: 5px;
-	background-color: rgb(177, 175, 157);
+	background-color: rgb(39, 73, 105);
 	border: 1px solid var(--brown);
 	margin: 0px auto;
 }
