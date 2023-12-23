@@ -41,6 +41,10 @@ header {
 	box-shadow: inset 0px 0px 2px 1px lightgoldenrodyellow;
 }
 
+footer {
+	padding-top: 2px;
+}
+
 /**********************************************************************/
 button {
 	cursor: pointer;

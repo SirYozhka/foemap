@@ -106,7 +106,7 @@ var SectorsDBOpen = new Promise(function (resolve, reject) {
                 //LOG("loaded :" + sector[i].name + " = " + sector[i].os);
             };
         }
-        LOG("Database opened successfully");
+        //LOG("Database opened successfully");
         resolve();
     };
     request.onupgradeneeded = function (event) { //создание локальной базы при первом запуске
@@ -148,45 +148,47 @@ var img_background;
 var loadImages = new Promise(function (resolve, reject) {
     img_background = new Image();
     img_background.src = "images/background.jpg";
-    let scene = new Image();
-    scene.src = "images/scene.png";
-    let addresses = new Image();
-    addresses.src = "images/addresses.bmp";
-    resolve({ scene: scene, addresses: addresses });
+    let scn = new Image();
+    scn.src = "images/scene.png";
+    let adr = new Image();
+    adr.src = "images/addresses.bmp";
+    scn.onload = () => {
+        bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
+        scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+        adr.onload = () => {
+            bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
+            address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+            // поиск центров секторов - для позиционирования названий
+            let maxX = [], minX = [], maxY = [], minY = [];
+            for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
+                maxX[s] = 0;
+                minX[s] = img_width;
+                maxY[s] = 0;
+                minY[s] = img_height;
+            }
+            for (let i = 0; i < address.data.length; i += 4) {
+                let s = address.data[i];
+                if (s < 62) {
+                    let y = ~~(i / 4 / img_width);
+                    let x = i / 4 - y * img_width;
+                    if (x > maxX[s]) maxX[s] = x;
+                    if (y > maxY[s]) maxY[s] = y;
+                    if (x < minX[s]) minX[s] = x;
+                    if (y < minY[s]) minY[s] = y;
+                }
+            }
+            for (let s = 1; s <= 61; s++) {
+                sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
+                sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+            }
+            resolve();
+        }
+    };
 });
 
 window.addEventListener("load", () => {
-    loadImages.then((res) => {
-        bufer_ctx.drawImage(res.scene, 0, 0, canvas.width, canvas.height);
-        scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-        bufer_ctx.drawImage(res.addresses, 0, 0, canvas.width, canvas.height);
-        address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height); //then
-
-        // поиск центров секторов - для позиционирования названий
-        let maxX = [], minX = [], maxY = [], minY = [];
-        for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
-            maxX[s] = 0;
-            minX[s] = img_width;
-            maxY[s] = 0;
-            minY[s] = img_height;
-        }
-        for (let i = 0; i < address.data.length; i += 4) {
-            let s = address.data[i];
-            if (s < 62) {
-                let y = ~~(i / 4 / img_width);
-                let x = i / 4 - y * img_width;
-                if (x > maxX[s]) maxX[s] = x;
-                if (y > maxY[s]) maxY[s] = y;
-                if (x < minX[s]) minX[s] = x;
-                if (y < minY[s]) minY[s] = y;
-            }
-        }
-        for (let s = 1; s <= 61; s++) {
-            sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
-            sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
-        }
-
-        SectorsDBOpen.then((res) => {
+    loadImages.then(() => {
+        SectorsDBOpen.then(() => {
             drawScene();
         }, () => {
             alert("Hren wam!")
@@ -198,16 +200,19 @@ window.addEventListener("load", () => {
 /************************ отрисовка сцены *********************************/
 ctx.textAlign = "center";
 ctx.font = "bold 18px arial";
-ctx.shadowOffsetX = 0;
-ctx.shadowOffsetY = 0;
+ctx.shadowOffsetX = 1;
+ctx.shadowOffsetY = 1;
 ctx.shadowBlur = 8;
 function drawScene() {
-    //фон
+    //фон - вулкан
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
+
     //раскраска карты
     bufer_ctx.putImageData(scene, 0, 0);
     ctx.shadowColor = "#ffffbb";
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
+
     //подписи штабов
     ctx.fontStretch = "ultra-condensed";
     for (let s = 1; s < 9; s++) {
@@ -218,21 +223,18 @@ function drawScene() {
             ctx.fillStyle = "black";
             ctx.shadowColor = "white";
         }
-        ctx.shadowBlur = 8;
-        ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
-        ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
-        ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
+        for (let i = 0; i < 3; i++) //для "усиления" тени
+            ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
     }
     //подписи секторов
     ctx.fontStretch = "normal";
     ctx.fillStyle = "black";
     ctx.shadowColor = "white";
-    ctx.shadowBlur = 3;
     for (let s = 9; s <= 61; s++) { //сектора
-        ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
+        for (let i = 0; i < 2; i++)//для "усиления" тени
+            ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
         ctx.fillText(sector[s].os, sector[s].x, sector[s].y + 16);
     }
-
 }
 
 
@@ -248,7 +250,7 @@ canvas.addEventListener("mousedown", (e) => {
     let addr = address.data[offset]; //red component = number of address
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_gild = addr;
-        selected_color = { r: r, g: g, b: b, a: 200 };
+        selected_color = { r: r, g: g, b: b, a: 2200 };
     } else if (addr < 62 && selected_color) {
         if (selected_color.r == r && selected_color.g == g)  //клик по тому же цвету (достаточно сравнить два цвета)
             color = { r: 0, g: 0, b: 0, a: 0 }; //убрать цвет
@@ -259,18 +261,19 @@ canvas.addEventListener("mousedown", (e) => {
         LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба");
     }
     drawScene();
-});
 
-function fillBackground(sec, color) {
-    for (var i = 0; i < address.data.length; i += 4) {
-        if (address.data[i] == sec) {
-            scene.data[i + 0] = color.r; //red
-            scene.data[i + 1] = color.g; //green
-            scene.data[i + 2] = color.b; //blue
-            scene.data[i + 3] = color.a; //alfa
+    function fillBackground(sec, color) {
+        for (var i = 0; i < address.data.length; i += 4) {
+            if (address.data[i] == sec) {
+                scene.data[i + 0] = color.r; //red
+                scene.data[i + 1] = color.g; //green
+                scene.data[i + 2] = color.b; //blue
+                scene.data[i + 3] = color.a; //alfa
+            }
         }
     }
-}
+});
+
 
 
 
@@ -327,8 +330,6 @@ function handler(event) {
         editor.style.visibility = "hidden";
     }
 }
-
-
 
 
 /*************** копироваине карты в буфер обмена ******************/
