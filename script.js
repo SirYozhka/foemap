@@ -16,77 +16,87 @@ bufer_canvas.height = img_height; //вертикальное разрешени�
 bufer_canvas.width = img_width; //зависит от параметров экрана
 
 var selected_color; //todo
-var selected_gild; //todo
+var selected_guild; //todo
 var address;
 var scene;
-var sector = [null,
-    { name: "Гильдия_1", os: 0 },
-    { name: "Гильдия_2", os: 0 },
-    { name: "Гильдия_3", os: 0 },
-    { name: "Гильдия_4", os: 0 },
-    { name: "Гильдия_5", os: 0 },
-    { name: "Гильдия_6", os: 0 },
-    { name: "Гильдия_7", os: 0 },
-    { name: "Гильдия_8", os: 0 },
-    { name: "X1X", os: 3 },
-    { name: "A4A", os: 1 }, // 10
-    { name: "A3A", os: 2 },
-    { name: "A2A", os: 2 },
-    { name: "A5B", os: 1 },
-    { name: "A4B", os: 1 },
-    { name: "A3B", os: 1 },
-    { name: "A5C", os: 1 },
-    { name: "A4C", os: 2 },
-    { name: "B2A", os: 3 },
-    { name: "B3A", os: 1 }, //19
-    { name: "B4A", os: 1 },
-    { name: "B5A", os: 1 },
-    { name: "B3B", os: 2 },
-    { name: "B4B", os: 2 },
-    { name: "B5B", os: 1 },
-    { name: "B4C", os: 1 },
-    { name: "B5D", os: 1 },
-    { name: "C2A", os: 2 },
-    { name: "C3A", os: 1 },
-    { name: "C4A", os: 2 },
-    { name: "C5A", os: 1 },
-    { name: "C3B", os: 1 },
-    { name: "C4B", os: 2 },
-    { name: "C5C", os: 1 },
-    { name: "C4C", os: 2 },
-    { name: "C5D", os: 1 },
-    { name: "D2A", os: 3 },
-    { name: "D3A", os: 2 },
-    { name: "D4A", os: 1 },
-    { name: "D3B", os: 1 },
-    { name: "D4B", os: 1 },
-    { name: "D5C", os: 1 },
-    { name: "D4C", os: 1 },
-    { name: "D5C", os: 1 },
-    { name: "E2A", os: 2 },
-    { name: "E3A", os: 1 },
-    { name: "E4A", os: 2 },
-    { name: "E5A", os: 1 },
-    { name: "E3B", os: 2 },
-    { name: "E4B", os: 2 },
-    { name: "E5B", os: 1 },
-    { name: "E4C", os: 2 },
-    { name: "E5D", os: 1 },
-    { name: "F2A", os: 3 },
-    { name: "F3A", os: 2 },
-    { name: "F4A", os: 2 },
-    { name: "F5A", os: 1 },
-    { name: "F3B", os: 1 },
-    { name: "F4B", os: 2 },
-    { name: "F5C", os: 1 },
-    { name: "F4C", os: 2 },
-    { name: "F5D", os: 1 }
+var gld_color = [null, //нумерация с единицы  gld_color[i]
+    { r: 250, g: 0, b: 250, a: 250 }, //розовый
+    { r: 100, g: 0, b: 180, a: 250 }, //фиолетовый
+    { r: 0, g: 0, b: 250, a: 250 }, //синий
+    { r: 250, g: 100, b: 0, a: 250 }, //оранжевый
+    { r: 0, g: 250, b: 250, a: 250 }, //бирюзовый
+    { r: 250, g: 250, b: 0, a: 250 }, //желтый
+    { r: 50, g: 250, b: 50, a: 250 }, //зелёный
+    { r: 250, g: 0, b: 0, a: 250 } //красный
+];
+var sector = [null, //для нумерации с 1
+    { name: "Гильдия_1", os: 0, guild: 1 },
+    { name: "Гильдия_2", os: 0, guild: 2 },
+    { name: "Гильдия_3", os: 0, guild: 3 },
+    { name: "Гильдия_4", os: 0, guild: 4 },
+    { name: "Гильдия_5", os: 0, guild: 5 },
+    { name: "Гильдия_6", os: 0, guild: 6 },
+    { name: "Гильдия_7", os: 0, guild: 7 },
+    { name: "Гильдия_8", os: 0, guild: 8 },
+    { name: "X1X", os: 3, guild: 0 },
+    { name: "A4A", os: 1, guild: 0 }, // 10
+    { name: "A3A", os: 2, guild: 0 },
+    { name: "A2A", os: 2, guild: 0 },
+    { name: "A5B", os: 1, guild: 0 },
+    { name: "A4B", os: 1, guild: 0 },
+    { name: "A3B", os: 1, guild: 0 },
+    { name: "A5C", os: 1, guild: 0 },
+    { name: "A4C", os: 2, guild: 0 },
+    { name: "B2A", os: 3, guild: 0 },
+    { name: "B3A", os: 1, guild: 0 }, //19
+    { name: "B4A", os: 1, guild: 0 },
+    { name: "B5A", os: 1, guild: 0 },
+    { name: "B3B", os: 2, guild: 0 },
+    { name: "B4B", os: 2, guild: 0 },
+    { name: "B5B", os: 1, guild: 0 },
+    { name: "B4C", os: 1, guild: 0 },
+    { name: "B5D", os: 1, guild: 0 },
+    { name: "C2A", os: 2, guild: 0 },
+    { name: "C3A", os: 1, guild: 0 },
+    { name: "C4A", os: 2, guild: 0 },
+    { name: "C5A", os: 1, guild: 0 },
+    { name: "C3B", os: 1, guild: 0 },
+    { name: "C4B", os: 2, guild: 0 },
+    { name: "C5C", os: 1, guild: 0 },
+    { name: "C4C", os: 2, guild: 0 },
+    { name: "C5D", os: 1, guild: 0 },
+    { name: "D2A", os: 3, guild: 0 },
+    { name: "D3A", os: 2, guild: 0 },
+    { name: "D4A", os: 1, guild: 0 },
+    { name: "D3B", os: 1, guild: 0 },
+    { name: "D4B", os: 1, guild: 0 },
+    { name: "D5C", os: 1, guild: 0 },
+    { name: "D4C", os: 1, guild: 0 },
+    { name: "D5C", os: 1, guild: 0 },
+    { name: "E2A", os: 2, guild: 0 },
+    { name: "E3A", os: 1, guild: 0 },
+    { name: "E4A", os: 2, guild: 0 },
+    { name: "E5A", os: 1, guild: 0 },
+    { name: "E3B", os: 2, guild: 0 },
+    { name: "E4B", os: 2, guild: 0 },
+    { name: "E5B", os: 1, guild: 0 },
+    { name: "E4C", os: 2, guild: 0 },
+    { name: "E5D", os: 1, guild: 0 },
+    { name: "F2A", os: 3, guild: 0 },
+    { name: "F3A", os: 2, guild: 0 },
+    { name: "F4A", os: 2, guild: 0 },
+    { name: "F5A", os: 1, guild: 0 },
+    { name: "F3B", os: 1, guild: 0 },
+    { name: "F4B", os: 2, guild: 0 },
+    { name: "F5C", os: 1, guild: 0 },
+    { name: "F4C", os: 2, guild: 0 },
+    { name: "F5D", os: 1, guild: 0 }
 ];
 
 
 //************************* IndexedDB ****************************************
 const dbName = "foesectors";
-const dbVersion = 1; //версия базы
+const dbVersion = 2; //версия базы
 var dbData; //экземпляр объекта db, где мы сможем хранить открытую базу данных
 var SectorsDBOpen = new Promise(function (resolve, reject) {
     let request = window.indexedDB.open(dbName, dbVersion);
@@ -102,6 +112,7 @@ var SectorsDBOpen = new Promise(function (resolve, reject) {
                 let myRecord = oRequest.result;
                 sector[i].name = myRecord.name;
                 sector[i].os = myRecord.osad;
+                sector[i].guild = myRecord.guild;
                 //LOG("loaded :" + sector[i].name + " = " + sector[i].os);
             };
         }
@@ -114,7 +125,7 @@ var SectorsDBOpen = new Promise(function (resolve, reject) {
         dbData.createObjectStore("sectors", { autoIncrement: true });
         let txn = event.target.transaction;
         for (let i = 1; i < 62; i++) {
-            let newItem = { name: sector[i].name, osad: sector[i].os };
+            let newItem = { name: sector[i].name, osad: sector[i].os, guild: sector[i].guild };
             let request = txn.objectStore("sectors").add(newItem);
             request.onsuccess = function () {
                 //LOG("added :" + i + " = " + sector[i].name);
@@ -129,17 +140,16 @@ var SectorsDBOpen = new Promise(function (resolve, reject) {
     };
 });
 
-function saveSector(i) {
+function saveSector(sec) { //запись в базу сектора sec
     var txn = dbData.transaction("sectors", "readwrite");
-    let newItem = { name: sector[i].name, osad: sector[i].os };
-    let request = txn.objectStore("sectors").put(newItem, i);
+    let newItem = { name: sector[sec].name, osad: sector[sec].os, guild: sector[sec].guild };
+    let request = txn.objectStore("sectors").put(newItem, sec);
     request.onsuccess = function () {
-        LOG("saved : " + sector[i].name);
+        //LOG("saved : " + sector[sec].name);
     };
     request.onerror = function () {
         LOG("Transaction SAVE error: " + request.error);
     };
-
 }
 
 /************************ инициализация *************************/
@@ -157,7 +167,7 @@ var loadImages = new Promise(function (resolve, reject) {
         adr.onload = () => {
             bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
             address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-            // поиск центров секторов - для позиционирования названий
+            // поиск центров секторов - для позиционирования названий и заодно - закраска в цвет гильдии
             let maxX = [], minX = [], maxY = [], minY = [];
             for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
                 maxX[s] = 0;
@@ -179,6 +189,8 @@ var loadImages = new Promise(function (resolve, reject) {
             for (let s = 1; s <= 61; s++) {
                 sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
                 sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+                let gld = sector[s].guild;
+                if (gld > 0) fillBackground(s, gld_color[gld]); //заливка сектора цветом занятой гильдии
             }
             resolve();
         }
@@ -215,10 +227,10 @@ function drawScene() {
     //подписи штабов
     ctx.fontStretch = "ultra-condensed";
     for (let s = 1; s < 9; s++) {
-        if (selected_gild == s) {
+        if (selected_guild == s) { //выбранный штаб
             ctx.fillStyle = "white";
             ctx.shadowColor = "black";
-        } else {
+        } else { //просто штаб
             ctx.fillStyle = "black";
             ctx.shadowColor = "white";
         }
@@ -233,7 +245,11 @@ function drawScene() {
     for (let s = 9; s <= 61; s++) { //сектора
         for (let i = 0; i < 2; i++)//для "усиления" тени
             ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
-        ctx.fillText(sector[s].os, sector[s].x, sector[s].y + 16);
+        let osadki = "";
+        for (let i = 0; i < sector[s].os; i++) {
+            osadki += "+"; //🞔
+        }
+        ctx.fillText(osadki, sector[s].x, sector[s].y + 16);
     }
 }
 
@@ -244,35 +260,37 @@ canvas.addEventListener("mousedown", (e) => {
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     if (e.button != 0) return; //клик левой кнопкой
     let color;
-    let r = scene.data[offset + 0];
-    let g = scene.data[offset + 1];
-    let b = scene.data[offset + 2];
     let addr = address.data[offset]; //red component = number of address
+    if (addr > 62) {
+        LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба"); return;
+    }
     if (addr < 9) { //клик по штабу - выбор цвета
-        selected_gild = addr;
-        selected_color = { r: r, g: g, b: b, a: 2200 };
-    } else if (addr < 62 && selected_color) {
-        if (selected_color.r == r && selected_color.g == g)  //клик по тому же цвету (достаточно сравнить два цвета)
-            color = { r: 0, g: 0, b: 0, a: 0 }; //убрать цвет
-        else
-            color = selected_color; //покрасить в выбранный цвет штаба
-        fillBackground(addr, color); //покрасить в выбранный цвет штаба
+        selected_guild = addr;
     } else {
-        LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба");
+        if (selected_guild == sector[addr].guild) {   //клик по той же гильдии - отмена выделения
+            sector[addr].guild = 0; //помечаем что сектор не занят гильдией
+            color = { r: 0, g: 0, b: 0, a: 0 };
+        } else {
+            sector[addr].guild = selected_guild; //помечаем что сектор занят этой гильдией
+            color = gld_color[selected_guild]; //покрасить в выбранный цвет штаба
+        }
+        fillBackground(addr, color); //покрасить в выбранный цвет штаба
+        saveSector(addr);
     }
     drawScene();
 
-    function fillBackground(sec, color) {
-        for (var i = 0; i < address.data.length; i += 4) {
-            if (address.data[i] == sec) {
-                scene.data[i + 0] = color.r; //red
-                scene.data[i + 1] = color.g; //green
-                scene.data[i + 2] = color.b; //blue
-                scene.data[i + 3] = color.a; //alfa
-            }
+});
+
+function fillBackground(sec, color) { //заливка сектора sec цветом color
+    for (var i = 0; i < address.data.length; i += 4) {
+        if (address.data[i] == sec) {
+            scene.data[i + 0] = color.r; //red
+            scene.data[i + 1] = color.g; //green
+            scene.data[i + 2] = color.b; //blue
+            scene.data[i + 3] = color.a; //alfa
         }
     }
-});
+}
 
 
 

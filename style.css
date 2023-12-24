@@ -17,10 +17,10 @@ html {
 
 body {
 	width: 810px;
-	height: 100vh;
 	padding: 5px;
-	background-color: rgb(39, 73, 105);
+	background: linear-gradient(rgb(108, 129, 148), rgb(242, 215, 185));
 	border: 1px solid var(--brown);
+	border-radius: 2px;
 	margin: 0px auto;
 }
 
@@ -36,15 +36,17 @@ header {
 	margin-bottom: 3px;
 	font-size: 10px;
 	color: lightgoldenrodyellow;
+	background-color: var(--brown);
 	border: 1px solid var(--brown);
 	border-radius: 4px;
-	background-color: var(--brown);
-	box-shadow: inset 0px 0px 2px 1px lightgoldenrodyellow;
+	box-shadow: inset 0px 0px 3px 1px lightgoldenrodyellow;
 }
 
 footer {
+	color: black;
 	padding-top: 2px;
 }
+
 
 /**********************************************************************/
 button {
@@ -80,7 +82,6 @@ button:disabled {
 main {
 	margin: 0px auto;
 }
-
 
 .container {
 	position: relative;
