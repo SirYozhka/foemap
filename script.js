@@ -259,10 +259,12 @@ canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     if (e.button != 0) return; //клик левой кнопкой
+    hideEditor();
     let color;
     let addr = address.data[offset]; //red component = number of address
     if (addr > 62) {
-        LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба"); return;
+        LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба");
+        return;
     }
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_guild = addr;
@@ -278,7 +280,6 @@ canvas.addEventListener("mousedown", (e) => {
         saveSector(addr);
     }
     drawScene();
-
 });
 
 function fillBackground(sec, color) { //заливка сектора sec цветом color
@@ -291,8 +292,6 @@ function fillBackground(sec, color) { //заливка сектора sec цве
         }
     }
 }
-
-
 
 
 /****************** редактор подписи сектора ****************************/
@@ -316,8 +315,7 @@ canvas.addEventListener("contextmenu", (e) => { //клик правой кноп
         inp_name = document.querySelectorAll(".name-editor")[1];
         inp_siege = document.querySelector(".siege-editor");
     }
-    document.querySelector(".guild-editor").style.visibility = "hidden";
-    document.querySelector(".sector-editor").style.visibility = "hidden";
+    hideEditor();
     editor.style.visibility = "visible";
     let dx = sector[addr].x - editor.clientWidth / 2;
     if (dx < 0) dx = 2;
@@ -334,6 +332,12 @@ canvas.addEventListener("contextmenu", (e) => { //клик правой кноп
         inp_siege.select();
     }
 });
+
+function hideEditor() {
+    document.querySelector(".guild-editor").style.visibility = "hidden";
+    document.querySelector(".sector-editor").style.visibility = "hidden";
+}
+
 
 container.addEventListener("keydown", (e) => handler(e));
 function handler(event) {
