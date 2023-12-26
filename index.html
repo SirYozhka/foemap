@@ -14,7 +14,7 @@
 <body>
   <header> <!-- header -->
     <!-- DEBUG: индикация -->
-    <button class="btn-clear" data-text="очистить выбранные опорники">clear </button>
+    <button class="btn-clear" data-text="очистить выделение всех опорников">clear </button>
     <button class="btn-copy" data-text="копировать карту в буфер обмена">copy </button>
     <div class="label-box">
       клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба
@@ -27,7 +27,7 @@
         <!-- отображение сцены с помошью canvas -->
       </canvas>
 
-      <!-- редактор названий штабоы гильдий -->
+      <!-- редактор названий гильдий -->
       <div class="guild-editor" style="visibility:hidden">
         <input name="ed" type="text" class="name-editor">
       </div>
@@ -42,44 +42,16 @@
   </main>
   <footer>
     <div class="copyright">
-      © 2023 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
+      © 2023 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.3)
     </div>
     <div class="load-spinner">
       <!-- индикатор процессов -->
     </div>
   </footer>
 
-  <!-- DEBUG логирование на экран -->
   <div class="log-box">
+    <!-- DEBUG логирование на экран -->
     <p>-------- logging --------</p>
-    <style>
-      .log-box {
-        position: absolute;
-        top: 6vh;
-        right: 1vh;
-        width: 200px;
-        min-width: fit-content;
-        height: fit-content;
-        max-height: 80vh;
-        padding: 5px;
-        overflow: auto;
-        background-color: lightgrey;
-        font-size: 13px;
-        color: darkblue;
-        opacity: 0.7;
-        visibility: hidden;
-      }
-    </style>
-    <script>
-      const div_log = document.querySelector(".log-box");
-      function LOG(message) {
-        div_log.style.visibility = "visible"; //при первом же логе делаем видимым
-        const p_msg = document.createElement("p");
-        div_log.appendChild(p_msg);
-        p_msg.textContent = message;
-        p_msg.scrollIntoView();
-      }
-    </script>
   </div>
 
 </body>

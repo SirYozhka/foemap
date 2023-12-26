@@ -15,8 +15,7 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = img_height; //вертикальное разрешение
 bufer_canvas.width = img_width; //зависит от параметров экрана
 
-var selected_color; //todo
-var selected_guild; //todo
+var selected_guild;
 var address;
 var scene;
 var gld_color = [null, //нумерация с единицы  gld_color[i]
@@ -97,7 +96,7 @@ var sector = [null, //для нумерации с 1
 //************************* IndexedDB ****************************************
 const dbName = "foesectors";
 const dbVersion = 2; //версия базы
-var dbData; //экземпляр объекта db, где мы сможем хранить открытую базу данных
+var dbData; //экземпляр объекта db, где мы храним открытую базу данных
 var SectorsDBOpen = new Promise(function (resolve, reject) {
     let request = window.indexedDB.open(dbName, dbVersion);
     request.onerror = function () { // база данных не открылась успешно
@@ -201,15 +200,9 @@ window.addEventListener("load", () => {
             }
         };
     });
-    loadImages.then(() => {
-        SectorsDBOpen.then(() => {
-            drawScene();
-        }, () => {
-            alert("Hren wam!")
-        }
-        );
-    });
-    canvas.addEventListener("mousemove", (e) => { showName(e) });
+    loadImages
+        .then(SectorsDBOpen)
+        .then(drawScene);
 });
 
 
@@ -264,7 +257,7 @@ canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     if (e.button != 0) return; //клик левой кнопкой
-    hideEditor();
+    if (editor) editor.style.visibility = "hidden"; //на всяк случай
     let color;
     let addr = address.data[offset]; //red component = number of address
     if (addr > 62) {
@@ -273,7 +266,7 @@ canvas.addEventListener("mousedown", (e) => {
     }
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_guild = addr;
-        LAB("выбрана гильдия " + sector[selected_guild].name);
+        helper(e);
     } else {
         if (selected_guild == sector[addr].guild) {   //клик по той же гильдии - отмена выделения
             sector[addr].guild = 0; //помечаем что сектор не занят гильдией
@@ -311,17 +304,21 @@ canvas.addEventListener("contextmenu", (e) => { //клик правой кноп
     let addr = address.data[offset]; //red component = number of address
     if (addr > 61) return;
     sel_addr = addr;
-    if (editor)
-        editor.removeEventListener("keydown", handler, false);
+    if (editor)  //если уже был открыт любой редактор - то закрыть
+        editor.style.visibility = "hidden"; //на всяк случай
     if (addr < 9) {
+        LAB("Редактироване названия гильдии.")
         editor = document.querySelector(".guild-editor");
         inp_name = document.querySelectorAll(".name-editor")[0];
+        inp_name.focus();
     } else if (addr < 62) {
+        LAB("Редактироване сектора.")
         editor = document.querySelector(".sector-editor");
         inp_name = document.querySelectorAll(".name-editor")[1];
         inp_siege = document.querySelector(".siege-editor");
+        inp_siege.value = sector[addr].os;
+        inp_siege.focus();
     }
-    hideEditor();
     editor.style.visibility = "visible";
     let dx = sector[addr].x - editor.clientWidth / 2;
     if (dx < 0) dx = 2;
@@ -330,55 +327,36 @@ canvas.addEventListener("contextmenu", (e) => { //клик правой кноп
     editor.style.top = sector[addr].y - 20 + 'px'
     inp_name.value = sector[addr].name;
     if (addr < 9) {
-        inp_name.focus();
         inp_name.select();
     } else if (addr < 62) {
-        inp_siege.value = sector[addr].os;
-        inp_siege.focus();
         inp_siege.select();
     }
+    editor.addEventListener("keydown", (e) => {
+        if (event.code === "NumpadEnter" || event.code === "Enter") {
+            sector[sel_addr].name = inp_name.value;
+            if (sel_addr > 8)
+                sector[sel_addr].os = inp_siege.value;
+            editor.style.visibility = "hidden";
+            drawScene();
+            saveSector(sel_addr);
+        } else if (event.code === "Escape") {
+            editor.style.visibility = "hidden";
+        }
+        LAB("...")
+    });
 });
-
-function hideEditor() {
-    document.querySelector(".guild-editor").style.visibility = "hidden";
-    document.querySelector(".sector-editor").style.visibility = "hidden";
-}
-
-
-container.addEventListener("keydown", (e) => handler(e));
-function handler(event) {
-    if (event.code === "NumpadEnter" || event.code === "Enter") {
-        sector[sel_addr].name = inp_name.value;
-        if (sel_addr > 8)
-            sector[sel_addr].os = inp_siege.value;
-        editor.style.visibility = "hidden";
-        drawScene();
-        saveSector(sel_addr);
-    } else if (event.code === "Escape") {
-        editor.style.visibility = "hidden";
-    }
-}
-
 
 /*************** копироваине карты в буфер обмена ******************/
 const btn_copy = document.querySelector(".btn-copy");
-btn_copy.addEventListener("mouseover", (event) => {
-    let message = event.target.getAttribute("data-text");
-    LAB(message);
-})
-btn_copy.addEventListener("mouseleave", () => {
-    LAB("");
-})
 btn_copy.addEventListener("click", () => {
-    processIndicator();
     canvas.toBlob((blob) => {
         let data = [new ClipboardItem({ 'image/png': blob })]; //работает только по протоколу https или localhost !
         navigator.clipboard.write(data).then(
             () => {
-                LAB("карта скопирована в буфер обмена");
-                setTimeout(() => { LAB("нажмите Ctr+V, чтобы вставить изображение карты (например в telegram) ") }, 3000);
+                LAB("Карта скопирована в буфер обмена.");
+                setTimeout(() => { LAB("Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ") }, 2000);
             },
-            (err) => { alert("error map copy: " + err); },
+            (err) => { LOG("error map copy: " + err); },
         );
     });
 })
@@ -386,13 +364,6 @@ btn_copy.addEventListener("click", () => {
 
 /*************** очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
-btn_clear.addEventListener("mouseover", (event) => {
-    let message = event.target.getAttribute("data-text");
-    LAB(message);
-})
-btn_clear.addEventListener("mouseleave", () => {
-    LAB("");
-})
 btn_clear.addEventListener("click", () => {
     for (let i = 9; i < 62; i++) {
         sector[i].guild = 0;
@@ -403,7 +374,8 @@ btn_clear.addEventListener("click", () => {
 })
 
 /************ вид курсора + подсказки ***********************/
-function showName(e) {
+canvas.addEventListener("mousemove", (e) => { helper(e) });
+function helper(e) {
     var offset = (e.offsetY * img_width + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
     var addr = address.data[offset]; //получить red component = number of address
     if (addr < 9) { //штабы
@@ -415,19 +387,23 @@ function showName(e) {
         return;
     }
     if (!selected_guild)
-        LAB("клик по штабу - выбрать цвет гильдии");
+        LAB("Сначала надо выбрать гильдию (кликнуть по штабу).");
     else
-        LAB("клик по сектору - отметить сектор цветом выбранной гильдии / отменить выбор опорника");
+        LAB("Выбор опорников для гильдии " + sector[selected_guild].name + "...");
 
 }
+
 
 /******************************************************/
 function LAB(message) { //вывод в строку состояния
     document.querySelector(".label-box").textContent = message;
 }
 
-function processIndicator() { //простой индикатор процесса
-    for (let i = 2000; i > 0; i--) {
-        setTimeout(() => { LAB(i) }, 200);
-    }
+const div_log = document.querySelector(".log-box");
+function LOG(message) { //вывод логов на экран
+    div_log.style.visibility = "visible"; //при первом же логе делаем видимым
+    const p_msg = document.createElement("p");
+    p_msg.textContent = message;
+    div_log.appendChild(p_msg);
+    p_msg.scrollIntoView();
 }

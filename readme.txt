@@ -1,4 +1,1 @@
-https://forgeofempires.com
-
--------------------------------
-pet-project C Sergey Fedorov
+PBG map editor for https://forgeofempires.com
