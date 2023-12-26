@@ -14,9 +14,8 @@
 <body>
   <header> <!-- header -->
     <!-- DEBUG: индикация -->
-    <button class="btn-help" disabled>help </button>
-    <button class="btn-save" disabled>save </button>
-    <button class="btn-copy">copy </button>
+    <button class="btn-clear" data-text="очистить выбранные опорники">clear </button>
+    <button class="btn-copy" data-text="копировать карту в буфер обмена">copy </button>
     <div class="label-box">
       клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба
     </div>
@@ -42,12 +41,17 @@
     </div>
   </main>
   <footer>
-    © 2023 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
+    <div class="copyright">
+      © 2023 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
+    </div>
+    <div class="load-spinner">
+      <!-- индикатор процессов -->
+    </div>
   </footer>
 
   <!-- DEBUG логирование на экран -->
   <div class="log-box">
-    <p>-------- журнал событий --------</p>
+    <p>-------- logging --------</p>
     <style>
       .log-box {
         position: absolute;

@@ -152,52 +152,55 @@ function saveSector(sec) { //запись в базу сектора sec
     };
 }
 
+
 /************************ инициализация *************************/
-var img_background;
-var loadImages = new Promise(function (resolve, reject) {
-    img_background = new Image();
-    img_background.src = "images/background.jpg";
-    let scn = new Image();
-    scn.src = "images/scene.png";
-    let adr = new Image();
-    adr.src = "images/addresses.bmp";
-    scn.onload = () => {
-        bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
-        scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-        adr.onload = () => {
-            bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
-            address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-            // поиск центров секторов - для позиционирования названий и заодно - закраска в цвет гильдии
-            let maxX = [], minX = [], maxY = [], minY = [];
-            for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
-                maxX[s] = 0;
-                minX[s] = img_width;
-                maxY[s] = 0;
-                minY[s] = img_height;
-            }
-            for (let i = 0; i < address.data.length; i += 4) {
-                let s = address.data[i];
-                if (s < 62) {
-                    let y = ~~(i / 4 / img_width);
-                    let x = i / 4 - y * img_width;
-                    if (x > maxX[s]) maxX[s] = x;
-                    if (y > maxY[s]) maxY[s] = y;
-                    if (x < minX[s]) minX[s] = x;
-                    if (y < minY[s]) minY[s] = y;
-                }
-            }
-            for (let s = 1; s <= 61; s++) {
-                sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
-                sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
-                let gld = sector[s].guild;
-                if (gld > 0) fillBackground(s, gld_color[gld]); //заливка сектора цветом занятой гильдии
-            }
-            resolve();
-        }
-    };
-});
+var img_background; //фоновое изображение водопада
 
 window.addEventListener("load", () => {
+    //LOG("initializing started");
+    var loadImages = new Promise(function (resolve, reject) {
+        //LOG("images loading");
+        img_background = new Image();
+        img_background.src = "images/background.jpg";
+        let scn = new Image();
+        scn.src = "images/scene.png";
+        let adr = new Image();
+        adr.src = "images/addresses.bmp";
+        scn.onload = () => {
+            bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
+            scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+            adr.onload = () => {
+                bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
+                address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+                // поиск центров секторов - для позиционирования названий и заодно - закраска в цвет гильдии
+                let maxX = [], minX = [], maxY = [], minY = [];
+                for (let s = 1; s < 62; s++) { //перебор всех 61 секторов
+                    maxX[s] = 0;
+                    minX[s] = img_width;
+                    maxY[s] = 0;
+                    minY[s] = img_height;
+                }
+                for (let i = 0; i < address.data.length; i += 4) {
+                    let s = address.data[i];
+                    if (s < 62) { //остальное поле - белый цвет
+                        let y = ~~(i / 4 / img_width);
+                        let x = i / 4 - y * img_width;
+                        if (x > maxX[s]) maxX[s] = x;
+                        if (y > maxY[s]) maxY[s] = y;
+                        if (x < minX[s]) minX[s] = x;
+                        if (y < minY[s]) minY[s] = y;
+                    }
+                }
+                for (let s = 1; s <= 61; s++) {
+                    sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
+                    sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+                    let gld = sector[s].guild;
+                    if (gld > 0) fillBackground(s, gld_color[gld]); //заливка сектора цветом занятой гильдии
+                }
+                resolve();
+            }
+        };
+    });
     loadImages.then(() => {
         SectorsDBOpen.then(() => {
             drawScene();
@@ -206,7 +209,9 @@ window.addEventListener("load", () => {
         }
         );
     });
+    canvas.addEventListener("mousemove", (e) => { showName(e) });
 });
+
 
 /************************ отрисовка сцены *********************************/
 ctx.textAlign = "center";
@@ -263,11 +268,12 @@ canvas.addEventListener("mousedown", (e) => {
     let color;
     let addr = address.data[offset]; //red component = number of address
     if (addr > 62) {
-        LAB("клик по штабу - выбрать цвет, клик по сектору - покрасить в цвет штаба");
+        LAB("клик по штабу - выбрать гильдию / клик по сектору - покрасить в цвет выбранной гильдии");
         return;
     }
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_guild = addr;
+        LAB("выбрана гильдия " + sector[selected_guild].name);
     } else {
         if (selected_guild == sector[addr].guild) {   //клик по той же гильдии - отмена выделения
             sector[addr].guild = 0; //помечаем что сектор не занят гильдией
@@ -356,35 +362,72 @@ function handler(event) {
 
 /*************** копироваине карты в буфер обмена ******************/
 const btn_copy = document.querySelector(".btn-copy");
-btn_copy.addEventListener("click", () => { copyPicture() })
-
-function copyPicture() { //todo разобраться
+btn_copy.addEventListener("mouseover", (event) => {
+    let message = event.target.getAttribute("data-text");
+    LAB(message);
+})
+btn_copy.addEventListener("mouseleave", () => {
+    LAB("");
+})
+btn_copy.addEventListener("click", () => {
+    processIndicator();
     canvas.toBlob((blob) => {
-        let data = [new ClipboardItem({ [blob.type]: blob })];
+        let data = [new ClipboardItem({ 'image/png': blob })]; //работает только по протоколу https или localhost !
         navigator.clipboard.write(data).then(
-            () => { alert("карта скопирована в буфер обмена"); },
+            () => {
+                LAB("карта скопирована в буфер обмена");
+                setTimeout(() => { LAB("нажмите Ctr+V, чтобы вставить изображение карты (например в telegram) ") }, 3000);
+            },
             (err) => { alert("error map copy: " + err); },
         );
     });
-};
+})
 
 
-/************ указатель сектора в строку состояния + вид курсора ***********************/
-canvas.addEventListener("mousemove", (e) => { showName(e) });
+/*************** очистить опорники ******************/
+const btn_clear = document.querySelector(".btn-clear");
+btn_clear.addEventListener("mouseover", (event) => {
+    let message = event.target.getAttribute("data-text");
+    LAB(message);
+})
+btn_clear.addEventListener("mouseleave", () => {
+    LAB("");
+})
+btn_clear.addEventListener("click", () => {
+    for (let i = 9; i < 62; i++) {
+        sector[i].guild = 0;
+        saveSector(i);
+        fillBackground(i, { r: 0, g: 0, b: 0, a: 0 }); //убрать заливку
+    };
+    drawScene();
+})
+
+/************ вид курсора + подсказки ***********************/
 function showName(e) {
     var offset = (e.offsetY * img_width + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
     var addr = address.data[offset]; //получить red component = number of address
-    if (addr < 10) //штабы
+    if (addr < 9) { //штабы
         container.style.cursor = "pointer";
-    else if (addr < 62) //сектора
+    } else if (addr < 62) { //сектора
         container.style.cursor = "cell";
-    else { //окружение
+    } else { //окружение
         container.style.cursor = "default";
         return;
     }
-    LAB(sector[addr].name);
+    if (!selected_guild)
+        LAB("клик по штабу - выбрать цвет гильдии");
+    else
+        LAB("клик по сектору - отметить сектор цветом выбранной гильдии / отменить выбор опорника");
+
 }
 
+/******************************************************/
 function LAB(message) { //вывод в строку состояния
     document.querySelector(".label-box").textContent = message;
+}
+
+function processIndicator() { //простой индикатор процесса
+    for (let i = 2000; i > 0; i--) {
+        setTimeout(() => { LAB(i) }, 200);
+    }
 }

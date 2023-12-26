@@ -43,13 +43,21 @@ header {
 }
 
 footer {
-	color: black;
-	padding-top: 2px;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+	position: relative;
 }
 
+.copyright {
+	padding-top: 2px;
+	color: black;
+}
 
 /**********************************************************************/
 button {
+	position: relative;
 	cursor: pointer;
 	height: 20px;
 	margin: 5px;
