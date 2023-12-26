@@ -44,6 +44,7 @@ header {
 
 footer {
 	display: flex;
+	height: 20px;
 	flex-direction: row;
 	justify-content: flex-start;
 	align-items: center;
@@ -51,8 +52,14 @@ footer {
 }
 
 .copyright {
+	font-size: 10px;
 	padding-top: 2px;
 	color: black;
+}
+
+.copyright a {
+	font-size: 10px;
+	padding-top: 2px;
 }
 
 /**********************************************************************/

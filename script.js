@@ -18,15 +18,16 @@ bufer_canvas.width = img_width; //зависит от параметров эк�
 var selected_guild;
 var address;
 var scene;
+var alpha = 200;
 var gld_color = [null, //нумерация с единицы  gld_color[i]
-    { r: 250, g: 0, b: 250, a: 250 }, //розовый
-    { r: 100, g: 0, b: 180, a: 250 }, //фиолетовый
-    { r: 0, g: 0, b: 250, a: 250 }, //синий
-    { r: 250, g: 100, b: 0, a: 250 }, //оранжевый
-    { r: 0, g: 250, b: 250, a: 250 }, //бирюзовый
-    { r: 250, g: 250, b: 0, a: 250 }, //желтый
-    { r: 50, g: 250, b: 50, a: 250 }, //зелёный
-    { r: 250, g: 0, b: 0, a: 250 } //красный
+    { r: 250, g: 0, b: 250, a: alpha }, //розовый
+    { r: 100, g: 0, b: 180, a: alpha }, //фиолетовый
+    { r: 0, g: 0, b: 250, a: alpha }, //синий
+    { r: 250, g: 100, b: 0, a: alpha }, //оранжевый
+    { r: 0, g: 250, b: 250, a: alpha }, //бирюзовый
+    { r: 250, g: 250, b: 0, a: alpha }, //желтый
+    { r: 50, g: 250, b: 50, a: alpha }, //зелёный
+    { r: 250, g: 0, b: 0, a: alpha } //красный
 ];
 var sector = [null, //для нумерации с 1
     { name: "Гильдия_1", os: 0, guild: 1 },
@@ -154,6 +155,7 @@ function saveSector(sec) { //запись в базу сектора sec
 
 /************************ инициализация *************************/
 var img_background; //фоновое изображение водопада
+var img_borders; //границы
 
 window.addEventListener("load", () => {
     //LOG("initializing started");
@@ -161,6 +163,8 @@ window.addEventListener("load", () => {
         //LOG("images loading");
         img_background = new Image();
         img_background.src = "images/background.jpg";
+        img_borders = new Image();
+        img_borders.src = "images/borders.png";
         let scn = new Image();
         scn.src = "images/scene.png";
         let adr = new Image();
@@ -219,8 +223,13 @@ function drawScene() {
 
     //раскраска карты
     bufer_ctx.putImageData(scene, 0, 0);
-    ctx.shadowColor = "#ffffbb";
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
+
+    //раскраска границ секторов
+    ctx.shadowColor = "#FFFFFF";
+    ctx.shadowBlur = 10;
+    ctx.drawImage(img_borders, 0, 0, canvas.width, canvas.height);
+
 
     //подписи штабов
     ctx.fontStretch = "ultra-condensed";
