@@ -111,6 +111,26 @@ button:hover::after {
 	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
 }
 
+.anim-clear {
+	animation-name: frm_clear;
+	animation-duration: 100ms;
+	animation-timing-function: ease-in;
+	animation-iteration-count: 3;
+}
+
+@keyframes frm_clear {
+	to {
+		transform: scale(1.01);
+	}
+}
+
+.anim-copy {
+	transition-duration: 800ms;
+	transition-timing-function: cubic-bezier(0.4, 1.0, 0.8);
+	transform-origin: top right;
+	transform: scale(0.05);
+}
+
 /********************************************************/
 main {
 	margin: 0px auto;
@@ -133,16 +153,6 @@ canvas {
 	height: 100%;
 }
 
-.container[shaded]:after {
-	content: '';
-	width: 100%;
-	height: 100%;
-	position: absolute;
-	top: 0;
-	left: 0;
-	background-color: rgba(0, 0, 0, 0.3);
-}
-
 /********************* label ********************/
 .label-box {
 	position: absolute;
@@ -154,7 +164,7 @@ canvas {
 	color: lightgoldenrodyellow;
 }
 
-/***************** form sector editor **********************/
+/***************** editor **********************/
 .guild-editor,
 .sector-editor {
 	display: flex;
@@ -184,6 +194,12 @@ input.name-editor {
 
 input.siege-editor {
 	width: 50px;
+}
+
+.shadow-filter {
+	filter: brightness(0.5);
+	transition-property: filter;
+	transition-duration: 1s;
 }
 
 /********************* лог ********************************/

@@ -286,7 +286,7 @@ canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     if (e.button != 0) return; //клик левой кнопкой
-    if (editor) editor.style.visibility = "hidden"; //на всяк случай
+    if (editor) editModeIndice(false); //закрыть редактор если открыт
     let color;
     let addr = data_address.data[offset]; //red component = number of address
     if (addr > 62) {
@@ -374,21 +374,23 @@ canvas.addEventListener("contextmenu", (e) => { //клик правой кноп
         LAB("...");
     });
 
-    function editModeIndice(mode) {
-        if (mode) {
-            container.setAttribute("shaded", null);
-            editor.style.visibility = "visible";
-        } else {
-            container.removeAttribute("shaded");
-            editor.style.visibility = "hidden";
-        }
-    }
 });
+
+function editModeIndice(mode) { //затенение фона при входе в редактор
+    if (mode) {
+        canvas.classList.add("shadow-filter");
+        editor.style.visibility = "visible";
+    } else {
+        canvas.classList.remove("shadow-filter");
+        editor.style.visibility = "hidden";
+    }
+}
 
 
 /*************** копироваине карты в буфер обмена ******************/
 const btn_copy = document.querySelector(".btn-copy");
 btn_copy.addEventListener("click", () => {
+    container.classList.add("anim-copy");
     canvas.toBlob((blob) => {
         let data = [new ClipboardItem({ 'image/png': blob })]; //работает только по протоколу https или localhost !
         navigator.clipboard.write(data).then(
@@ -401,18 +403,23 @@ btn_copy.addEventListener("click", () => {
             },
         );
     });
+    setTimeout(() => { container.classList.remove("anim-copy") }, 1000);
 })
 
 
 /*************** очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
+    container.classList.add("anim-clear");
     for (let i = 9; i < 62; i++) {
         sector[i].guild = 0;
         saveSector(i);
         fillBackground(i, { r: 0, g: 0, b: 0, a: 0 }); //убрать заливку
     };
     drawScene();
+    setTimeout(() => {
+        container.classList.remove("anim-clear");
+    }, 300);
 })
 
 /************ вид курсора + подсказки ***********************/
