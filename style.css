@@ -16,12 +16,13 @@ html {
 }
 
 body {
-	width: 810px;
+	width: 100%;
+	height: 100%;
 	padding: 5px;
 	background: linear-gradient(rgb(108, 129, 148), rgb(242, 215, 185));
 	border: 1px solid var(--brown);
 	border-radius: 2px;
-	margin: 0px auto;
+	margin: 3px auto;
 }
 
 header {
@@ -84,15 +85,6 @@ button:hover {
 	box-shadow: 0px 0px 3px 2px rgb(250, 250, 248);
 }
 
-button:active {
-	background-color: rgb(205, 205, 177);
-}
-
-button:disabled {
-	background-color: rgb(208, 208, 208);
-	cursor: not-allowed;
-}
-
 button:hover::after {
 	content: attr(data-text);
 	position: absolute;
@@ -111,24 +103,17 @@ button:hover::after {
 	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
 }
 
-.anim-clear {
-	animation-name: frm_clear;
-	animation-duration: 100ms;
-	animation-timing-function: ease-in;
-	animation-iteration-count: 3;
+button:active {
+	background-color: rgb(205, 205, 177);
 }
 
-@keyframes frm_clear {
-	to {
-		transform: scale(1.01);
-	}
+button:active::after {
+	display: none;
 }
 
-.anim-copy {
-	transition-duration: 800ms;
-	transition-timing-function: cubic-bezier(0.4, 1.0, 0.8);
-	transform-origin: top right;
-	transform: scale(0.05);
+button:disabled {
+	background-color: rgb(208, 208, 208);
+	cursor: not-allowed;
 }
 
 /********************************************************/
@@ -153,15 +138,41 @@ canvas {
 	height: 100%;
 }
 
-/********************* label ********************/
-.label-box {
+/************************** анимации действий *****************************/
+.anim-clear {
+	/*дрожание*/
+	animation-name: frm_clear;
+	animation-duration: 100ms;
+	animation-timing-function: ease-in;
+	animation-iteration-count: 3;
+}
+
+@keyframes frm_clear {
+	to {
+		transform: scale(1.01);
+	}
+}
+
+.anim-copy {
+	/*сдвиг+уменьшение в правый верхний угол*/
+	transition-duration: 800ms;
+	transition-timing-function: cubic-bezier(0.4, 1.0, 0.8);
+	transform-origin: top right;
+	transform: scale(0.1);
+}
+
+/*************** монитор буфера обмена ***********************/
+.monitor img {
+	display: none;
 	position: absolute;
 	top: 3px;
-	left: 3px;
-	line-height: 1.6;
-	padding: 0px 5px 0px 5px;
-	width: 0 auto;
-	color: lightgoldenrodyellow;
+	right: 3px;
+	width: 80px;
+	height: 60px;
+	background-color: lightgoldenrodyellow;
+	border: 1px solid var(--brown);
+	border-radius: 2px;
+	opacity: 0.8;
 }
 
 /***************** editor **********************/
@@ -199,7 +210,18 @@ input.siege-editor {
 .shadow-filter {
 	filter: brightness(0.5);
 	transition-property: filter;
-	transition-duration: 1s;
+	transition-duration: 0.5;
+}
+
+/********************* label (строка подсказок) ********************/
+.label-box {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	line-height: 1.6;
+	padding: 0px 5px 0px 5px;
+	width: 0 auto;
+	color: lightgoldenrodyellow;
 }
 
 /********************* лог ********************************/

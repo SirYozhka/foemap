@@ -16,6 +16,8 @@ bufer_canvas.height = img_height; //вертикальное разрешени�
 bufer_canvas.width = img_width; //зависит от параметров экрана
 
 var selected_guild;
+var img_background; //фоновое изображение водопада
+var img_borders; //границы
 var data_address; //data  номеров секторов из adresses.bmp
 var data_scene; //data  холст для раскраски
 var alpha = 250; //общий альфаканал для заливки
@@ -99,48 +101,49 @@ const dbName = "foesectors";
 const dbVersion = 2; //версия базы
 var dbData; //экземпляр объекта db, где мы храним открытую базу данных
 
-
-function SectorsDBOpen() {
+function dbSectorsOpen() {
     return new Promise(function (resolve, reject) {
-        let request = window.indexedDB.open(dbName, dbVersion);
-        request.onerror = function () { // база данных не открылась успешно
-            console.log("Database failed to open!");
+        let dbRequest = window.indexedDB.open(dbName, dbVersion);
+        dbRequest.onerror = function () { // база данных не открылась
+            LOG("Database failed to open. Please, contact developer.");
         };
-        request.onsuccess = function () { // база открыта - чтение в масив sectors
-            dbData = request.result;
-            let txn = dbData.transaction("sectors");
+        dbRequest.onsuccess = function () { // база открыта - чтение в масив sectors
+            dbData = dbRequest.result;
+            let dbTransaction = dbData.transaction("sectors");
             for (let i = 1; i < 62; i++) {
-                let oRequest = txn.objectStore("sectors").get(i);
-                oRequest.onsuccess = (event) => {
-                    let myRecord = oRequest.result;
+                let txnRequest = dbTransaction.objectStore("sectors").get(i);
+                txnRequest.onsuccess = (event) => {
+                    let myRecord = txnRequest.result;
                     sector[i].name = myRecord.name;
                     sector[i].os = myRecord.osad;
                     sector[i].guild = myRecord.guild;
                     //LOG("loaded :" + sector[i].name + " = " + sector[i].os);
                 };
             }
-            txn.oncomplete = function () {
-                resolve();
+            dbTransaction.oncomplete = function () {
                 LOG("Database opened.");
+                resolve();
             };
         };
-        request.onupgradeneeded = function (event) { //создание локальной базы при первом запуске
+        dbRequest.onupgradeneeded = function (event) { //создание базы при первом запуске или изменении версии
             LOG("Database ( version " + dbVersion + " ) setup...");
-            let dbData = event.target.result;
-            dbData.createObjectStore("sectors", { autoIncrement: true });
-            let txn = event.target.transaction;
+            let db = event.target.result;
+            if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors" (если меняем версию БД)
+                db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
+            db.createObjectStore("sectors", { autoIncrement: true });
+            let dbTransaction = event.target.transaction;
             for (let i = 1; i < 62; i++) {
                 let newItem = { name: sector[i].name, osad: sector[i].os, guild: sector[i].guild };
-                let request = txn.objectStore("sectors").add(newItem);
-                request.onsuccess = function () {
-                    LOG("added :" + i + " = " + sector[i].name);
+                let txnRequest = dbTransaction.objectStore("sectors").add(newItem);
+                txnRequest.onsuccess = function () {
+                    //LOG("added :" + i + " = " + sector[i].name);
                 };
             }
-            txn.onerror = function () {
-                LOG("Transaction error: " + request.error);
+            dbTransaction.onerror = function () {
+                LOG("Transaction error: " + txnRequest.error);
                 reject();
             };
-            txn.oncomplete = function () {
+            dbTransaction.oncomplete = function () {
                 LOG("Database setup finished.");
             };
         };
@@ -157,13 +160,11 @@ function saveSector(sec) { //запись в базу сектора sec
     request.onerror = function () {
         LOG("Transaction SAVE error: " + request.error);
     };
+    imgClipBoard.style.display = "none";
 }
 
 
-/************************ инициализация *************************/
-var img_background; //фоновое изображение водопада
-var img_borders; //границы
-
+/************************ загрузка изображений карты *************************/
 function loadingSceneImages() {
     return new Promise((resolve, reject) => {
         LOG("Loading images ...");
@@ -221,9 +222,14 @@ function loadingSceneImages() {
 
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", () => {
-    SectorsDBOpen()
+
+    dbSectorsOpen()
         .then(loadingSceneImages)
         .then(drawScene);
+
+    setTimeout(() => {
+        document.querySelector(".log-box").style.visibility = "hidden"; //скрыть логи
+    }, 10000);
 });
 
 
@@ -255,11 +261,11 @@ function drawScene() {
     ctx.fontStretch = "ultra-condensed";
     for (let s = 1; s < 9; s++) {
         if (selected_guild == s) { //выбранный штаб
-            ctx.fillStyle = "white";
+            ctx.fillStyle = "lightgoldenrodyellow";
             ctx.shadowColor = "black";
         } else { //просто штаб
             ctx.fillStyle = "black";
-            ctx.shadowColor = "white";
+            ctx.shadowColor = "lightgoldenrodyellow";
         }
         for (let i = 0; i < 3; i++) //для "усиления" тени
             ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
@@ -268,7 +274,7 @@ function drawScene() {
     //подписи секторов
     ctx.fontStretch = "normal";
     ctx.fillStyle = "black";
-    ctx.shadowColor = "white";
+    ctx.shadowColor = "lightgoldenrodyellow";
     for (let s = 9; s <= 61; s++) { //сектора
         for (let i = 0; i < 2; i++)//для "усиления" тени
             ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
@@ -277,22 +283,23 @@ function drawScene() {
             osadki += "+"; //🞔
         }
         ctx.fillText(osadki, sector[s].x, sector[s].y + 16);
+        ctx.fillText(osadki, sector[s].x, sector[s].y + 16);
     }
 }
 
 
-/************************ заливка ************************************/
+/***************** клик по сектору - выбор гильдии / заливка *********************************/
 canvas.addEventListener("mousedown", (e) => {
     e.preventDefault();
     let offset = (e.offsetY * img_width + e.offsetX) * 4;
     if (e.button != 0) return; //клик левой кнопкой
     if (editor) editModeIndice(false); //закрыть редактор если открыт
-    let color;
     let addr = data_address.data[offset]; //red component = number of address
-    if (addr > 62) {
+    if (addr > 62) { //клик не по сектору
         LAB("клик по штабу - выбрать гильдию / клик по сектору - покрасить в цвет выбранной гильдии");
         return;
     }
+    let color;
     if (addr < 9) { //клик по штабу - выбор цвета
         selected_guild = addr;
         helper(e);
@@ -389,9 +396,13 @@ function editModeIndice(mode) { //затенение фона при входе 
 
 /*************** копироваине карты в буфер обмена ******************/
 const btn_copy = document.querySelector(".btn-copy");
+const imgClipBoard = document.querySelector(".monitor img");
 btn_copy.addEventListener("click", () => {
-    container.classList.add("anim-copy");
+    canvas.classList.add("anim-copy");
     canvas.toBlob((blob) => {
+        imgClipBoard.style.display = "block";
+        imgClipBoard.src = URL.createObjectURL(blob);
+
         let data = [new ClipboardItem({ 'image/png': blob })]; //работает только по протоколу https или localhost !
         navigator.clipboard.write(data).then(
             () => {
@@ -403,13 +414,15 @@ btn_copy.addEventListener("click", () => {
             },
         );
     });
-    setTimeout(() => { container.classList.remove("anim-copy") }, 1000);
+    setTimeout(() => { canvas.classList.remove("anim-copy") }, 1000);
 })
 
 
 /*************** очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
+    let result = confirm("Удалить все опорники?");
+    if (!result) return;
     container.classList.add("anim-clear");
     for (let i = 9; i < 62; i++) {
         sector[i].guild = 0;
@@ -448,8 +461,8 @@ function LAB(message) { //вывод в строку состояния
     document.querySelector(".label-box").textContent = message;
 }
 
-const div_log = document.querySelector(".log-box");
 function LOG(message) { //вывод логов на экран
+    const div_log = document.querySelector(".log-box");
     div_log.style.visibility = "visible"; //при первом же логе делаем видимым
     const p_msg = document.createElement("p");
     p_msg.textContent = message;
