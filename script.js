@@ -176,17 +176,19 @@ function loadingSceneImages() {
         scn.src = "images/scene.png";
         let adr = new Image();
         adr.src = "images/addresses.bmp";
-        scn.onload = () => {
-            LOG("Calculation scene ...");
-            bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
-            data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-            adr.onload = () => {
-                LOG("Calculation addresses ...");
-                bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
-                data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-                calculationSectorsCenters();
-                LOG("Images loaded.");
-                resolve();
+        img_background.onload = ()=>{
+            scn.onload = () => {
+                LOG("Calculation scene ...");
+                bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
+                data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+                adr.onload = () => {
+                    LOG("Calculation addresses ...");
+                    bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
+                    data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    calculationSectorsCenters();
+                    LOG("Images loaded.");
+                    resolve();
+                };
             };
         };
     });
@@ -227,8 +229,8 @@ window.addEventListener("load", () => {
         .then(loadingSceneImages)
         .then(drawScene);
 
-    setTimeout(() => {
-        document.querySelector(".log-box").style.visibility = "hidden"; //скрыть логи
+    setTimeout(() => { //debug
+        //document.querySelector(".log-box").style.visibility = "hidden"; //скрыть логи
     }, 10000);
 });
 
@@ -296,7 +298,7 @@ canvas.addEventListener("mousedown", (e) => {
     if (editor) editModeIndice(false); //закрыть редактор если открыт
     let addr = data_address.data[offset]; //red component = number of address
     if (addr > 62) { //клик не по сектору
-        LAB("клик по штабу - выбрать гильдию / клик по сектору - покрасить в цвет выбранной гильдии");
+        LAB("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)");
         return;
     }
     let color;
@@ -402,7 +404,7 @@ btn_copy.addEventListener("click", () => {
     canvas.toBlob((blob) => {
         imgClipBoard.style.display = "block";
         imgClipBoard.src = URL.createObjectURL(blob);
-
+        
         let data = [new ClipboardItem({ 'image/png': blob })]; //работает только по протоколу https или localhost !
         navigator.clipboard.write(data).then(
             () => {
@@ -414,7 +416,12 @@ btn_copy.addEventListener("click", () => {
             },
         );
     });
-    setTimeout(() => { canvas.classList.remove("anim-copy") }, 1000);
+    btn_copy.setAttribute("disabled",null);
+    setTimeout(() => { 
+        canvas.classList.remove("anim-copy") 
+        btn_copy.removeAttribute("disabled");
+    }, 1000);
+    
 })
 
 
@@ -449,7 +456,7 @@ function helper(e) {
         return;
     }
     if (!selected_guild)
-        LAB("Сначала надо выбрать гильдию (кликнуть по штабу).");
+        LAB("Выбрать гильдию (кликнуть по штабу).");
     else
         LAB("Выбор опорников для гильдии " + sector[selected_guild].name + "...");
 
