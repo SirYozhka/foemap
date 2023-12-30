@@ -21,7 +21,7 @@ var img_borders; //границы
 var data_address; //data  номеров секторов из adresses.bmp
 var data_scene; //data  холст для раскраски
 var alpha = 250; //общий альфаканал для заливки
-var gld_color = [null, //нумерация с единицы  gld_color[i]
+var gld_color = [{ r: 0, g: 0, b: 0, a: 0 }, //нумерация с единицы  gld_color[i]
     { r: 250, g: 0, b: 250, a: alpha }, //розовый
     { r: 100, g: 0, b: 180, a: alpha }, //фиолетовый
     { r: 0, g: 0, b: 250, a: alpha }, //синий
@@ -172,13 +172,13 @@ function loadingSceneImages() {
         img_background.src = "images/background.jpg";
         img_borders = new Image();
         img_borders.src = "images/borders.png";
-        let scn = new Image();
-        scn.src = "images/scene.png";
-        let adr = new Image();
-        adr.src = "images/addresses.bmp";
         img_background.onload = ()=>{
+            let scn = new Image();
+            scn.src = "images/scene.png";
             scn.onload = () => {
                 LOG("Calculation scene ...");
+                let adr = new Image();
+                adr.src = "images/addresses.bmp";
                 bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
                 data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
                 adr.onload = () => {
@@ -232,6 +232,7 @@ window.addEventListener("load", () => {
     setTimeout(() => { //debug
         //document.querySelector(".log-box").style.visibility = "hidden"; //скрыть логи
     }, 10000);
+
 });
 
 
@@ -245,13 +246,13 @@ function drawScene() {
     //LOG("Scene drawing ...");
 
     //фон - вулкан
+    ctx.fillStyle = "rgba(0,0,0,0)";
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
 
+    //раскраска карты
     ctx.shadowBlur = 0;
     ctx.shadowColor = "black";
-
-    //раскраска карты
     bufer_ctx.putImageData(data_scene, 0, 0);
     ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
 

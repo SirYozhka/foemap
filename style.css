@@ -11,13 +11,18 @@
 	line-height: 1.2;
 }
 
-html, body {
-	background-color: white;
+html {
+	background-color: gray;
+}
+
+body{
+	background:linear-gradient( rgb(242, 215, 185), rgb(108, 129, 148));
+	height: 100vh;
 }
 
 main {
 	width: 810px;
-	height: 100%;
+	height: calc( 100% - 20px );
 	padding: 5px;
 	background: linear-gradient(rgb(108, 129, 148), rgb(242, 215, 185));
 	border: 1px solid var(--brown);
@@ -32,7 +37,7 @@ main {
 	align-items: center;
 	position: relative;
 	height: 30px;
-	width: 800px;
+	min-width: 800px;
 	margin: 0px auto;
 	margin-bottom: 3px;
 	font-size: 10px;
@@ -43,24 +48,15 @@ main {
 	box-shadow: inset 0px 0px 3px 1px lightgoldenrodyellow;
 }
 
-.footer {
-	display: flex;
-	height: 20px;
-	flex-direction: row;
-	justify-content: flex-start;
-	align-items: center;
-	position: relative;
-}
-
-.copyright {
-	font-size: 10px;
-	padding-top: 2px;
-	color: black;
-}
-
-.copyright a {
-	font-size: 10px;
-	padding-top: 2px;
+/********************* label (строка подсказок) ********************/
+.label-box {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	line-height: 1.6;
+	padding: 0px 5px 0px 5px;
+	width: 0 auto;
+	color: lightgoldenrodyellow;
 }
 
 /**********************************************************************/
@@ -116,18 +112,15 @@ button:disabled {
 	cursor: not-allowed;
 }
 
-/********************************************************/
-main {
-	margin: 0px auto;
-}
-
+/*********************** сцена *********************************/
 .container {
 	position: relative;
 	margin: 0px auto;
 	padding: 0px;
-	width: 800px;
-	height: 600px;
+	min-width: 800px;
+	min-height: 600px;
 	font-size: 10px;
+	background: url("images/background.jpg");
 	border: 2px solid var(--brown);
 	border-radius: 4px;
 	overflow: hidden;
@@ -213,15 +206,29 @@ input.siege-editor {
 	transition-duration: 0.5;
 }
 
-/********************* label (строка подсказок) ********************/
-.label-box {
-	position: absolute;
-	top: 3px;
-	left: 3px;
-	line-height: 1.6;
-	padding: 0px 5px 0px 5px;
-	width: 0 auto;
-	color: lightgoldenrodyellow;
+/********************** scene footer ******************************/
+.footer {
+	display: flex;
+	height: 20px;
+	gap: 5px;
+	flex-direction: row;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+/************************* body footer **********************************/
+footer{
+	width: 810px;
+	margin: 3px auto;
+}
+.copyright {
+	font-size: 10px;
+	padding-top: 2px;
+	color: black;
+}
+.copyright a {
+	font-size: 10px;
+	padding-top: 2px;
 }
 
 /********************* лог ********************************/
@@ -235,7 +242,6 @@ input.siege-editor {
 	max-height: 80vh;
 	padding: 5px;
 	overflow: auto;
-	background-color: lightgrey;
 	font-size: 13px;
 	color: darkblue;
 	opacity: 0.7;
