@@ -2,7 +2,7 @@
 <html lang="en-us">
 
 <head>
-  <title>Map editor for PBG farming. </title>
+  <title>Map editor PBG</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
   <link rel="stylesheet" href="style.css">
@@ -10,21 +10,22 @@
 </head>
 
 <body>
+  <header></header>
+
   <main>
-    <div class="controls">
-      <button class="btn-save" data-text="записать размещение в файл">save </button>
-      <button class="btn-load" data-text="загрузить размещение из файла">load </button>
+    <div class="button-controls">
+      <button class="btn-save" data-text="записать размещение опорников в файл">save </button>
+      <button class="btn-load" data-text="загрузить размещение опорников из файла">load </button>
       <button class="btn-clear" data-text="очистить выделение всех опорников">clear </button>
       <button class="btn-copy" data-text="копировать карту в буфер обмена">copy </button>
       <div class="label-box">
         Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)
       </div>
-  
     </div>
-    
+
     <div class="container">
+      <!-- отображение сцены -->
       <canvas>
-        <!-- отображение сцены -->
       </canvas>
 
       <!-- редактор названий гильдий -->
@@ -38,27 +39,28 @@
         <input name="os" type="number" class="siege-editor" min="0" max="3">
       </div>
 
+      <!-- монитор буфера обмена (для отображения скопированой карты) -->
       <div class="monitor">
         <img>
-        <!-- монитор буфера обмена (для отображения скопированой карты) -->
+      </div>
+      
+      <!-- DEBUG логирование на экран -->
+      <div id="log-box">
+        <p>... downloading log ...</p>
       </div>
 
     </div>
-    <div class="footer">
-      <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">FORGE OF EMPIRES</a> city building strategy game
-    </div>
+   
   </main>
-  
-  <footer>
-    <div class="copyright">
-      © 2023 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.3)
-    </div>
-  </footer>
 
-  <div class="log-box">
-    <!-- DEBUG логирование на экран -->
-    <p>-------- debug log --------</p>
-  </div>
+  <footer>
+    <span>Редактор карты секторов-опорников. <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
+    </span>
+    <span class="copyright">
+      © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
+    </span>
+  </footer>
+ 
 
 </body>
 

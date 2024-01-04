@@ -111,7 +111,7 @@ function dbSectorsOpen() {
       let txnSectors = dbTransaction.objectStore("sectors"); //работаем с хранилищем "sectors"
       txnSectors.getAll().onsuccess = (e) => {
           sector = e.target.result;
-          LOG("Database successfully opened.");
+          LOG("Database opened.");
           resolve();
       }
     };
@@ -258,20 +258,14 @@ function drawScene() {
   ctx.shadowBlur = 8;
   ctx.fontStretch = "ultra-condensed";
   for (let s = 1; s < 9; s++) {
-    if (selected_guild == s) {
-      //выбранный штаб
+    if (selected_guild == s) { //выбранный штаб
       ctx.fillStyle = "lightgoldenrodyellow";
       ctx.shadowColor = "black";
-    } else {
-      //просто штаб
+    } else { //просто штаб
       ctx.fillStyle = "black";
       ctx.shadowColor = "lightgoldenrodyellow";
     }
-    for (
-      let i = 0;
-      i < 3;
-      i++ //для "усиления" тени
-    )
+    for (let i = 0; i < 3; i++ ) //для "усиления" тени
       ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
   }
 
@@ -279,17 +273,12 @@ function drawScene() {
   ctx.fontStretch = "normal";
   ctx.fillStyle = "black";
   ctx.shadowColor = "lightgoldenrodyellow";
-  for (let s = 9; s <= 61; s++) {
-    //сектора
-    for (
-      let i = 0;
-      i < 2;
-      i++ //для "усиления" тени
-    )
+  for (let s = 9; s <= 61; s++) { //сектора
+    for (let i = 0; i < 2; i++) //для "усиления" тени
       ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
     let osadki = "";
     for (let i = 0; i < sector[s].os; i++) {
-      osadki += "+"; //🞔
+      osadki += "🞔"; //🞔
     }
     ctx.fillText(osadki, sector[s].x, sector[s].y + 16);
     ctx.fillText(osadki, sector[s].x, sector[s].y + 16);
@@ -305,9 +294,7 @@ canvas.addEventListener("mousedown", (e) => {
   let addr = data_address.data[offset]; //red component = number of address
   if (addr > 62) {
     //клик не по сектору
-    LAB(
-      "Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)"
-    );
+    LAB("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)" );
     return;
   }
   let color;
@@ -355,12 +342,12 @@ canvas.addEventListener("contextmenu", (e) => {  //клик правой кно�
   if (addr > 61) return;
   sel_addr = addr;
   if (addr < 9) {
-    LAB("Редактироване названия гильдии...");
+    LAB("Редактирование названия гильдии...");
     editor = document.querySelector(".guild-editor");
     inp_name = document.querySelectorAll(".name-editor")[0];
     inp_name.focus();
   } else if (addr < 62) {
-    LAB("Редактироване сектора...");
+    LAB("Редактирование сектора и кол-ва опорников...");
     editor = document.querySelector(".sector-editor");
     inp_name = document.querySelectorAll(".name-editor")[1];
     inp_siege = document.querySelector(".siege-editor");
@@ -528,10 +515,13 @@ function LAB(message) {
 
 function LOG(message) {
   //вывод логов на экран
-  const div_log = document.querySelector(".log-box");
-  div_log.style.visibility = "visible"; //при первом же логе делаем видимым
+  const div_log = document.querySelector("#log-box");
+  div_log.style.display = "block"; //делаем видимым
+  div_log.style.opacity = "1.0";
   const p_msg = document.createElement("p");
   p_msg.textContent = message;
   div_log.appendChild(p_msg);
   p_msg.scrollIntoView();
+  div_log.style.opacity = "0";  //запустится css transition: opacity 10s;
+  setTimeout(()=>{div_log.style.display = "none"},5000); //делаем невидимым и недоступным
 }

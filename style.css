@@ -1,5 +1,7 @@
 :root {
-	--brown: rgb(90, 31, 31);
+	--dark: #4c2f1d;
+	--light: lightgoldenrodyellow;
+	--grad-bgr: linear-gradient(rgb(25, 44, 61), rgb(246, 189, 164));
 }
 
 * {
@@ -7,7 +9,8 @@
 	margin: 0;
 	padding: 0;
 	font-family: Tahoma, Arial, Verdana, sans-serif;
-	font-size: 14px;
+	font-size: 12px;
+	color: #07041c;
 	line-height: 1.2;
 }
 
@@ -16,51 +19,64 @@ html {
 }
 
 body{
-	background:linear-gradient( rgb(242, 215, 185), rgb(108, 129, 148));
 	height: 100vh;
+	width: 100vh;
+	min-width: 840px;
+	margin: 0 auto;
 }
+
+a {
+	color: rgb(4, 1, 91);
+}
+
+header,main,footer{
+	width: 100%;
+}
+
+header{
+	height: 3px;
+}
+
+footer {
+	height: 20px;
+	width: 100%;
+	margin: 2px;
+	display: flex;
+	gap: 5px;
+	flex-direction: row;
+	justify-content:space-between;
+	align-items: center;
+}
+
 
 main {
-	width: 810px;
-	height: calc( 100% - 20px );
+	margin: 2px;
 	padding: 5px;
-	background: linear-gradient(rgb(108, 129, 148), rgb(242, 215, 185));
-	border: 1px solid var(--brown);
+	background: var(--grad-bgr);
+	border: 1px solid var(--dark);
 	border-radius: 2px;
-	margin: 3px auto;
 }
 
-.controls {
+/********************** кнопки ***********************************/
+.button-controls {
 	display: flex;
 	flex-direction: row;
 	justify-content: flex-end;
 	align-items: center;
 	position: relative;
-	height: 30px;
-	min-width: 800px;
+	height: 35px;
+	width: 800px;
 	margin: 0px auto;
-	margin-bottom: 3px;
-	font-size: 10px;
-	color: lightgoldenrodyellow;
-	background-color: var(--brown);
-	border: 1px solid var(--brown);
-	border-radius: 4px;
-	box-shadow: inset 0px 0px 3px 1px lightgoldenrodyellow;
 }
 
-/********************* label (строка подсказок) ********************/
 .label-box {
 	position: absolute;
+	width: 300px;
 	top: 3px;
 	left: 3px;
-	font-size: 12px;
-	line-height: 1.6;
-	padding: 0px 5px 0px 5px;
-	width: 0 auto;
-	color: lightgoldenrodyellow;
+	color: var(--light);
 }
 
-/**********************************************************************/
 button {
 	position: relative;
 	cursor: pointer;
@@ -68,14 +84,14 @@ button {
 	margin: 5px;
 	width: 50px;
 	padding: 2px;
-	color: var(--brown);
+	color: var(--dark);
 	font-size: 12px;
 	font-weight: 700;
 	line-height: 1.0;
-	border: 1px solid var(--brown);
+	border: 1px solid var(--dark);
 	border-radius: 2px;
-	background-color: lightgoldenrodyellow;
-	box-shadow: 0px 0px 2px 1px lightgoldenrodyellow;
+	background: var(--light);
+	box-shadow: 0px 0px 2px 1px var(--light);
 }
 
 button:hover {
@@ -94,7 +110,7 @@ button:not([disabled]):hover::after {
 	font-size: 12px;
 	font-weight: 300;
 	color: black;
-	border: 1px solid var(--brown);
+	border: 1px solid var(--dark);
 	border-radius: 2px;
 	background-color: rgba(245, 245, 245, 0.9);
 	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
@@ -116,14 +132,14 @@ button:disabled {
 /*********************** сцена *********************************/
 .container {
 	position: relative;
-	margin: 0px auto;
+	margin: 5px auto;
 	padding: 0px;
-	min-width: 800px;
-	min-height: 600px;
+	width: 800px;
+	height: 600px;
 	font-size: 10px;
 	background: url("images/background.jpg");
-	border: 2px solid var(--brown);
-	border-radius: 4px;
+	outline: 1px solid var(--dark);
+	border-radius: 2px;
 	overflow: hidden;
 }
 
@@ -163,8 +179,8 @@ canvas {
 	right: 3px;
 	width: 80px;
 	height: 60px;
-	background-color: lightgoldenrodyellow;
-	border: 1px solid var(--brown);
+	background-color: var(--light);
+	border: 1px solid var(--dark);
 	border-radius: 2px;
 	opacity: 0.8;
 }
@@ -178,9 +194,9 @@ canvas {
 	top: 30px;
 	left: 100px;
 	width: 150px;
-	border: 1px solid var(--brown);
+	border: 1px solid var(--dark);
 	border-radius: 2px;
-	box-shadow: 0px 0px 2px 1px var(--brown);
+	box-shadow: 0px 0px 2px 1px var(--dark);
 }
 
 .sector-editor {
@@ -189,9 +205,9 @@ canvas {
 
 input.name-editor,
 input.siege-editor {
-	background-color: lightgoldenrodyellow;
-	border: 1px solid var(--brown);
-	box-shadow: 0px 0px 2px 1px lightgoldenrodyellow;
+	background-color: var(--light);
+	border: 1px solid var(--dark);
+	box-shadow: 0px 0px 2px 1px var(--light);
 	padding: 3px;
 	outline: none;
 }
@@ -210,44 +226,22 @@ input.siege-editor {
 	transition-duration: 0.5;
 }
 
-/********************** scene footer ******************************/
-.footer {
-	display: flex;
-	height: 20px;
-	gap: 5px;
-	flex-direction: row;
-	justify-content: flex-start;
-	align-items: center;
-}
-
-/************************* body footer **********************************/
-footer{
-	width: 810px;
-	margin: 3px auto;
-}
-.copyright {
-	font-size: 10px;
-	padding-top: 2px;
-	color: black;
-}
-.copyright a {
-	font-size: 10px;
-	padding-top: 2px;
-}
-
 /********************* лог ********************************/
-.log-box {
+#log-box {
+	display: none;
 	position: absolute;
-	top: 6vh;
-	right: 1vh;
-	width: 200px;
-	min-width: fit-content;
-	height: fit-content;
-	max-height: 80vh;
+	bottom: 2px;
+	right: 2px;
+	width: 150px;
+	height: 100px;
+	max-height: 150px;
 	padding: 5px;
-	overflow: auto;
-	font-size: 13px;
-	color: darkblue;
-	opacity: 0.7;
-	visibility: hidden;
+	font-size: 8px;
+	opacity: 1.0;
+	transition: opacity 10s;
+	overflow: hidden;
+}
+
+#log-box p{
+	color: var(--light);
 }
