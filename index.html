@@ -2,7 +2,7 @@
 <html lang="en-us">
 
 <head>
-  <title>FOE editor PBG farming map</title>
+  <title>Map editor for PBG farming. </title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
   <link rel="stylesheet" href="style.css">
@@ -10,16 +10,18 @@
 </head>
 
 <body>
-  <header></header>
   <main>
     <div class="controls">
+      <button class="btn-save" data-text="записать размещение в файл">save </button>
+      <button class="btn-load" data-text="загрузить размещение из файла">load </button>
+      <button class="btn-clear" data-text="очистить выделение всех опорников">clear </button>
+      <button class="btn-copy" data-text="копировать карту в буфер обмена">copy </button>
       <div class="label-box">
         Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)
       </div>
-      <button class="btn-clear" data-text="очистить выделение всех опорников">clear </button>
-      <button class="btn-copy" data-text="копировать карту в буфер обмена">copy </button>
+  
     </div>
-
+    
     <div class="container">
       <canvas>
         <!-- отображение сцены -->
