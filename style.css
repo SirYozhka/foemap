@@ -1,7 +1,7 @@
 :root {
-	--dark: #4c2f1d;
+	--dark: rgb(25, 45, 60);
 	--light: lightgoldenrodyellow;
-	--grad-bgr: linear-gradient(rgb(25, 44, 61), rgb(246, 189, 164));
+	--grad-bgr: linear-gradient(rgb(25, 45, 60), rgb(167, 184, 198));
 }
 
 * {
