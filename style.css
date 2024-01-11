@@ -1,14 +1,14 @@
 :root {
-	--dark: rgb(25, 45, 60);
-	--light: lightgoldenrodyellow;
-	--grad-bgr: linear-gradient(rgb(25, 45, 60), rgb(167, 184, 198));
+	--dark: rgb(50, 10, 10);
+	--light: rgb(250, 250, 210);
+	--grad-bgr: linear-gradient(var(--dark), var(--light));
 }
 
 * {
 	box-sizing: border-box;
 	margin: 0;
 	padding: 0;
-	font-family: Tahoma, Arial, Verdana, sans-serif;
+	font-family: Arial, Verdana, sans-serif;
 	font-size: 12px;
 	color: #07041c;
 	line-height: 1.2;
@@ -36,7 +36,12 @@ header,main,footer{
 header{
 	height: 3px;
 }
-
+main {
+	margin: 2px;
+	background: var(--grad-bgr);
+	border: 1px solid var(--dark);
+	border-radius: 2px;
+}
 footer {
 	height: 20px;
 	width: 100%;
@@ -48,12 +53,14 @@ footer {
 	align-items: center;
 }
 
-
-main {
-	margin: 2px;
-	background: var(--grad-bgr);
-	border: 1px solid var(--dark);
-	border-radius: 2px;
+/******************* форматы *************************/
+.flex-row{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0px;
 }
 
 /********************** кнопки ***********************************/
@@ -136,9 +143,10 @@ button:disabled {
 	width: 800px;
 	height: 600px;
 	font-size: 10px;
-	background: url("images/background.jpg");
+	background: url("images/bgr.jpg");
 	outline: 1px solid var(--dark);
-	border-radius: 2px;
+	border-radius: 1px;
+	box-shadow: -1px -1px 3px var(--light);
 	overflow: hidden;
 }
 
@@ -147,7 +155,7 @@ canvas {
 	height: 100%;
 }
 
-/************************** анимации действий *****************************/
+/************************** анимации *****************************/
 .anim-clear {
 	/*дрожание*/
 	animation-name: frm_clear;
@@ -183,41 +191,191 @@ canvas {
 	border-radius: 2px;
 }
 
-/***************** editor **********************/
-.guild-editor,
-.sector-editor {
-	display: flex;
+/**************************** editor **********************************/
+.sector_editor {
+	visibility: hidden;
 	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
 	position: absolute;
 	top: 30px;
-	left: 100px;
-	width: 150px;
+	left: 30px;
+	width: 200px;
+  	outline: 1px solid var(--dark);
+	box-shadow: 0px 0px 2px 1px var(--light);
+	background-color: var(--light);
+	padding: 1px;
+}
+
+/**** название input[type="text"] ****/
+.sector_editor input{
+	appearance: none;
+	outline: none;
+	height: 20px;
+	font-weight: 700;
+	color: var(--dark);
+}
+
+.sector_editor input[type="text"]{
+	width: calc(100% - 21px);
+	border: 1px solid var(--dark);
+}
+
+.sector_editor input[type="text"]:focus{
+	background-color: aliceblue;
+}
+
+/***** штаб  input[type="checkbox"] да/нет ******/
+.sector_editor input[type="checkbox"]{
+	appearance: none;
+	cursor: pointer;
+	position: relative; 
+	background-color: white;
+	border: 1px solid var(--dark);
+	width: 20px; 
+	margin-left: 1px;
+}
+
+.sector_editor input[type="checkbox"]:hover::after{
+	z-index: 2;
+	content: "отметить штаб";
+	position: absolute;
+	top: 13px;
+	right: 17px;
+	width: 40px;
+	padding: 1px;
+	font-size: 10px;
+	font-weight: 100;
+	color: black;
 	border: 1px solid var(--dark);
 	border-radius: 2px;
-	box-shadow: 0px 0px 2px 1px var(--dark);
+	background-color: rgba(245, 245, 245, 0.9);
+	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
+	pointer-events: none;
+}
+.sector_editor input[type="checkbox"]:checked:hover::after{
+	content: "убрать штаб";
 }
 
-.sector-editor {
-	width: 100px;
+.sector_editor input[type="checkbox"]:checked::before {
+	content: "Ш";
+	position: absolute;
+	top:50%;
+	left:50%;
+	transform: translate(-50%, -50%);
 }
 
-input.name-editor,
-input.siege-editor {
-	background-color: var(--light);
+/****** кол-во осадок input[type="radio"] ******/
+/*div:has(>input[type="radio"]){ */
+.sector_editor .input_osad{
 	border: 1px solid var(--dark);
-	box-shadow: 0px 0px 2px 1px var(--light);
-	padding: 3px;
-	outline: none;
+	background-color: white;
+	margin-bottom: 1px;
 }
 
-input.name-editor {
+.sector_editor input[type="radio"] {
+	appearance: none;
+	cursor: pointer;
+	position: relative;
+	width: 30px;
+	height: 20px;
+}
+
+.sector_editor input[type="radio"]::before {
+	display: flex;
+	content: attr(value);
+	position: absolute;
+	width: 30px;
+	height: 20px;
+	align-items: center;
+	justify-content: center;
+}
+
+.sector_editor input[type="radio"]:checked::before {
+	background-color: var(--dark);
+	color: var(--light);
+}
+
+/******** цвет **********/
+.input_color{
 	width: 100%;
+	height: 20px;
+	position: relative;
 }
 
-input.siege-editor {
-	width: 50px;
+.input_color::after{
+	content: " ";
+	position: absolute;
+	top: 50%;
+	right: 5px;
+	transform: translateY(-50%);
+	display: block;
+	width: 0px;
+	height: 0px;
+	border-style: solid;
+	border-width: 10px 7px 0px 7px;
+	border-color: var(--dark) transparent transparent transparent;
+	pointer-events: none;
 }
 
+select {
+	appearance: none;
+}
+
+.input_color select{
+	width: 100%;
+	height: 20px;
+	background-color: white; 
+	outline: none;
+	border: 1px solid var(--dark);
+	padding: 1px 30px 1px 5px;
+	cursor: pointer;
+}
+
+.input_color select:focus {
+	background-color: aliceblue;
+}
+
+.input_color:has(select:focus)::after {
+	border-style: solid;
+	border-width: 7px 10px 7px 7px;
+	border-color: transparent var(--dark) transparent transparent;
+}
+
+.input_color select option{
+	font-weight: 700;
+	color: var(--dark);
+}
+
+.input_color select option:nth-child(2){
+	background-color: rgb(250, 3, 250);
+}
+.input_color select option:nth-child(3){
+	background-color: rgb(135, 3, 250);
+}
+.input_color select option:nth-child(4){
+	background-color: rgb(19, 3, 250);
+}
+.input_color select option:nth-child(5){
+	background-color: rgb(250, 110, 3);
+}
+.input_color select option:nth-child(6){
+	background-color: rgb(3, 205, 250);
+}
+.input_color select option:nth-child(7){
+	background-color: rgb(250, 238, 3);
+}
+.input_color select option:nth-child(8){
+	background-color: rgb(1, 189, 7);
+}
+.input_color select option:nth-child(9){
+	background-color: rgb(250, 3, 3);
+}
+
+
+/******* для затенения холста в режиме редактирования *******/
 .shadow-filter {
 	filter: brightness(0.5);
 	transition-property: filter;
@@ -228,8 +386,8 @@ input.siege-editor {
 #log-box {
 	position: absolute;
 	bottom: 1px;
-	left: 1px;
-	width: 200px;
+	left: 2px;
+	width: 180px;
 	height: 68px;
 	max-height: 150px;
 	padding: 3px;
@@ -241,5 +399,16 @@ input.siege-editor {
 	font-size: 10px;
 	font-weight: 100;
 	line-height: 11px;
-	transition: opacity 8s;
+	transition: color 8s;
+}
+
+#log-box:hover {
+	background-color: rgba(19, 44, 26, 0.5);
+	outline: 1px solid rgb(0, 24, 3);
+	overflow-y: auto;
+}
+
+p:hover {
+	color: var(--light);
+	border-color: red;
 }

@@ -14,10 +14,10 @@
 
   <main>
     <div class="button-controls">
-      <button class="btn-save" data-text="записать размещение опорников в файл">save </button>
-      <button class="btn-load" data-text="загрузить размещение опорников из файла">load </button>
-      <button class="btn-clear" data-text="очистить выделение всех опорников">clear </button>
-      <button class="btn-copy" data-text="копировать карту в буфер обмена">copy </button>
+      <button class="btn-save" data-text="записать настройки карты в файл">save </button>
+      <button class="btn-load" data-text="загрузить настройки карты из файла">load </button>
+      <button class="btn-clear" data-text="очистить выбор всех опорников">clear </button>
+      <button class="btn-copy" data-text="копировать изображение карты в буфер обмена">copy </button>
       <div class="label-box">
         Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)
       </div>
@@ -28,15 +28,34 @@
       <canvas>
       </canvas>
 
-      <!-- редактор названий гильдий -->
-      <div class="guild-editor" style="visibility:hidden">
-        <input name="ed" type="text" class="name-editor">
-      </div>
+      <!-- редактор секторов -->
+      <div class="sector_editor">
 
-      <!-- редактор секторов и количества мест под осадки -->
-      <div class="sector-editor" style="visibility:hidden">
-        <input name="nm" type="text" class="name-editor">
-        <input name="os" type="number" class="siege-editor" min="0" max="3">
+        <div class="flex-row" style="width: 100%; margin-bottom: 1px;">
+          <input type="text" class="input_name" name="name" autocomplete="off"/>
+          <input type="checkbox" class="input_shtab" name="shab" />
+        </div>
+        
+        <div class="input_osad flex-row">
+          <input type="radio" name="os" value="o" />
+          <input type="radio" name="os" value="oo" />
+          <input type="radio" name="os" value="ooo" />
+				</div>
+        
+        <div class="input_color">
+          <select name="select-color" id="input_color">
+            <option value="0">--- выбор цвета гильдии ---</option>
+            <option value="1">розовый</option>
+            <option value="2">фиолетовый</option>
+            <option value="3">синий</option>
+            <option value="4">оранжевый</option>
+            <option value="5">голубой</option>
+            <option value="6">жёлтый</option>
+            <option value="7">зелёный</option>
+            <option value="8">красный</option>
+          </select>
+        </div>
+
       </div>
 
       <!-- монитор буфера обмена (для отображения скопированой карты) -->
@@ -53,7 +72,7 @@
   </main>
 
   <footer>
-    <span>Редактор карты секторов-опорников. <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
+    <span>Редактор карты секторов-опорников для ПБГ <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
     </span>
     <span class="copyright">
       © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)

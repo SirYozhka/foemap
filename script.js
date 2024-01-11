@@ -21,80 +21,97 @@ var img_borders; //границы
 var data_address; //data  номеров секторов из adresses.bmp
 var data_scene; //data  холст для раскраски
 var alpha = 250; //общий альфаканал для заливки
-var gld_color = [ 
-  { r: 0, g: 0, b: 0, a: 0 }, //нулевой - прозрачный
-  { r: 250, g: 0, b: 250, a: alpha }, //розовый
-  { r: 100, g: 0, b: 180, a: alpha }, //фиолетовый
-  { r: 0, g: 0, b: 250, a: alpha }, //синий
-  { r: 250, g: 100, b: 0, a: alpha }, //оранжевый
-  { r: 0, g: 250, b: 250, a: alpha }, //бирюзовый
-  { r: 250, g: 250, b: 0, a: alpha }, //желтый
-  { r: 50, g: 250, b: 50, a: alpha }, //зелёный
-  { r: 250, g: 0, b: 0, a: alpha }, //красный
+
+var colors = [ 
+  { r: 0, g: 0, b: 0, a: 0 , name:"transparent"}, //нулевой - прозрачный
+  { r: 250, g: 0, b: 250, a: alpha, name:"pink" }, //розовый
+  { r: 100, g: 0, b: 180, a: alpha, name:"violet" }, //фиолетовый
+  { r: 0, g: 0, b: 250, a: alpha, name:"blue" }, //синий
+  { r: 250, g: 100, b: 0, a: alpha, name:"orange" }, //оранжевый
+  { r: 0, g: 250, b: 250, a: alpha, name:"turquoise" }, //бирюзовый
+  { r: 250, g: 250, b: 0, a: alpha, name:"yellow" }, //желтый
+  { r: 50, g: 250, b: 50, a: alpha, name:"green" }, //зелёный
+  { r: 250, g: 0, b: 0, a: alpha, name:"red" }, //красный
 ];
-var sector = [null, // нумерация секторов с единицы!
-  { name: "A5A", os: 0, guild: 1 },
-  { name: "A5D", os: 0, guild: 2 },
-  { name: "B5C", os: 1, guild: 0 },
-  { name: "C5B", os: 1, guild: 0 },
-  { name: "D5A", os: 1, guild: 0 },
-  { name: "D5D", os: 1, guild: 0 },
-  { name: "E5C", os: 1, guild: 0 },
-  { name: "F5B", os: 1, guild: 0 },
-  { name: "X1X", os: 3, guild: 0 },
-  { name: "A4A", os: 1, guild: 0 }, // 10
-  { name: "A3A", os: 2, guild: 0 },
-  { name: "A2A", os: 2, guild: 0 },
-  { name: "A5B", os: 1, guild: 0 },
-  { name: "A4B", os: 1, guild: 0 },
-  { name: "A3B", os: 1, guild: 0 },
-  { name: "A5C", os: 1, guild: 0 },
-  { name: "A4C", os: 2, guild: 0 },
-  { name: "B2A", os: 3, guild: 0 },
-  { name: "B3A", os: 1, guild: 0 }, //19
-  { name: "B4A", os: 1, guild: 0 },
-  { name: "B5A", os: 1, guild: 0 },
-  { name: "B3B", os: 2, guild: 0 },
-  { name: "B4B", os: 2, guild: 0 },
-  { name: "B5B", os: 1, guild: 0 },
-  { name: "B4C", os: 1, guild: 0 },
-  { name: "B5D", os: 1, guild: 0 },
-  { name: "C2A", os: 2, guild: 0 },
-  { name: "C3A", os: 1, guild: 0 },
-  { name: "C4A", os: 2, guild: 0 },
-  { name: "C5A", os: 1, guild: 0 },
-  { name: "C3B", os: 1, guild: 0 },
-  { name: "C4B", os: 2, guild: 0 },
-  { name: "C5C", os: 1, guild: 0 },
-  { name: "C4C", os: 2, guild: 0 },
-  { name: "C5D", os: 1, guild: 0 },
-  { name: "D2A", os: 3, guild: 0 },
-  { name: "D3A", os: 2, guild: 0 },
-  { name: "D4A", os: 1, guild: 0 },
-  { name: "D3B", os: 1, guild: 0 },
-  { name: "D4B", os: 1, guild: 0 },
-  { name: "D5B", os: 1, guild: 0 },
-  { name: "D4C", os: 1, guild: 0 },
-  { name: "D5C", os: 1, guild: 0 },
-  { name: "E2A", os: 2, guild: 0 },
-  { name: "E3A", os: 1, guild: 0 },
-  { name: "E4A", os: 2, guild: 0 },
-  { name: "E5A", os: 1, guild: 0 },
-  { name: "E3B", os: 2, guild: 0 },
-  { name: "E4B", os: 2, guild: 0 },
-  { name: "E5B", os: 1, guild: 0 },
-  { name: "E4C", os: 2, guild: 0 },
-  { name: "E5D", os: 1, guild: 0 },
-  { name: "F2A", os: 3, guild: 0 },
-  { name: "F3A", os: 2, guild: 0 },
-  { name: "F4A", os: 2, guild: 0 },
-  { name: "F5A", os: 1, guild: 0 },
-  { name: "F3B", os: 1, guild: 0 },
-  { name: "F4B", os: 2, guild: 0 },
-  { name: "F5C", os: 1, guild: 0 },
-  { name: "F4C", os: 2, guild: 0 },
-  { name: "F5D", os: 1, guild: 0 },
+
+const defaultGuilds = [
+  {name: "gild_1", sec:1, color:1},
 ];
+
+const defaultSectors = [null, // нумерация секторов с единицы!
+  { name: "A5A", os: 1, color: 0 },
+  { name: "A5D", os: 1, color: 0 },
+  { name: "B5C", os: 1, color: 0 },
+  { name: "C5B", os: 1, color: 0 },
+  { name: "D5A", os: 1, color: 0 },
+  { name: "D5D", os: 1, color: 0 },
+  { name: "E5C", os: 1, color: 0 },
+  { name: "F5B", os: 1, color: 0 },
+  { name: "X1X", os: 3, color: 0 },
+  { name: "A4A", os: 1, color: 0 }, // 10
+  { name: "A3A", os: 2, color: 0 },
+  { name: "A2A", os: 2, color: 0 },
+  { name: "A5B", os: 1, color: 0 },
+  { name: "A4B", os: 1, color: 0 },
+  { name: "A3B", os: 1, color: 0 },
+  { name: "A5C", os: 1, color: 0 },
+  { name: "A4C", os: 2, color: 0 },
+  { name: "B2A", os: 3, color: 0 },
+  { name: "B3A", os: 1, color: 0 }, //19
+  { name: "B4A", os: 1, color: 0 },
+  { name: "B5A", os: 1, color: 0 },
+  { name: "B3B", os: 2, color: 0 },
+  { name: "B4B", os: 2, color: 0 },
+  { name: "B5B", os: 1, color: 0 },
+  { name: "B4C", os: 1, color: 0 },
+  { name: "B5D", os: 1, color: 0 },
+  { name: "C2A", os: 2, color: 0 },
+  { name: "C3A", os: 1, color: 0 },
+  { name: "C4A", os: 2, color: 0 },
+  { name: "C5A", os: 1, color: 0 },
+  { name: "C3B", os: 1, color: 0 },
+  { name: "C4B", os: 2, color: 0 },
+  { name: "C5C", os: 1, color: 0 },
+  { name: "C4C", os: 2, color: 0 },
+  { name: "C5D", os: 1, color: 0 },
+  { name: "D2A", os: 3, color: 0 },
+  { name: "D3A", os: 2, color: 0 },
+  { name: "D4A", os: 1, color: 0 },
+  { name: "D3B", os: 1, color: 0 },
+  { name: "D4B", os: 1, color: 0 },
+  { name: "D5B", os: 1, color: 0 },
+  { name: "D4C", os: 1, color: 0 },
+  { name: "D5C", os: 1, color: 0 },
+  { name: "E2A", os: 2, color: 0 },
+  { name: "E3A", os: 1, color: 0 },
+  { name: "E4A", os: 2, color: 0 },
+  { name: "E5A", os: 1, color: 0 },
+  { name: "E3B", os: 2, color: 0 },
+  { name: "E4B", os: 2, color: 0 },
+  { name: "E5B", os: 1, color: 0 },
+  { name: "E4C", os: 2, color: 0 },
+  { name: "E5D", os: 1, color: 0 },
+  { name: "F2A", os: 3, color: 0 },
+  { name: "F3A", os: 2, color: 0 },
+  { name: "F4A", os: 2, color: 0 },
+  { name: "F5A", os: 1, color: 0 },
+  { name: "F3B", os: 1, color: 0 },
+  { name: "F4B", os: 2, color: 0 },
+  { name: "F5C", os: 1, color: 0 },
+  { name: "F4C", os: 2, color: 0 },
+  { name: "F5D", os: 1, color: 0 },
+];
+var arrSector = []; //текущее хранилище данных карты
+
+
+/*********************** запуск инициализация *************************/
+window.addEventListener("load", () => {
+  LOG("......... start .........");
+  dbSectorsOpen()
+    .then(loadingSceneImages)
+    .then(drawScene);
+});
+
 
 /************* IndexedDB (хранение данных на клиенте) *************************/
 const dbName = "foesectors";
@@ -107,25 +124,28 @@ function dbSectorsOpen() {
     
     dbRequest.onsuccess = function (event) {
       dbData = event.target.result; //то же что = dbRequest.result
-      let dbTransaction = dbData.transaction("sectors", "readonly"); //["sectors","guilds",...] //transaction(db.objectStoreNames) - все хранилища
+      let dbTransaction = dbData.transaction("sectors", "readonly"); 
       let txnSectors = dbTransaction.objectStore("sectors"); //работаем с хранилищем "sectors"
       txnSectors.getAll().onsuccess = (e) => {
-          sector = e.target.result;
+          arrSector = e.target.result;
           LOG("Database opened.");
           resolve();
       }
     };
 
-    dbRequest.onupgradeneeded = function (event) { //создание базы при первом запуске или изменении версии
-      LOG("Database ( version " + dbVersion + " ) setup ...");
+    //создание базы при первом запуске ( изменении версии )
+    dbRequest.onupgradeneeded = function (event) { 
+      LOG("Database (ver. " + dbVersion + ") setup ...");
       let db = event.target.result;
       if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors"
         db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
-      let userStore =db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false});
+      let userStore =db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false}); //и сразу создать
       
       userStore.add({id:0}); //добавляем в начало пустышку (для нумерации секторов с единицы)
-      for (let i = 1; i < 62; i++) 
-        userStore.add(getSector(i));
+      for (let sec = 1; sec < 62; sec++) { //заполняем базу из инициализирующего массива defaultSectors
+        arrSector[sec] = Object.assign({}, defaultSectors[sec]);
+        userStore.add(getSector(sec));
+      }
 
     };
 
@@ -135,22 +155,22 @@ function dbSectorsOpen() {
 
   });
 
-  //todo прикрутить загрузку начальных данных с серверного .json
+  /* //todo прикрутить загрузку начальных данных с серверного .json
   async function loadJSON(requestURL) {
     const request = new Request(requestURL);
     const response = await fetch(request);
     const jsonTXT = await response.text(); //получение "сырого" json-текста
     return JSON.parse(jsonTXT); //преобразование текста в объект JS
-  }
+  } */
 
 }
 
 function getSector(sec){
   return {
     id: sec,
-    name: sector[sec].name,
-    os: sector[sec].os,
-    guild: sector[sec].guild,
+    name: arrSector[sec].name,
+    os: arrSector[sec].os,
+    color: arrSector[sec].color,
   };
 }
 
@@ -159,12 +179,12 @@ function dbSaveSector(sec) { //запись в базу сектора sec
   let newItem = getSector(sec);
   let request = txn.objectStore("sectors").put(newItem);
   request.onsuccess = function () {
-    //LOG("saved : " + sector[sec].name);
+    //LOG("saved : " + arrSector[sec].name);
+    imgClipBoard.style.display = "none"; //убрать картинку буфера обмена
   };
   request.onerror = function () {
-    LOG("ERROR saving: " + request.error);
+    LOG("ERROR saving: " + request.error, "alert");
   };
-  imgClipBoard.style.display = "none"; //убрать картинку буфера обмена
 }
 
 
@@ -173,9 +193,9 @@ function loadingSceneImages() {
   return new Promise((resolve, reject) => {
     LOG("Loading images ...");
     img_background = new Image();
-    img_background.src = "images/background.jpg";
+    img_background.src = "images/bgr.jpg";
     img_borders = new Image();
-    img_borders.src = "images/borders.png";
+    img_borders.src = "images/brd.png";
     img_background.onload = () => {
       let scn = new Image();
       scn.src = "images/scene.png";
@@ -197,23 +217,18 @@ function loadingSceneImages() {
     };
   });
 
+  // поиск центров секторов - для позиционирования названий и заодно - закраска в цвет гильдии
   function calculationSectorsCenters() {
-    // поиск центров секторов - для позиционирования названий и заодно - закраска в цвет гильдии
-    let maxX = [],
-      minX = [],
-      maxY = [],
-      minY = [];
-    for (let s = 1; s < 62; s++) {
-      //перебор всех 61 секторов
+    let maxX = [],  minX = [],  maxY = [],  minY = [];
+    for (let s = 1; s <= 61; s++) {
       maxX[s] = 0;
       minX[s] = IMG_WITH;
       maxY[s] = 0;
       minY[s] = IMG_HEGHT;
     }
     for (let i = 0; i < data_address.data.length; i += 4) {
-      let s = data_address.data[i];
-      if (s < 62) {
-        //остальное поле - белый цвет
+      let s = data_address.data[i]; //red компонента содержит порядковый номер сектора
+      if (s < 62) { //остальное поле сцены оставить прозрачным
         let y = ~~(i / 4 / IMG_WITH);
         let x = i / 4 - y * IMG_WITH;
         if (x > maxX[s]) maxX[s] = x;
@@ -222,76 +237,54 @@ function loadingSceneImages() {
         if (y < minY[s]) minY[s] = y;
       }
     }
-    for (let s = 1; s <= 61; s++) {
-      sector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
-      sector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
-      let gld = sector[s].guild;
-      if (gld > 0) 
-        fillBackground(s, gld_color[gld]); //заливка сектора цветом занятой гильдии
+    for (let s = 1; s <= 61; s++) { 
+      arrSector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
+      arrSector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+      if (arrSector[s].color)
+        fillBackground(s, colors[arrSector[s].color]); //заливка сектора цветом занятой гильдии
     }
   }
 }
 
-/**********************************************************************/
-/*********************** запуск инициализация *************************/
-window.addEventListener("load", () => {
-  LOG("......... loging .........");
-  dbSectorsOpen()
-    .then(loadingSceneImages)
-    .then(drawScene);
-});
 
 /************************ отрисовка сцены *********************************/
 ctx.textAlign = "center";
 ctx.font = "bold 18px arial";
-ctx.shadowOffsetX = 1;
-ctx.shadowOffsetY = 1;
+ctx.fontStretch = "ultra-condensed";
+ctx.shadowOffsetX = 0.3;
+ctx.shadowOffsetY = 0.3;
 
 function drawScene() {
-  //LOG("Scene drawing ...");
-
   //фон - вулкан
   ctx.fillStyle = "rgba(0,0,0,0)";
+  
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
-
-  //раскраска карты
-  ctx.shadowBlur = 0;
-  ctx.shadowColor = "black";
+  //карта секторов
   bufer_ctx.putImageData(data_scene, 0, 0);
   ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
-
-  //раскраска границ секторов
+  //границы секторов
+  ctx.shadowBlur = 2;
+  ctx.shadowColor = "lightgoldenrodyellow";  //ctx.shadowColor = "transparent";
   ctx.drawImage(img_borders, 0, 0, canvas.width, canvas.height);
-
-  //подписи штабов
-  ctx.shadowBlur = 8;
-  ctx.fontStretch = "ultra-condensed";
-  for (let s = 1; s < 9; s++) {
-    if (selected_guild == s) { //выбранный штаб
+  
+  //подписи секторов
+  ctx.fillStyle = "black";
+  ctx.shadowBlur = 4;
+  ctx.shadowColor = "lightgoldenrodyellow";
+  for (let s = 1; s <= 61; s++) { 
+    if (selected_guild == s) { //выбранная гильдия
       ctx.fillStyle = "lightgoldenrodyellow";
       ctx.shadowColor = "black";
     } else { //просто штаб
       ctx.fillStyle = "black";
       ctx.shadowColor = "lightgoldenrodyellow";
     }
-    for (let i = 0; i < 3; i++ ) //для "усиления" тени
-      ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
-  }
-
-  //подписи секторов
-  ctx.fontStretch = "normal";
-  ctx.fillStyle = "black";
-  ctx.shadowColor = "lightgoldenrodyellow";
-  for (let s = 9; s <= 61; s++) { //сектора
+    for (let i = 0; i < 3; i++) //для "усиления" тени
+      ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y);
+    let osadki = (arrSector[s].os==0) ? "штаб" : "o".repeat(arrSector[s].os); //🞔
     for (let i = 0; i < 2; i++) //для "усиления" тени
-      ctx.fillText(sector[s].name, sector[s].x, sector[s].y);
-    let osadki = "";
-    for (let i = 0; i < sector[s].os; i++) {
-      osadki += "🞔"; //🞔
-    }
-    ctx.fillText(osadki, sector[s].x, sector[s].y + 16);
-    ctx.fillText(osadki, sector[s].x, sector[s].y + 16);
+      ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);
   }
 }
 
@@ -300,23 +293,23 @@ canvas.addEventListener("mousedown", (e) => {
   e.preventDefault();
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
   if (e.button != 0) return; //клик левой кнопкой
-  if (editor) editModeIndice(false); //закрыть редактор если открыт
+  if (editor) styleCanvasEdit(false); //закрыть редактор если открыт
   let adr = data_address.data[offset]; //red component = number of address
   if (adr > 61) {  //клик не по сектору
     LAB("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)" );
     return;
   }
   let color;
-  if (sector[adr].os == 0) { //клик по штабу - выбор цвета
+  if (arrSector[adr].os == 0) { //клик по штабу - выбор цвета
     selected_guild = adr;
     helper(e);
   } else {
-    if (selected_guild == sector[adr].guild) { //клик по той же гильдии - отмена выделения
-      sector[adr].guild = 0; //помечаем что сектор не занят гильдией
+    if (selected_guild == arrSector[adr].color) { //клик по той же гильдии - отмена выделения
+      arrSector[adr].color = 0; //помечаем что сектор не занят гильдией
       color = { r: 0, g: 0, b: 0, a: 0 };
     } else {
-      sector[adr].guild = selected_guild; //помечаем что сектор занят этой гильдией
-      color = gld_color[selected_guild]; //покрасить в выбранный цвет штаба
+      arrSector[adr].color = selected_guild; //помечаем что сектор занят этой гильдией
+      color = colors[selected_guild]; //покрасить в выбранный цвет штаба
     }
     fillBackground(adr, color); //покрасить в выбранный цвет штаба
     dbSaveSector(adr);
@@ -337,60 +330,105 @@ function fillBackground(sec, color) { //заливка сектора sec цве
 
 
 /****************** РЕДАКТОР подписи сектора ****************************/
-var editor;
+var editor = document.querySelector(".sector_editor");
+var inp_name = document.querySelector(".input_name");
+var inp_shtab = document.querySelector(".input_shtab");
+var div_inp_osadki = document.querySelector(".input_osad");
+var inp_osadki = document.querySelectorAll(".input_osad input[type='radio']");
+var div_inp_color = document.querySelector(".input_color");
+var inp_color = document.querySelector("#input_color");
 var sel_addr;
-var inp_name;
-var inp_siege;
+
 canvas.addEventListener("contextmenu", (e) => {  //клик правой кнопкой - редактор надписи
   e.preventDefault();
-  if (editor) editModeIndice(false); //если уже был открыт любой редактор - то закрыть
+  //if (editor) editModeIndice(false); //если уже был открыт любой редактор - то закрыть
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
-  let adr = data_address.data[offset]; //red component = number of address
-  if (adr > 61) return;
+  let adr = data_address.data[offset]; // number of address (red component)
+  if (adr < 1 || adr > 61) return; //клик не на секторе
+  
   sel_addr = adr;
-  //sector[adr].os == 0
-  if (adr < 9) {
-    LAB("Редактирование названия гильдии...");
-    editor = document.querySelector(".guild-editor");
-    inp_name = document.querySelectorAll(".name-editor")[0];
-    inp_name.focus();
-  } else if (adr < 62) {
-    LAB("Редактирование сектора и кол-ва опорников...");
-    editor = document.querySelector(".sector-editor");
-    inp_name = document.querySelectorAll(".name-editor")[1];
-    inp_siege = document.querySelector(".siege-editor");
-    inp_siege.value = sector[adr].os;
-    inp_siege.focus();
+  LAB("Редактирование данных сектора ...");
+  styleCanvasEdit(true);
+  
+  inp_name.value = arrSector[adr].name; //название сектора/гильдии
+  let osd=arrSector[adr].os;  //сколько осад в секторе
+  if (osd>0){ //сектор
+    styleEditClrOs("osd");
+    inp_osadki[osd-1].checked = true;
+    inp_shtab.checked = false;
+  } else { //гильдия
+    styleEditClrOs("clr");
+    inp_shtab.checked = true;
+    for (const item of inp_osadki) item.checked = false;
   }
-  editModeIndice(true);
-  let dx = sector[adr].x - editor.clientWidth / 2;
+  let dx = arrSector[adr].x - editor.clientWidth / 2;
   if (dx < 0) dx = 2;
   if (dx + editor.clientWidth > IMG_WITH)
-    dx = IMG_WITH - editor.clientWidth - 7;
+  dx = IMG_WITH - editor.clientWidth - 7;
   editor.style.left = dx + "px";
-  editor.style.top = sector[adr].y - 20 + "px";
-  inp_name.value = sector[adr].name;
-  if (adr < 9) {
-    inp_name.select();
-  } else if (adr < 62) {
-    inp_siege.select();
-  }
+  editor.style.top = arrSector[adr].y - 20 + "px";
+  
+  inp_shtab.addEventListener("change", ()=>{
+    if (inp_shtab.checked) { //поставили галочку на ШТАБ
+      styleEditClrOs("clr");
+      for (const item of inp_osadki) item.checked = false; //отчекнуть все radio
+    } else { //сняли галочку с ШТАБА
+      styleEditClrOs("osd");
+      if (osd!=0)
+        inp_osadki[osd-1].checked = true; //вернуть кол-во осад
+    }
+  })
 
+  for (const item of inp_osadki) {
+    item.addEventListener("change", ()=>{
+      inp_shtab.checked=false;
+    })
+  }
+  
+  //todo form
   editor.addEventListener("keydown", (event) => {
+    //event.preventDefault();
     if (event.code === "NumpadEnter" || event.code === "Enter") {
-      sector[sel_addr].name = inp_name.value;
-      if (sel_addr > 8) sector[sel_addr].os = inp_siege.value;
-      editModeIndice(false);
+      arrSector[sel_addr].name = inp_name.value;
+
+      let item_checked = 0; // останется 0 если штаб
+      for (let i=0; i<3; i++) 
+        if (inp_osadki[i].checked) 
+          item_checked = i+1;
+      arrSector[sel_addr].os = item_checked;
+
+      let index = inp_color.selectedIndex;
+      if (index){ //если в select был выбор
+        arrSector[sel_addr].color = index; //выбранный индекс
+        fillBackground(sel_addr,colors[index]);
+        inp_color.selectedIndex=0;
+      }
+
+      styleCanvasEdit(false);
       drawScene();
       dbSaveSector(sel_addr);
+
     } else if (event.code === "Escape") {
-      editModeIndice(false);
+      styleCanvasEdit(false);
     }
+
     LAB("...");
   });
+  
+  function styleEditClrOs(div){
+    if (div=="osd"){
+      div_inp_osadki.style.display="block";
+      div_inp_color.style.display="none";
+    } else { // =="clr"
+      div_inp_osadki.style.display="none";
+      div_inp_color.style.display="block";
+    }
+  }
+
+  
 });
 
-function editModeIndice(mode) { //затенение холста при входе в редактор
+function styleCanvasEdit(mode) { //затенение холста при входе в редактор
   if (mode) {
     canvas.classList.add("shadow-filter");
     editor.style.visibility = "visible";
@@ -399,6 +437,7 @@ function editModeIndice(mode) { //затенение холста при вхо�
     editor.style.visibility = "hidden";
   }
 }
+
 
 
 /*************** копироваине карты в буфер обмена ******************/
@@ -436,8 +475,8 @@ btn_clear.addEventListener("click", () => {
   if (!result) return;
   container.classList.add("anim-clear");
   for (let i = 1; i <= 61; i++) {
-    if (sector[i].os!=0){ // не штаб
-      sector[i].guild = 0; //отметить в массиве что сектор не занят
+    if (arrSector[i].os!=0){ // не штаб
+      arrSector[i].color = 0; //отметить в массиве что сектор не занят
       dbSaveSector(i); //отметить в IndexedDB
       fillBackground(i, { r: 0, g: 0, b: 0, a: 0 }); //убрать заливку на канвас-сцене
     }
@@ -456,7 +495,7 @@ const btn_save = document.querySelector(".btn-save");
 //todo записать в базу на сервер (с уникальным id)
 btn_save.addEventListener("click", async () => {
   LAB("Сохранение данных карты в файл на диске.");
-  const content = JSON.stringify(sector,null,"\t");
+  const content = JSON.stringify(arrSector,null,"\t");
   let filename = genDateString();
   let filehandler;
 
@@ -531,7 +570,7 @@ btn_load.addEventListener("click", async () => {
   try{ //получение файла и загрузка данных карты
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
-     sector = JSON.parse(contents);
+     arrSector = JSON.parse(contents);
     LOG("Data map loaded.");
     LAB("");
   } catch {
@@ -540,7 +579,7 @@ btn_load.addEventListener("click", async () => {
   }
 
   for (let i = 1; i < 62; i++) {
-    fillBackground(i, gld_color[sector[i].guild]); //заливка
+    fillBackground(i, colors[arrSector[i].color]); //заливка
     dbSaveSector(i); //запись в IndexedDB
   }
   drawScene(); 
@@ -554,17 +593,17 @@ canvas.addEventListener("mousemove", (e) => {
 function helper(e) {
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
   let adr = data_address.data[offset]; //получить red component = number of address
-  if (adr>61){ //за пределами секторов
+  if (adr > 61 || adr < 1){ //за пределами секторов
     container.style.cursor = "default";
   } else {
-    if (sector[adr].os == 0) {    //штабы (осадки == 0)
+    if (arrSector[adr].os == 0) {    //штабы (осадки == 0)
       container.style.cursor = "pointer";
     } else { //обычные сектора 
       container.style.cursor = "cell";
     }
   }
   if (selected_guild) 
-    LAB("Выбор опорников для гильдии " + sector[selected_guild].name + "...");
+    LAB("Выбор опорников для гильдии " + arrSector[selected_guild].name + "...");
   else 
     LAB("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)" );
 }
@@ -585,7 +624,8 @@ function LOG(message, warning="") {
   p_msg.scrollIntoView();
   if (warning=="alert"){
     p_msg.style.color = "#f00";  //красный
-  } else{
-    p_msg.style.opacity = "0.2";  //запустится css transition: opacity 5s;
+  } else {
+    p_msg.style.color = "rgba(250,250,210, 1)";
+    p_msg.style.color = "rgba(250,250,210, 0.2)"; //transition в css
   }
 }
