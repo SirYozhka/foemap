@@ -1,7 +1,13 @@
 :root {
 	--dark: rgb(50, 10, 10);
-	--light: rgb(250, 250, 210);
+	--light: rgb(250, 250, 200);
+	--dark-marine: rgb(10, 33, 50);
+	--light-marine: rgb(200, 220, 250);
 	--grad-bgr: linear-gradient(var(--dark), var(--light));
+	--border-dark: 1px solid var(--dark);
+	--shadow-dark: 0px 0px 4px 2px var(--dark);
+	--shadow-light: 0px 0px 4px 2px var(--light);
+	--shadow-light-strong: 0px 0px 5px 4px var(--light);
 }
 
 * {
@@ -39,7 +45,7 @@ header{
 main {
 	margin: 2px;
 	background: var(--grad-bgr);
-	border: 1px solid var(--dark);
+	border: var(--border-dark);
 	border-radius: 2px;
 }
 footer {
@@ -51,16 +57,6 @@ footer {
 	flex-direction: row;
 	justify-content:space-between;
 	align-items: center;
-}
-
-/******************* форматы *************************/
-.flex-row{
-	display: flex;
-	flex-wrap: nowrap;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-	gap: 0px;
 }
 
 /********************** кнопки ***********************************/
@@ -94,14 +90,14 @@ button {
 	font-size: 12px;
 	font-weight: 700;
 	line-height: 1.0;
-	border: 1px solid var(--dark);
-	border-radius: 2px;
 	background: var(--light);
-	box-shadow: 0px 0px 2px 1px var(--light);
+	border: var(--border-dark);
+	border-radius: 2px;
+	box-shadow: var(--shadow-light);
 }
 
 button:hover {
-	box-shadow: 0px 0px 3px 2px rgb(250, 250, 248);
+	box-shadow: var(--shadow-light-strong);
 }
 
 button:not([disabled]):hover::after {
@@ -120,6 +116,7 @@ button:not([disabled]):hover::after {
 	border-radius: 2px;
 	background-color: rgba(245, 245, 245, 0.9);
 	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
+	pointer-events: none;
 }
 
 button:active {
@@ -151,8 +148,11 @@ button:disabled {
 }
 
 canvas {
-	width: 100%;
-	height: 100%;
+	position: absolute;
+	top: 0px;
+	left:0px;
+	width: 800px;
+	height: 600px;
 }
 
 /************************** анимации *****************************/
@@ -193,7 +193,6 @@ canvas {
 
 /**************************** editor **********************************/
 .sector_editor {
-	visibility: hidden;
 	z-index: 2;
 	display: flex;
 	flex-direction: column;
@@ -204,173 +203,135 @@ canvas {
 	left: 30px;
 	width: 200px;
   	outline: 1px solid var(--dark);
-	box-shadow: 0px 0px 2px 1px var(--light);
+	outline-offset: 0px;
+	border-radius: 2px;
+	box-shadow: var(--shadow-light);
 	background-color: var(--light);
-	padding: 1px;
+	padding: 3px;
 }
 
-/**** название input[type="text"] ****/
 .sector_editor input{
 	appearance: none;
 	outline: none;
-	height: 20px;
 	font-weight: 700;
 	color: var(--dark);
 }
 
+.sector_editor input:hover{
+	outline: var(--border-dark);
+}
+
+/**** название input[type="text"] ****/
 .sector_editor input[type="text"]{
-	width: calc(100% - 21px);
+	width: 100%;
+	height: 20px;
 	border: 1px solid var(--dark);
+	padding-left: 3px;
+	margin-bottom: 3px;
+}
+
+.sector_editor input[type="text"]:hover{
+	background-color: aliceblue;
 }
 
 .sector_editor input[type="text"]:focus{
 	background-color: aliceblue;
 }
 
-/***** штаб  input[type="checkbox"] да/нет ******/
-.sector_editor input[type="checkbox"]{
-	appearance: none;
-	cursor: pointer;
-	position: relative; 
-	background-color: white;
-	border: 1px solid var(--dark);
-	width: 20px; 
-	margin-left: 1px;
-}
-
-.sector_editor input[type="checkbox"]:hover::after{
-	z-index: 2;
-	content: "отметить штаб";
-	position: absolute;
-	top: 13px;
-	right: 17px;
-	width: 40px;
-	padding: 1px;
-	font-size: 10px;
-	font-weight: 100;
-	color: black;
-	border: 1px solid var(--dark);
-	border-radius: 2px;
-	background-color: rgba(245, 245, 245, 0.9);
-	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
-	pointer-events: none;
-}
-.sector_editor input[type="checkbox"]:checked:hover::after{
-	content: "убрать штаб";
-}
-
-.sector_editor input[type="checkbox"]:checked::before {
-	content: "Ш";
-	position: absolute;
-	top:50%;
-	left:50%;
-	transform: translate(-50%, -50%);
-}
-
-/****** кол-во осадок input[type="radio"] ******/
-/*div:has(>input[type="radio"]){ */
+/****** выбор штаб или 123 осадки input[type="radio"] ******/
 .sector_editor .input_osad{
-	border: 1px solid var(--dark);
-	background-color: white;
-	margin-bottom: 1px;
-}
-
-.sector_editor input[type="radio"] {
-	appearance: none;
-	cursor: pointer;
-	position: relative;
-	width: 30px;
-	height: 20px;
-}
-
-.sector_editor input[type="radio"]::before {
 	display: flex;
-	content: attr(value);
-	position: absolute;
-	width: 30px;
-	height: 20px;
+	flex-wrap: nowrap;
+	flex-direction: row;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-bottom: 3px;
 }
 
-.sector_editor input[type="radio"]:checked::before {
+.input_osad input[type="radio"] {
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	width: 40px;
+	height: 20px;
+	padding: 0px, 2px, 0px, 2px;
+	border: var(--border-dark);
+	background-color: white;
+}
+
+.input_osad input[type="radio"]::before {
+	content: attr(value);
+}
+
+.input_osad input[type="radio"]:hover {
+	background-color: rgb(218, 238, 255);
+}
+
+.input_osad input[type="radio"]:checked {
 	background-color: var(--dark);
 	color: var(--light);
 }
 
-/******** цвет **********/
-.input_color{
+/******** цвет input[type="radio"] **********/
+.sector_editor .input_color{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
 	width: 100%;
-	height: 20px;
-	position: relative;
 }
 
-.input_color::after{
-	content: " ";
-	position: absolute;
-	top: 50%;
-	right: 5px;
-	transform: translateY(-50%);
-	display: block;
-	width: 0px;
-	height: 0px;
-	border-style: solid;
-	border-width: 10px 7px 0px 7px;
-	border-color: var(--dark) transparent transparent transparent;
-	pointer-events: none;
-}
-
-select {
+.input_color input{
 	appearance: none;
-}
-
-.input_color select{
-	width: 100%;
-	height: 20px;
-	background-color: white; 
-	outline: none;
-	border: 1px solid var(--dark);
-	padding: 1px 30px 1px 5px;
 	cursor: pointer;
+	width: 20px;
+	height: 20px;
+	border: var(--border-dark);
+	overflow: hidden;	
 }
 
-.input_color select:focus {
-	background-color: aliceblue;
+.input_color input::before {
+	content: url(images/onepx.png);
+	opacity: 0.4;
 }
 
-.input_color:has(select:focus)::after {
-	border-style: solid;
-	border-width: 7px 10px 7px 7px;
-	border-color: transparent var(--dark) transparent transparent;
+.input_color input:hover::before {
+	opacity: 0;
 }
 
-.input_color select option{
-	font-weight: 700;
+.input_color input:checked::before {
+	display: grid;
+	place-items: center;
 	color: var(--dark);
+	content: "✔";
+	font-size: 18px;
+	opacity: 1;
 }
 
-.input_color select option:nth-child(2){
+.input_color input:nth-child(1){
 	background-color: rgb(250, 3, 250);
 }
-.input_color select option:nth-child(3){
+.input_color input:nth-child(2){
 	background-color: rgb(135, 3, 250);
 }
-.input_color select option:nth-child(4){
+.input_color input:nth-child(3){
 	background-color: rgb(19, 3, 250);
 }
-.input_color select option:nth-child(5){
+.input_color input:nth-child(4){
 	background-color: rgb(250, 110, 3);
 }
-.input_color select option:nth-child(6){
+.input_color input:nth-child(5){
 	background-color: rgb(3, 205, 250);
 }
-.input_color select option:nth-child(7){
+.input_color input:nth-child(6){
 	background-color: rgb(250, 238, 3);
 }
-.input_color select option:nth-child(8){
+.input_color input:nth-child(7){
 	background-color: rgb(1, 189, 7);
 }
-.input_color select option:nth-child(9){
+.input_color input:nth-child(8){
 	background-color: rgb(250, 3, 3);
 }
 
@@ -387,28 +348,47 @@ select {
 	position: absolute;
 	bottom: 1px;
 	left: 2px;
-	width: 180px;
+	width: auto;
 	height: 68px;
 	max-height: 150px;
-	padding: 3px;
+	padding: 2px;
+	cursor: auto;
 	overflow: hidden;
 }
 
 #log-box p{
-	color: var(--light);
 	font-size: 10px;
 	font-weight: 100;
 	line-height: 11px;
-	transition: color 8s;
+	color: var(--light);
+	opacity: 1;
+	transition: opacity 8s linear;
 }
 
 #log-box:hover {
-	background-color: rgba(19, 44, 26, 0.5);
-	outline: 1px solid rgb(0, 24, 3);
+	background-color: rgba(19, 34, 44, 0.5);
+	outline: 1px solid var(--light-marine);
+	border-right: none;
 	overflow-y: auto;
+	scrollbar-width: 5px;
+	scrollbar-color: green black;
 }
 
-p:hover {
-	color: var(--light);
-	border-color: red;
+#log-box::-webkit-scrollbar { /* Ширина всего элемента навигации */
+	width: 5px; 
+}
+#log-box::-webkit-scrollbar-track { /* Цвет дорожки */
+	background: var(--light-marine); 
+}
+#log-box::-webkit-scrollbar-thumb { /* Цвет бегунка */
+	background: linear-gradient(-90deg, var(--dark-marine),var(--light-marine)); 
+}
+
+#log-box:hover p{
+	transition: none;
+	opacity: 0.5 !important;
+}
+#log-box p:hover{
+	background-color: rgb(0, 18, 30);
+	opacity: 1.0 !important;
 }

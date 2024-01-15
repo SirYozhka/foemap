@@ -2,6 +2,12 @@
 
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
+const ON = true;
+const OFF = false;
+const BLUE = "rgb(200,200,255)"; // текущий процесс
+const GREEN = "rgb(150,255,150)"; // завершение процесса 
+const YELLOW = "rgb(250,255,200)"; //стандартные
+const RED = "rgb(255,150,150)"; // ошибки
 
 const container = document.querySelector(".container"); //контейнер сцены
 
@@ -15,7 +21,7 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
-var selected_guild;
+var selected_guild = 0;
 var img_background; //фоновое изображение водопада
 var img_borders; //границы
 var data_address; //data  номеров секторов из adresses.bmp
@@ -34,9 +40,18 @@ var colors = [
   { r: 250, g: 0, b: 0, a: alpha, name:"red" }, //красный
 ];
 
-const defaultGuilds = [
-  {name: "gild_1", sec:1, color:1},
-];
+/* todo настройки для количесва гильдий 8 и 9
+const default_guilds_9 = [
+  {sec:1, color:1}, // гильдия 1
+  {sec:2, color:2}, // гильдия 2
+  ...
+]; 
+const default_guilds_8 = [
+  {sec:1, color:2}, // гильдия 1
+  {sec:12, color:3}, // гильдия 2
+  ...
+]; 
+*/
 
 const defaultSectors = [null, // нумерация секторов с единицы!
   { name: "A5A", os: 1, color: 0 },
@@ -106,10 +121,13 @@ var arrSector = []; //текущее хранилище данных карты
 
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", () => {
-  LOG("......... start .........");
+  LOG("Initialization started ..." , BLUE);
   dbSectorsOpen()
     .then(loadingSceneImages)
-    .then(drawScene);
+    .then(()=>{
+      drawScene();
+      canvas.addEventListener("mousemove", (e) => { cursorStyle(e); });
+    });
 });
 
 
@@ -127,35 +145,35 @@ function dbSectorsOpen() {
       let dbTransaction = dbData.transaction("sectors", "readonly"); 
       let txnSectors = dbTransaction.objectStore("sectors"); //работаем с хранилищем "sectors"
       txnSectors.getAll().onsuccess = (e) => {
-          arrSector = e.target.result;
-          LOG("Database opened.");
-          resolve();
+        arrSector = e.target.result;
+        LOG("Database opened." , GREEN);
+        resolve();
       }
     };
 
     //создание базы при первом запуске ( изменении версии )
     dbRequest.onupgradeneeded = function (event) { 
-      LOG("Database (ver. " + dbVersion + ") setup ...");
+      LOG("Database (ver. " + dbVersion + ") setup ...", GREEN);
       let db = event.target.result;
       if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors"
         db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
       let userStore =db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false}); //и сразу создать
       
       userStore.add({id:0}); //добавляем в начало пустышку (для нумерации секторов с единицы)
-      for (let sec = 1; sec < 62; sec++) { //заполняем базу из инициализирующего массива defaultSectors
-        arrSector[sec] = Object.assign({}, defaultSectors[sec]);
-        userStore.add(getSector(sec));
+      for (let sec = 1; sec < 62; sec++) { 
+        arrSector[sec] = Object.assign({}, defaultSectors[sec]); //копируем настройки по умолчанию 
+        userStore.add(getSector(sec)); //заполняем базу из инициализирующего массива defaultSectors
       }
 
     };
 
     dbRequest.onerror = function () {
-      LOG("ERROR! Database failed to open. Please, contact developer.");
+      LOG("ERROR! Database failed to open. Please, contact developer." , RED);
     };
 
   });
 
-  /* //todo прикрутить загрузку начальных данных с серверного .json
+  /* //todo прикрутить загрузку начальных данных из default.json
   async function loadJSON(requestURL) {
     const request = new Request(requestURL);
     const response = await fetch(request);
@@ -183,7 +201,7 @@ function dbSaveSector(sec) { //запись в базу сектора sec
     imgClipBoard.style.display = "none"; //убрать картинку буфера обмена
   };
   request.onerror = function () {
-    LOG("ERROR saving: " + request.error, "alert");
+    LOG("ERROR saving: " + request.error, RED);
   };
 }
 
@@ -191,7 +209,7 @@ function dbSaveSector(sec) { //запись в базу сектора sec
 /************************ загрузка изображений карты *************************/
 function loadingSceneImages() {
   return new Promise((resolve, reject) => {
-    LOG("Loading images ...");
+    LOG("Loading images ..." , BLUE);
     img_background = new Image();
     img_background.src = "images/bgr.jpg";
     img_borders = new Image();
@@ -200,24 +218,25 @@ function loadingSceneImages() {
       let scn = new Image();
       scn.src = "images/scene.png";
       scn.onload = () => {
-        LOG("Calculation scene ...");
+        LOG("Calculation scene ..." , BLUE);
         let adr = new Image();
         adr.src = "images/addresses.bmp";
         bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
         data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
         adr.onload = () => {
-          LOG("Calculation addresses ...");
+          LOG("Calculation addresses ..." , BLUE);
           bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
           data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
           calculationSectorsCenters();
-          LOG("Ready to paint.");
+          fillBackgroundAll();
+          LOG("Ready to process." , GREEN);
           resolve();
         };
       };
     };
   });
 
-  // поиск центров секторов - для позиционирования названий и заодно - закраска в цвет гильдии
+  // поиск центров секторов и закраска секторов в цвет гильдии
   function calculationSectorsCenters() {
     let maxX = [],  minX = [],  maxY = [],  minY = [];
     for (let s = 1; s <= 61; s++) {
@@ -240,10 +259,9 @@ function loadingSceneImages() {
     for (let s = 1; s <= 61; s++) { 
       arrSector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
       arrSector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
-      if (arrSector[s].color)
-        fillBackground(s, colors[arrSector[s].color]); //заливка сектора цветом занятой гильдии
     }
   }
+
 }
 
 
@@ -288,157 +306,173 @@ function drawScene() {
   }
 }
 
+function fillBackground(sec, color) { //заливка сектора sec цветом color
+  try {
+    for (var i = 0; i < data_address.data.length; i += 4) {
+      if (data_address.data[i] == sec) {
+        data_scene.data[i + 0] = color.r; //red
+        data_scene.data[i + 1] = color.g; //green
+        data_scene.data[i + 2] = color.b; //blue
+        data_scene.data[i + 3] = color.a; //alfa
+      }
+    }
+  } catch {
+    LOG("Error filling sector ("+sec+")" , RED)
+  }
+}
+
+function fillBackgroundAll() { //заливка ВСЕХ секторов соответствующим цветом
+  LOG("Filling sectors with colors..." , BLUE);
+  for (let s = 1; s <= 61; s++) { 
+    if (arrSector[s].color)
+      fillBackground(s, colors[arrSector[s].color]); //заливка сектора цветом занятой гильдии
+  }
+}
+
 /***************** клик по сектору - выбор гильдии / заливка *********************************/
-canvas.addEventListener("mousedown", (e) => {
-  e.preventDefault();
+canvas.addEventListener("click", (e) => {
+  sel_color: 0;
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
-  if (e.button != 0) return; //клик левой кнопкой
-  if (editor) styleCanvasEdit(false); //закрыть редактор если открыт
   let adr = data_address.data[offset]; //red component = number of address
+  
+  //todo запретить выход из редактора по клику где-попало ??? элемент cover (закрывает весь экран)
+  if (form_editor) styleShadeBackground(false); //закрыть редактор если открыт 
+  
   if (adr > 61) {  //клик не по сектору
     LAB("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)" );
     return;
   }
+
   let color;
   if (arrSector[adr].os == 0) { //клик по штабу - выбор цвета
-    selected_guild = adr;
-    helper(e);
+    selected_guild = arrSector[adr].color;
+    LAB("Выбор опорников для гильдии " + arrSector[selected_guild].name + "...");
   } else {
     if (selected_guild == arrSector[adr].color) { //клик по той же гильдии - отмена выделения
       arrSector[adr].color = 0; //помечаем что сектор не занят гильдией
       color = { r: 0, g: 0, b: 0, a: 0 };
     } else {
-      arrSector[adr].color = selected_guild; //помечаем что сектор занят этой гильдией
-      color = colors[selected_guild]; //покрасить в выбранный цвет штаба
+      arrSector[adr].color = arrSector[selected_guild].color; //помечаем что сектор занят этой гильдией
+      color = colors[selected_guild]; //покрасить в выбранный цвет 
     }
-    fillBackground(adr, color); //покрасить в выбранный цвет штаба
+    fillBackground(adr, color); //покрасить сектор в выбранный цвет 
     dbSaveSector(adr);
   }
   drawScene();
 });
 
-function fillBackground(sec, color) { //заливка сектора sec цветом color
-  for (var i = 0; i < data_address.data.length; i += 4) {
-    if (data_address.data[i] == sec) {
-      data_scene.data[i + 0] = color.r; //red
-      data_scene.data[i + 1] = color.g; //green
-      data_scene.data[i + 2] = color.b; //blue
-      data_scene.data[i + 3] = color.a; //alfa
-    }
-  }
-}
-
 
 /****************** РЕДАКТОР подписи сектора ****************************/
-var editor = document.querySelector(".sector_editor");
+var form_editor = document.querySelector(".sector_editor");
 var inp_name = document.querySelector(".input_name");
-var inp_shtab = document.querySelector(".input_shtab");
-var div_inp_osadki = document.querySelector(".input_osad");
-var inp_osadki = document.querySelectorAll(".input_osad input[type='radio']");
+var nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
 var div_inp_color = document.querySelector(".input_color");
-var inp_color = document.querySelector("#input_color");
+var nodes_color = document.querySelectorAll(".input_color input[type='radio']");
 var sel_addr;
 
-canvas.addEventListener("contextmenu", (e) => {  //клик правой кнопкой - редактор надписи
-  e.preventDefault();
-  //if (editor) editModeIndice(false); //если уже был открыт любой редактор - то закрыть
-  let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
-  let adr = data_address.data[offset]; // number of address (red component)
-  if (adr < 1 || adr > 61) return; //клик не на секторе
-  
-  sel_addr = adr;
-  LAB("Редактирование данных сектора ...");
-  styleCanvasEdit(true);
-  
-  inp_name.value = arrSector[adr].name; //название сектора/гильдии
-  let osd=arrSector[adr].os;  //сколько осад в секторе
-  if (osd>0){ //сектор
-    styleEditClrOs("osd");
-    inp_osadki[osd-1].checked = true;
-    inp_shtab.checked = false;
-  } else { //гильдия
-    styleEditClrOs("clr");
-    inp_shtab.checked = true;
-    for (const item of inp_osadki) item.checked = false;
+canvas.addEventListener("contextmenu", (event) => { //клик правой кнопкой - редактор надписи
+  event.preventDefault();
+  event.stopPropagation();
+  let offset=(event.offsetY * IMG_WITH + event.offsetX) * 4;
+  let address = data_address.data[offset]; // number of address (red component)
+  if (address < 1 || address > 61) return; //клик не на секторе
+  editSector(address);
+})
+
+/*
+form_editor.addEventListener("submit", (e)=>{ //ничего не отправляется
+  console.log("start submit", e);
+  prompt("start submit");
+  e.preventDefault;
+  e.stopPropagation();
+  console.log("end submit", e);
+  prompt("end submit");
+  return false;
+})*/
+
+form_editor.addEventListener("keydown", (e) => { //запись только по кнопкам
+  if (e.code === "Enter" || e.code === "NumpadEnter") {
+    saveForm();
+    drawScene();
+    LAB("Данные сохранены.");
   }
-  let dx = arrSector[adr].x - editor.clientWidth / 2;
-  if (dx < 0) dx = 2;
-  if (dx + editor.clientWidth > IMG_WITH)
-  dx = IMG_WITH - editor.clientWidth - 7;
-  editor.style.left = dx + "px";
-  editor.style.top = arrSector[adr].y - 20 + "px";
-  
-  inp_shtab.addEventListener("change", ()=>{
-    if (inp_shtab.checked) { //поставили галочку на ШТАБ
-      styleEditClrOs("clr");
-      for (const item of inp_osadki) item.checked = false; //отчекнуть все radio
-    } else { //сняли галочку с ШТАБА
-      styleEditClrOs("osd");
-      if (osd!=0)
-        inp_osadki[osd-1].checked = true; //вернуть кол-во осад
-    }
-  })
-
-  for (const item of inp_osadki) {
-    item.addEventListener("change", ()=>{
-      inp_shtab.checked=false;
-    })
+  if (e.code === "Escape") {
+    styleShadeBackground(false);
+    LAB("Данные не изменены.");
   }
-  
-  //todo form
-  editor.addEventListener("keydown", (event) => {
-    //event.preventDefault();
-    if (event.code === "NumpadEnter" || event.code === "Enter") {
-      arrSector[sel_addr].name = inp_name.value;
-
-      let item_checked = 0; // останется 0 если штаб
-      for (let i=0; i<3; i++) 
-        if (inp_osadki[i].checked) 
-          item_checked = i+1;
-      arrSector[sel_addr].os = item_checked;
-
-      let index = inp_color.selectedIndex;
-      if (index){ //если в select был выбор
-        arrSector[sel_addr].color = index; //выбранный индекс
-        fillBackground(sel_addr,colors[index]);
-        inp_color.selectedIndex=0;
-      }
-
-      styleCanvasEdit(false);
-      drawScene();
-      dbSaveSector(sel_addr);
-
-    } else if (event.code === "Escape") {
-      styleCanvasEdit(false);
-    }
-
-    LAB("...");
-  });
-  
-  function styleEditClrOs(div){
-    if (div=="osd"){
-      div_inp_osadki.style.display="block";
-      div_inp_color.style.display="none";
-    } else { // =="clr"
-      div_inp_osadki.style.display="none";
-      div_inp_color.style.display="block";
-    }
-  }
-
-  
 });
 
-function styleCanvasEdit(mode) { //затенение холста при входе в редактор
+function editSector(adr) {  
+  sel_addr = adr;
+  LAB("Редактирование данных сектора: " + defaultSectors[adr].name + "...");
+  styleShadeBackground(true);
+  
+  let dx = arrSector[adr].x - form_editor.clientWidth / 2;
+  if (dx < 0) 
+    dx = 2;
+  if (dx + form_editor.clientWidth > IMG_WITH)
+    dx = IMG_WITH - form_editor.clientWidth - 2;
+
+  let dy = arrSector[adr].y - form_editor.clientHeight / 2;
+  if (dy < 0) 
+    dy = 2;
+  if (dy + form_editor.clientHeight > IMG_HEGHT)
+    dy = IMG_HEGHT - form_editor.clientHeight - 2;
+
+  form_editor.style.left = dx + "px";
+  form_editor.style.top = dy + "px";
+
+  inp_name.value = arrSector[adr].name; //название сектора(гильдии)
+  inp_name.focus();
+  
+  let osd=arrSector[adr].os;  //кол-во осад в секторе (если osd == 0 тогда там штаб)
+  nodes_osadki[osd].checked = true; //поставить галочку
+  showColorEditor(osd==0); //показать input для выбора цвета
+  for (const item of nodes_osadki) { //для всех кнопок выбора (штаб/осадки)
+    item.addEventListener("change", (e)=>{ 
+      showColorEditor(e.target.value == "штаб"); //показать input для выбора цвета
+    })
+  }
+  let clr=arrSector[adr].color;  //получить цвет сектора
+  if (clr>0) nodes_color[clr-1].checked = true; //поставить галочку
+    
+  function showColorEditor(mode){
+    div_inp_color.style.display = (mode ? "block" : "none");
+  }
+
+
+};
+
+
+function styleShadeBackground(mode) { //затенение холста при входе в редактор
   if (mode) {
     canvas.classList.add("shadow-filter");
-    editor.style.visibility = "visible";
+    form_editor.style.display = "block";
   } else {
     canvas.classList.remove("shadow-filter");
-    editor.style.visibility = "hidden";
+    form_editor.style.display = "none";
   }
+};
+
+function saveForm(e){ //запись данных в массив arrSector
+  let index;
+  //название сектора
+  arrSector[sel_addr].name = inp_name.value;
+  //кол-во осадок в секторе или = 0 (штаб)
+  index = [... nodes_osadki].findIndex(e=>e.checked); 
+  arrSector[sel_addr].os = index;
+
+  //цвет, если это штаб
+  index = [... nodes_color].findIndex(e=>e.checked); //
+  console.log(index);
+  if (index > 0){ //если в select есть отмеченый элемент
+    arrSector[sel_addr].color = index; //выбранный индекс
+    fillBackground(sel_addr,colors[index]);
+  }
+
+  dbSaveSector(sel_addr); //запись в базу
+  styleShadeBackground(false); //убрать затенение холста
 }
-
-
 
 /*************** копироваине карты в буфер обмена ******************/
 const btn_copy = document.querySelector(".btn-copy");
@@ -453,10 +487,10 @@ btn_copy.addEventListener("click", () => {
     navigator.clipboard.write(data).then(
       () => {
         LAB("Карта скопирована в буфер обмена. Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ");
-        LOG("Imagemap copied into clipboard.");
+        LOG("Imagemap copied into clipboard." , GREEN);
       },
       (err) => {
-        LOG("error map copy: " + err);
+        LOG("error map copy: " + err , RED);
       }
     );
   });
@@ -471,14 +505,14 @@ btn_copy.addEventListener("click", () => {
 /*************** очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
-  let result = confirm("Удалить все опорники? \n (штабы не удалаются)");
+  let result = confirm("Удалить все опорники? \n (настройки карты не меняются)");
   if (!result) return;
   container.classList.add("anim-clear");
   for (let i = 1; i <= 61; i++) {
     if (arrSector[i].os!=0){ // не штаб
       arrSector[i].color = 0; //отметить в массиве что сектор не занят
       dbSaveSector(i); //отметить в IndexedDB
-      fillBackground(i, { r: 0, g: 0, b: 0, a: 0 }); //убрать заливку на канвас-сцене
+      fillBackground(i, { r: 0, g: 0, b: 0, a: 0 }); //убрать заливку
     }
   }
   drawScene();
@@ -522,7 +556,7 @@ btn_save.addEventListener("click", async () => {
     LOG("Datafile "+filename+" is saved.");
     LAB("Файл данных карты "+filename+".json можно переслать другому игроку дла редактирования.");
   }catch{
-    LOG("Error saving datamap!", "alert");
+    LOG("Error saving datamap!" , RED);
     LAB("Ошибка записи файла данных карты.");
   }
   
@@ -575,22 +609,19 @@ btn_load.addEventListener("click", async () => {
     LAB("");
   } catch {
     LAB("Ошибка загрузки файла данных карты!");
-    LOG("Error reading json!", "alert");
+    LOG("Error reading json!", RED);
   }
-
-  for (let i = 1; i < 62; i++) {
-    fillBackground(i, colors[arrSector[i].color]); //заливка
-    dbSaveSector(i); //запись в IndexedDB
-  }
+  
+  fillBackgroundAll();
+  for (let i = 1; i < 62; i++) dbSaveSector(i); //запись в IndexedDB
   drawScene(); 
 });
 
 
-/************ вид курсора + подсказки ***********************/
-canvas.addEventListener("mousemove", (e) => {
-  helper(e);
-});
-function helper(e) {
+/********************************************************************/
+
+// вид курсора
+function cursorStyle(e) {
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
   let adr = data_address.data[offset]; //получить red component = number of address
   if (adr > 61 || adr < 1){ //за пределами секторов
@@ -602,14 +633,8 @@ function helper(e) {
       container.style.cursor = "cell";
     }
   }
-  if (selected_guild) 
-    LAB("Выбор опорников для гильдии " + arrSector[selected_guild].name + "...");
-  else 
-    LAB("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)" );
 }
 
-
-/******************************************************/
 //вывод в строку состояния
 function LAB(message) {
   document.querySelector(".label-box").textContent = message;
@@ -617,15 +642,13 @@ function LAB(message) {
 
 //вывод логов на экран
 const div_log = document.querySelector("#log-box");
-function LOG(message, warning="") {
-  const p_msg = document.createElement("p");
-  p_msg.textContent = message;
+function LOG(message, color=YELLOW) {
+  let p_msg = document.createElement("p");
   div_log.appendChild(p_msg);
-  p_msg.scrollIntoView();
-  if (warning=="alert"){
-    p_msg.style.color = "#f00";  //красный
-  } else {
-    p_msg.style.color = "rgba(250,250,210, 1)";
-    p_msg.style.color = "rgba(250,250,210, 0.2)"; //transition в css
-  }
+  setTimeout(()=>{ //appendChild занимает некоторое время
+    p_msg.textContent = message;
+    p_msg.style.color = color;
+    p_msg.style.opacity = "0.3";
+    p_msg.scrollIntoView();
+  }, 100);
 }
