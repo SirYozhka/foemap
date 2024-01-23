@@ -10,26 +10,32 @@
 </head>
 
 <body>
-  <header></header>
+  <header>
+  </header>
 
   <main>
     <div class="button-controls">
-      <button class="btn-save" data-text="записать настройки карты в файл">save </button>
-      <button class="btn-load" data-text="загрузить настройки карты из файла">load </button>
-      <button class="btn-clear" data-text="очистить выбор всех опорников">clear </button>
-      <button class="btn-copy" data-text="копировать изображение карты в буфер обмена">copy </button>
-      <div class="label-box">
-        Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка)
+      <div class="menu">
+        <div class="menu_button">file</div>
+        <div class="menu_content">
+          <button class="btn-new" data-text="создать новую карту">new</button>
+          <button class="btn-load" data-text="загрузить карту из файла">open</button>
+          <button class="btn-save" data-text="записать карту в файл">save</button>
+          <button class="btn-clear" data-text="очистить выбор опорников">clear</button>
+        </div>
       </div>
-    </div>
+      
+      <button class="btn-copy" data-text="копировать изображение карты в буфер обмена">copy </button>
 
+    </div>
+    
     <div class="container">
       <!-- отображение сцены -->
       <canvas>
       </canvas>
 
       <!-- редактор секторов -->
-      <form class="sector_editor" style="display: none;" onsubmit="return false" >
+      <form class="sector_editor" style="visibility: hidden;" onsubmit="return false" >
 
         <input type="text" class="input_name" name="name" autocomplete="off"/>
                 
@@ -41,14 +47,14 @@
 				</div>
         
         <div class="input_color">
-          <input type="radio" name="clr" value="1" checked />
-          <input type="radio" name="clr" value="2" />
-          <input type="radio" name="clr" value="3" />
-          <input type="radio" name="clr" value="4" />
-          <input type="radio" name="clr" value="5" />
-          <input type="radio" name="clr" value="6" />
-          <input type="radio" name="clr" value="7" />
-          <input type="radio" name="clr" value="8" />
+          <input type="radio" name="clr" value="1" /> <!--розовый-->
+          <input type="radio" name="clr" value="2" /> <!--фиолетовый-->
+          <input type="radio" name="clr" value="3" /> <!--синий-->
+          <input type="radio" name="clr" value="4" /> <!--оранжевый-->
+          <input type="radio" name="clr" value="5" /> <!--голубой-->
+          <input type="radio" name="clr" value="6" /> <!--желтый-->
+          <input type="radio" name="clr" value="7" /> <!--зеленый-->
+          <input type="radio" name="clr" value="8" /> <!--красный-->
         </div>
 
       </form>
@@ -63,11 +69,16 @@
       </div>
 
     </div>
-   
+    <div class="footer">
+      <div class="label-box">
+        Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка).
+      </div>
+    <div>
+
   </main>
 
   <footer>
-    <span>Редактор карты секторов-опорников для ПБГ <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
+    <span>Редактор карты секторов-опорников ПБГ <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
     </span>
     <span class="copyright">
       © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)

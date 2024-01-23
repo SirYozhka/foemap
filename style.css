@@ -1,13 +1,15 @@
 :root {
-	--dark: rgb(50, 10, 10);
-	--light: rgb(250, 250, 200);
-	--dark-marine: rgb(10, 33, 50);
-	--light-marine: rgb(200, 220, 250);
-	--grad-bgr: linear-gradient(var(--dark), var(--light));
+	--dark: rgb(10, 33, 50); /* cold */
+	--light: rgb(200, 220, 250); /* cold */
+	--dark: rgb(40, 6, 6); /* warm */
+	--light: rgb(250, 250, 200); /* warm */
+
+
+	--grad-bgr: linear-gradient(20deg, var(--light), var(--dark));
 	--border-dark: 1px solid var(--dark);
 	--shadow-dark: 0px 0px 4px 2px var(--dark);
-	--shadow-light: 0px 0px 4px 2px var(--light);
-	--shadow-light-strong: 0px 0px 5px 4px var(--light);
+	--shadow-light: 0px 0px 2px 1px var(--light);
+	--shadow-light-strong: 0px 0px 4px 2px var(--light);
 }
 
 * {
@@ -40,7 +42,7 @@ header,main,footer{
 }
 
 header{
-	height: 3px;
+	height: 2px;
 }
 main {
 	margin: 2px;
@@ -59,33 +61,100 @@ footer {
 	align-items: center;
 }
 
-/********************** кнопки ***********************************/
+/********************** блок управления (кнопки) **********************/
 .button-controls {
 	display: flex;
 	flex-direction: row;
-	justify-content: flex-end;
+	justify-content:space-between;
 	align-items: center;
 	position: relative;
-	height: 35px;
+	height: 25px;
 	width: 800px;
 	margin: 0px auto;
 }
 
-.label-box {
-	position: absolute;
-	width: 400px;
-	top: 3px;
-	left: 3px;
-	color: var(--light);
+/******************* выпадающее меню **********************/
+.menu{
+	position: relative;
+	width: 50px;
+	margin: 5px;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.6;	
 }
 
+.menu_button{
+	height: 20px;
+	width: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--light);
+	padding: 1px 15px 1px 5px;
+	cursor: pointer;
+	/*
+	border-top: 1px solid var(--light);
+	border-left: 1px solid var(--light);
+	border-right: 1px solid rgb(195, 197, 168);
+	border-bottom: 1px solid rgb(142, 145, 120);
+	border-radius: 2px; 
+	*/
+}
+
+.menu_button::after {
+	content: " ";
+	position: absolute;
+	top: 50%;
+	right: 3px;
+	transform: translateY(-50%);
+	display: block;
+	width: 0px;
+	height: 0px;
+	border-style: solid;
+	border-width: 7px 5px 0px 5px;
+	border-color: var(--light) transparent transparent transparent;
+}
+
+.menu_content{
+	z-index: 1;
+	position: absolute;
+	top: 25px;
+	left: 0px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	width: 100%;
+	height: 0px;
+	overflow: hidden;
+	border-bottom: none;
+	transition: height 150ms ease-in;
+}
+
+.menu:hover .menu_content{
+	height: 150px;
+	overflow: visible;
+}
+
+.menu_content button{
+	padding-left: 3px;
+	display: flex;
+	align-items: center;
+}
+
+.menu_content button:hover::after { /* подсказка */
+	position: absolute;
+	left: 30px;
+	top: 25px;
+}
+
+ /***************** кнопка(и) ****************/
 button {
 	position: relative;
 	cursor: pointer;
-	height: 20px;
-	margin: 5px;
+	height: 17px;
+	margin: 0px;
 	width: 50px;
-	padding: 2px;
+	padding: 0px;
 	color: var(--dark);
 	font-size: 12px;
 	font-weight: 700;
@@ -97,10 +166,11 @@ button {
 }
 
 button:hover {
+	outline: var(--border-dark);
 	box-shadow: var(--shadow-light-strong);
 }
 
-button:not([disabled]):hover::after {
+button:not([disabled]):hover::after { /* подсказка */
 	content: attr(data-text);
 	position: absolute;
 	width: 80px;
@@ -113,14 +183,13 @@ button:not([disabled]):hover::after {
 	font-weight: 300;
 	color: black;
 	border: 1px solid var(--dark);
-	border-radius: 2px;
-	background-color: rgba(245, 245, 245, 0.9);
+	background-color: rgba(250, 250, 250, 1);
 	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
 	pointer-events: none;
 }
 
 button:active {
-	background-color: rgb(205, 205, 177);
+	background-color: rgb(252, 252, 245);
 }
 
 button:active::after {
@@ -135,11 +204,10 @@ button:disabled {
 /*********************** сцена *********************************/
 .container {
 	position: relative;
-	margin: 5px auto;
+	margin: 2px auto;
 	padding: 0px;
 	width: 800px;
 	height: 600px;
-	font-size: 10px;
 	background: url("images/bgr.jpg");
 	outline: 1px solid var(--dark);
 	border-radius: 1px;
@@ -173,9 +241,9 @@ canvas {
 .anim-copy {
 	/*сдвиг+уменьшение в правый верхний угол*/
 	transition-duration: 800ms;
-	transition-timing-function: cubic-bezier(0.4, 1.0, 0.8);
-	transform-origin: top right;
+	transition-timing-function: linear;
 	transform: scale(0.1);
+	transform-origin: 795px 5px;
 }
 
 /*************** монитор буфера обмена ***********************/
@@ -214,7 +282,8 @@ canvas {
 	appearance: none;
 	outline: none;
 	font-weight: 700;
-	color: var(--dark);
+	border: 1px solid var(--dark);
+	background-color: var(--light);
 }
 
 .sector_editor input:hover{
@@ -225,17 +294,17 @@ canvas {
 .sector_editor input[type="text"]{
 	width: 100%;
 	height: 20px;
-	border: 1px solid var(--dark);
 	padding-left: 3px;
 	margin-bottom: 3px;
+	color: var(--dark);
 }
 
 .sector_editor input[type="text"]:hover{
-	background-color: aliceblue;
+	background-color: white;
 }
 
 .sector_editor input[type="text"]:focus{
-	background-color: aliceblue;
+	background-color: white;
 }
 
 /****** выбор штаб или 123 осадки input[type="radio"] ******/
@@ -256,8 +325,7 @@ canvas {
 	width: 40px;
 	height: 20px;
 	padding: 0px, 2px, 0px, 2px;
-	border: var(--border-dark);
-	background-color: white;
+	color: var(--dark);
 }
 
 .input_osad input[type="radio"]::before {
@@ -265,7 +333,7 @@ canvas {
 }
 
 .input_osad input[type="radio"]:hover {
-	background-color: rgb(218, 238, 255);
+	background-color: white;
 }
 
 .input_osad input[type="radio"]:checked {
@@ -275,6 +343,7 @@ canvas {
 
 /******** цвет input[type="radio"] **********/
 .sector_editor .input_color{
+	visibility: hidden;
 	display: flex;
 	flex-wrap: nowrap;
 	flex-direction: row;
@@ -305,7 +374,7 @@ canvas {
 	display: grid;
 	place-items: center;
 	color: var(--dark);
-	content: "✔";
+	content: "✔"; 
 	font-size: 18px;
 	opacity: 1;
 }
@@ -341,6 +410,22 @@ canvas {
 	filter: brightness(0.5);
 	transition-property: filter;
 	transition-duration: 0.5;
+}
+
+
+/************************** блок вывода подсказок **********************************/
+.footer{
+	height: 30px; 
+	position: relative;
+}
+
+.label-box {
+	position: absolute;
+	width: 100%;
+	top: 0px;
+	left: 10px;
+	font-size: 12px;
+	color: var(--dark);
 }
 
 /********************* лог ********************************/
