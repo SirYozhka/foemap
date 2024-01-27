@@ -1,11 +1,9 @@
-"use strict"; //строгий режим
+"use strict";
 
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
-const ON = true;
-const OFF = false;
+
 const BLUE = "rgb(200,200,255)"; // текущий процесс
-const GREEN = "rgb(150,255,150)"; // завершение процесса 
 const YELLOW = "rgb(250,255,200)"; //стандартные
 const RED = "rgb(255,150,150)"; // ошибки
 
@@ -24,9 +22,9 @@ bufer_canvas.width = IMG_WITH; //зависит от параметров экр
 var selected_color = null;
 var img_background; //фоновое изображение водопада
 var img_borders; //границы
-var data_address; //data  номеров секторов из adresses.bmp
-var data_scene; //data  холст для раскраски
-var alpha = 250; //общий альфаканал для заливки
+var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
+var data_scene; //холст для раскраски (просто прозрачный)
+var alpha = 200; //альфаканал для прозрачности заливки
 
 var colors = [ 
   { r: 0, g: 0, b: 0, a: 0 , name:"transparent"}, //нулевой - прозрачный
@@ -42,68 +40,68 @@ var colors = [
 
 var form; //класс формы редактирования сектора
 
-const defaultSectors = [null, // нумерация секторов с единицы!
-  { name: "A5A", os: 1, color: 0 },
-  { name: "A5D", os: 1, color: 0 },
-  { name: "B5C", os: 1, color: 0 },
-  { name: "C5B", os: 1, color: 0 },
-  { name: "D5A", os: 1, color: 0 },
-  { name: "D5D", os: 1, color: 0 },
-  { name: "E5C", os: 1, color: 0 },
-  { name: "F5B", os: 1, color: 0 },
-  { name: "X1X", os: 3, color: 0 },
-  { name: "A4A", os: 1, color: 0 }, // 10
-  { name: "A3A", os: 2, color: 0 },
-  { name: "A2A", os: 2, color: 0 },
-  { name: "A5B", os: 1, color: 0 },
-  { name: "A4B", os: 1, color: 0 },
-  { name: "A3B", os: 1, color: 0 },
-  { name: "A5C", os: 1, color: 0 },
-  { name: "A4C", os: 2, color: 0 },
-  { name: "B2A", os: 3, color: 0 },
-  { name: "B3A", os: 1, color: 0 }, //19
-  { name: "B4A", os: 1, color: 0 },
-  { name: "B5A", os: 1, color: 0 },
-  { name: "B3B", os: 2, color: 0 },
-  { name: "B4B", os: 2, color: 0 },
-  { name: "B5B", os: 1, color: 0 },
-  { name: "B4C", os: 1, color: 0 },
-  { name: "B5D", os: 1, color: 0 },
-  { name: "C2A", os: 2, color: 0 },
-  { name: "C3A", os: 1, color: 0 },
-  { name: "C4A", os: 2, color: 0 },
-  { name: "C5A", os: 1, color: 0 },
-  { name: "C3B", os: 1, color: 0 },
-  { name: "C4B", os: 2, color: 0 },
-  { name: "C5C", os: 1, color: 0 },
-  { name: "C4C", os: 2, color: 0 },
-  { name: "C5D", os: 1, color: 0 },
-  { name: "D2A", os: 3, color: 0 },
-  { name: "D3A", os: 2, color: 0 },
-  { name: "D4A", os: 1, color: 0 },
-  { name: "D3B", os: 1, color: 0 },
-  { name: "D4B", os: 1, color: 0 },
-  { name: "D5B", os: 1, color: 0 },
-  { name: "D4C", os: 1, color: 0 },
-  { name: "D5C", os: 1, color: 0 },
-  { name: "E2A", os: 2, color: 0 },
-  { name: "E3A", os: 1, color: 0 },
-  { name: "E4A", os: 2, color: 0 },
-  { name: "E5A", os: 1, color: 0 },
-  { name: "E3B", os: 2, color: 0 },
-  { name: "E4B", os: 2, color: 0 },
-  { name: "E5B", os: 1, color: 0 },
-  { name: "E4C", os: 2, color: 0 },
-  { name: "E5D", os: 1, color: 0 },
-  { name: "F2A", os: 3, color: 0 },
-  { name: "F3A", os: 2, color: 0 },
-  { name: "F4A", os: 2, color: 0 },
-  { name: "F5A", os: 1, color: 0 },
-  { name: "F3B", os: 1, color: 0 },
-  { name: "F4B", os: 2, color: 0 },
-  { name: "F5C", os: 1, color: 0 },
-  { name: "F4C", os: 2, color: 0 },
-  { name: "F5D", os: 1, color: 0 },
+const defaultSectors = [{id: 0 }, // нумерация секторов с единицы!
+  {id: 1, name: "A5A", os: 1, color: 0 },
+  {id: 2, name: "A5D", os: 1, color: 0 },
+  {id: 3, name: "B5C", os: 1, color: 0 },
+  {id: 4, name: "C5B", os: 1, color: 0 },
+  {id: 5, name: "D5A", os: 1, color: 0 },
+  {id: 6, name: "D5D", os: 1, color: 0 },
+  {id: 7, name: "E5C", os: 1, color: 0 },
+  {id: 8, name: "F5B", os: 1, color: 0 },
+  {id: 9, name: "X1X", os: 3, color: 0 },
+  {id:10, name: "A4A", os: 1, color: 0 }, // 10
+  {id:11, name: "A3A", os: 2, color: 0 },
+  {id:12, name: "A2A", os: 2, color: 0 },
+  {id:13, name: "A5B", os: 1, color: 0 },
+  {id:14, name: "A4B", os: 1, color: 0 },
+  {id:15, name: "A3B", os: 1, color: 0 },
+  {id:16, name: "A5C", os: 1, color: 0 },
+  {id:17, name: "B2A", os: 3, color: 0 },
+  {id:18, name: "A4C", os: 2, color: 0 },
+  {id:19, name: "B3A", os: 1, color: 0 }, //19
+  {id:20, name: "B4A", os: 1, color: 0 },
+  {id:21, name: "B5A", os: 1, color: 0 },
+  {id:22, name: "B3B", os: 2, color: 0 },
+  {id:23, name: "B4B", os: 2, color: 0 },
+  {id:24, name: "B5B", os: 1, color: 0 },
+  {id:25, name: "B4C", os: 1, color: 0 },
+  {id:26, name: "B5D", os: 1, color: 0 },
+  {id:27, name: "C2A", os: 2, color: 0 },
+  {id:28, name: "C3A", os: 1, color: 0 },
+  {id:29, name: "C4A", os: 2, color: 0 },
+  {id:30, name: "C5A", os: 1, color: 0 },
+  {id:31, name: "C3B", os: 1, color: 0 },
+  {id:32, name: "C4B", os: 2, color: 0 },
+  {id:33, name: "C5C", os: 1, color: 0 },
+  {id:34, name: "C4C", os: 2, color: 0 },
+  {id:35, name: "C5D", os: 1, color: 0 },
+  {id:36, name: "D2A", os: 3, color: 0 },
+  {id:37, name: "D3A", os: 2, color: 0 },
+  {id:38, name: "D4A", os: 1, color: 0 },
+  {id:39, name: "D3B", os: 1, color: 0 },
+  {id:40, name: "D4B", os: 1, color: 0 },
+  {id:41, name: "D5B", os: 1, color: 0 },
+  {id:42, name: "D4C", os: 1, color: 0 },
+  {id:43, name: "D5C", os: 1, color: 0 },
+  {id:44, name: "E2A", os: 2, color: 0 },
+  {id:45, name: "E3A", os: 1, color: 0 },
+  {id:46, name: "E4A", os: 2, color: 0 },
+  {id:47, name: "E5A", os: 1, color: 0 },
+  {id:48, name: "E3B", os: 2, color: 0 },
+  {id:49, name: "E4B", os: 2, color: 0 },
+  {id:50, name: "E5B", os: 1, color: 0 },
+  {id:51, name: "E4C", os: 2, color: 0 },
+  {id:52, name: "E5D", os: 1, color: 0 },
+  {id:53, name: "F2A", os: 3, color: 0 },
+  {id:54, name: "F3A", os: 2, color: 0 },
+  {id:55, name: "F4A", os: 2, color: 0 },
+  {id:56, name: "F5A", os: 1, color: 0 },
+  {id:57, name: "F3B", os: 1, color: 0 },
+  {id:58, name: "F4B", os: 2, color: 0 },
+  {id:59, name: "F5C", os: 1, color: 0 },
+  {id:60, name: "F4C", os: 2, color: 0 },
+  {id:61, name: "F5D", os: 1, color: 0 },
 ];
 var arrSector = []; //текущее хранилище данных карты
 
@@ -136,23 +134,23 @@ function dbSectorsOpen() {
       let txnSectors = dbTransaction.objectStore("sectors"); //работаем с хранилищем "sectors"
       txnSectors.getAll().onsuccess = (e) => {
         arrSector = e.target.result;
-        LOG("Database opened." , GREEN);
+        LOG("Database opened.");
         resolve();
       }
     };
 
     //создание базы при первом запуске ( изменении версии )
     dbRequest.onupgradeneeded = function (event) { 
-      LOG("Database (ver. " + dbVersion + ") setup ...", GREEN);
+      LOG("Database (ver. " + dbVersion + ") setup ...");
       let db = event.target.result;
       if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors"
         db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
       let userStore =db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false}); //и сразу создать
       
       userStore.add({id:0}); //добавляем в начало пустышку (для нумерации секторов с единицы)
-      for (let sec = 1; sec < 62; sec++) { 
+      for (let sec = 1; sec <= 61; sec++) { 
         arrSector[sec] = Object.assign({}, defaultSectors[sec]); //копируем настройки по умолчанию 
-        userStore.add(getSector(sec)); //заполняем базу из инициализирующего массива defaultSectors
+        userStore.add(arrSector[sec]); //заполняем базу
       }
 
     };
@@ -163,28 +161,21 @@ function dbSectorsOpen() {
 
   });
 
-  /* //todo прикрутить загрузку начальных данных из default.json
+  //todo прикрутить загрузку начальных данных из default.json
+  /* 
   async function loadJSON(requestURL) {
     const request = new Request(requestURL);
     const response = await fetch(request);
     const jsonTXT = await response.text(); //получение "сырого" json-текста
     return JSON.parse(jsonTXT); //преобразование текста в объект JS
-  } */
+  } 
+  */
 
-}
-
-function getSector(sec){
-  return {
-    id: sec,
-    name: arrSector[sec].name,
-    os: arrSector[sec].os,
-    color: arrSector[sec].color,
-  };
 }
 
 function dbSaveSector(sec) { //запись в базу сектора sec
   var txn = dbData.transaction("sectors", "readwrite");
-  let newItem = getSector(sec);
+  let newItem = arrSector[sec];
   let request = txn.objectStore("sectors").put(newItem);
   request.onsuccess = function () {
     //LOG("saved : " + arrSector[sec].name);
@@ -196,7 +187,8 @@ function dbSaveSector(sec) { //запись в базу сектора sec
 }
 
 function dbSaveAllSectors(){
-  for (let i = 1; i < 62; i++) dbSaveSector(i); //запись в IndexedDB
+  for (let i = 1; i < 62; i++) 
+    dbSaveSector(i); //запись в IndexedDB
 }
 
 
@@ -222,8 +214,8 @@ function loadingSceneImages() {
           bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
           data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
           calculationSectorsCenters();
-          fillBackgroundAll();
-          LOG("Ready to process." , GREEN);
+          sceneFillSectorAll();
+          LOG("Ready to process.");
           resolve();
         };
       };
@@ -295,23 +287,19 @@ function drawScene() {
   }
 }
 
-function fillBackground(adr) { //заливка сектора цветом color
+function sceneFillSector(adr) { //заливка сектора цветом color
   let color = colors[arrSector[adr].color];
-  try {
-    for (var i = 0; i < data_address.data.length; i += 4) {
-      if (data_address.data[i] == adr) {
-        data_scene.data[i + 0] = color.r; //red
-        data_scene.data[i + 1] = color.g; //green
-        data_scene.data[i + 2] = color.b; //blue
-        data_scene.data[i + 3] = color.a; //alfa
-      }
+  for (var i = 0; i < data_address.data.length; i += 4) {
+    if (data_address.data[i] == adr) {
+      data_scene.data[i + 0] = color.r; //red
+      data_scene.data[i + 1] = color.g; //green
+      data_scene.data[i + 2] = color.b; //blue
+      data_scene.data[i + 3] = color.a; //alfa
     }
-  } catch {
-    LOG("Error filling sector (" + adr + ")" , RED)
   }
 }
 
-function fillBackgroundAll() { //заливка ВСЕХ секторов соответствующим цветом
+function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом
   LOG("Filling sectors with colors..." , BLUE);
   for (var i = 0; i < data_address.data.length; i += 4) {
     let adr = data_address.data[i];
@@ -346,10 +334,10 @@ canvas.addEventListener("click", (e) => {
       arrSector[adr].color = 0; //помечаем что сектор не занят гильдией
     else 
       arrSector[adr].color = selected_color; //помечаем что сектор занят этой гильдией
-    fillBackground(adr); //покрасить сектор в выбранный цвет 
+    sceneFillSector(adr); //покрасить сектор в выбранный цвет 
     dbSaveSector(adr);
   } else { //цвет не выбран
-    NOTE("Сначала выбрать гильдию (кликнуть по штабу).");
+    NOTE("Необходимо сначала выбрать гильдию (кликнуть по штабу).");
   }
 
   drawScene();
@@ -401,30 +389,21 @@ class FormEditor{
     for (const item of this.nodes_osadki) { //для всех кнопок (штаб/осадки)
       item.addEventListener("change", (e)=>{ 
         this.osd = [... this.nodes_osadki].findIndex(e=>e.checked);
-        this.showColorCheck(this.osd==0); //показать-скрыть панель выбора цвета
-        console.log(this.osd);
-        //todo
-        /*
-        if (clr >= 0){ //если есть отмеченый элемент
-          clr + 1; //выбранный индекс
-        } else { //осадки
-          clr=0; //очистить цвет
+        this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
+        //console.log(this.osd);
+        
+        if (this.osd) //если осадка то сбросить имя сектора на "по умолчанию"
+          this.inp_name.value = defaultSectors[this.adr].name;
+        else {
+          this.inp_name.focus();
         }
-        */
-
       })
     }
   } //end constructor
 
-  showColorCheck(mode){ ////показать-скрыть панель выбора цвета
-    this.div_inp_color.style.visibility = (mode ? "visible" : "hidden");
-  }
-
   edit() { 
-    //затенить холст
-    canvas.classList.add("shadow-filter");
-    //показать форму
-    this.form_editor.style.visibility = "visible";
+    canvas.classList.add("shadow-filter"); //затенить холст
+    this.form_editor.style.visibility = "visible"; //показать форму
     //позиционирование формы
     let dx = arrSector[this.adr].x - this.form_editor.clientWidth / 2;
     if (dx < 0) 
@@ -443,9 +422,10 @@ class FormEditor{
     this.inp_name.focus();
     this.osd=arrSector[this.adr].os;  //кол-во осад в секторе (если osd == 0 тогда там штаб)
     this.nodes_osadki[this.osd].checked = true; //поставить галочку
-    this.showColorCheck(this.osd==0);  //показать-скрыть панель выбора цвета
+    this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
     this.clr = arrSector[this.adr].color;  //получить цвет сектора
-    if (this.clr > 0) this.nodes_color[this.clr-1].checked = true; //поставить галочку
+    if (this.clr > 0) 
+      this.nodes_color[this.clr-1].checked = true; //поставить галочку
   };
 
   hide() { //скрыть форму + осветлить холст
@@ -476,7 +456,7 @@ class FormEditor{
     arrSector[this.adr].name = this.nam;
     arrSector[this.adr].os = this.osd;
     arrSector[this.adr].color = this.clr + 1;
-    fillBackground(this.adr); //заливка
+    sceneFillSector(this.adr); //заливка
     dbSaveSector(this.adr); //запись в базу
     this.hide(); //убрать затенение холста
   }
@@ -500,7 +480,7 @@ btn_copy.addEventListener("click", () => {
       () => {
         imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
         NOTE("Карта скопирована в буфер обмена.", "Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ");
-        LOG("Imagemap copied into clipboard." , GREEN);
+        LOG("Imagemap copied into clipboard.");
       },
       (err) => {
         LOG("Error imagemap copy: " + err , RED);
@@ -514,6 +494,7 @@ btn_copy.addEventListener("click", () => {
   }, 800);
 });
 
+
 /*************** очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
 btn_new.addEventListener("click", () => {
@@ -521,13 +502,13 @@ btn_new.addEventListener("click", () => {
   if (!result) return;
   selected_color=null; //снять выбор штаба
   container.classList.add("anim-clear");
-  for (let i = 1; i <= 61; i++) {  //перезаписать настройки по умолчанию 
+  for (let i = 1; i <= 61; i++) {  //перезаписать настройки по умолчанию (id, x, y - не меняем !!!)
     arrSector[i].name = defaultSectors[i].name; 
     arrSector[i].os = defaultSectors[i].os; 
     arrSector[i].color = 0; 
   }
   dbSaveAllSectors(); //сохранить все сектора в IndexedDB
-  fillBackgroundAll();
+  sceneFillSectorAll();
   drawScene();
   setTimeout(() => {
     container.classList.remove("anim-clear");
@@ -547,7 +528,7 @@ btn_clear.addEventListener("click", () => {
   for (let i = 1; i <= 61; i++) {
     if (arrSector[i].os!=0){ // не штаб
       arrSector[i].color = 0; //отметить что сектор не занят
-      fillBackground(i, colors[0]); //убрать заливку
+      sceneFillSector(i, colors[0]); //убрать заливку
       dbSaveSector(i); //отметить в IndexedDB
     }
   }
@@ -641,7 +622,7 @@ btn_load.addEventListener("click", async () => {
     let contents = await file.text();
     arrSector = JSON.parse(contents);
     dbSaveAllSectors();
-    fillBackgroundAll();
+    sceneFillSectorAll();
     drawScene(); 
     LOG("Map metadata downloaded.");
     NOTE("");
@@ -675,7 +656,7 @@ function NOTE(msg1, msg2="") {
   document.querySelector(".label-box").innerHTML = msg1+"<br>"+msg2;
 }
 
-//вывод логов на экран
+//вывод логов на экран (цвет сообщений по умолчанию - жёлтый)
 function LOG(message, color=YELLOW) {
   let p_msg = document.createElement("p");
   document.querySelector("#log-box").appendChild(p_msg);
