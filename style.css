@@ -380,27 +380,30 @@ canvas {
 }
 
 .input_color input:nth-child(1){
-	background-color: rgb(250, 3, 250);
+	background-color: rgba(0, 0, 0,0);
 }
 .input_color input:nth-child(2){
-	background-color: rgb(135, 3, 250);
+	background-color: rgb(250, 3, 250);
 }
 .input_color input:nth-child(3){
-	background-color: rgb(19, 3, 250);
+	background-color: rgb(135, 3, 250);
 }
 .input_color input:nth-child(4){
-	background-color: rgb(250, 110, 3);
+	background-color: rgb(19, 3, 250);
 }
 .input_color input:nth-child(5){
-	background-color: rgb(3, 205, 250);
+	background-color: rgb(250, 110, 3);
 }
 .input_color input:nth-child(6){
-	background-color: rgb(250, 238, 3);
+	background-color: rgb(3, 205, 250);
 }
 .input_color input:nth-child(7){
-	background-color: rgb(1, 189, 7);
+	background-color: rgb(250, 238, 3);
 }
 .input_color input:nth-child(8){
+	background-color: rgb(1, 189, 7);
+}
+.input_color input:nth-child(9){
 	background-color: rgb(250, 3, 3);
 }
 

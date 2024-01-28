@@ -368,7 +368,6 @@ class FormEditor{
       if (this.adr < 1 || this.adr > 61) return; //клик не на секторе
       selected_color=null; //снять выбор штаба
       drawScene(); 
-      NOTE("Редактирование данных сектора: " + defaultSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
       this.edit();
     });
 
@@ -390,18 +389,18 @@ class FormEditor{
       item.addEventListener("change", (e)=>{ 
         this.osd = [... this.nodes_osadki].findIndex(e=>e.checked);
         this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
-        //console.log(this.osd);
-        
-        if (this.osd) //если осадка то сбросить имя сектора на "по умолчанию"
+        if (this.osd) //если ставим осадку то сбросить имя сектора на "по умолчанию"
           this.inp_name.value = defaultSectors[this.adr].name;
-        else {
+        else { //если ставим "штаб" - сразу редактировать его имя (и выбрать цвет)
           this.inp_name.focus();
+          this.inp_name.select();
         }
       })
     }
   } //end constructor
 
   edit() { 
+    NOTE("Редактирование данных сектора: " + defaultSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
     canvas.classList.add("shadow-filter"); //затенить холст
     this.form_editor.style.visibility = "visible"; //показать форму
     //позиционирование формы
@@ -423,9 +422,8 @@ class FormEditor{
     this.osd=arrSector[this.adr].os;  //кол-во осад в секторе (если osd == 0 тогда там штаб)
     this.nodes_osadki[this.osd].checked = true; //поставить галочку
     this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
-    this.clr = arrSector[this.adr].color;  //получить цвет сектора
-    if (this.clr > 0) 
-      this.nodes_color[this.clr-1].checked = true; //поставить галочку
+    this.clr = arrSector[this.adr].color; //запомнить цвет сектора
+    this.nodes_color[this.clr].checked = true; //поставить галочку (нет цвета - невидимый radio)
   };
 
   hide() { //скрыть форму + осветлить холст
@@ -455,7 +453,7 @@ class FormEditor{
   save(){
     arrSector[this.adr].name = this.nam;
     arrSector[this.adr].os = this.osd;
-    arrSector[this.adr].color = this.clr + 1;
+    arrSector[this.adr].color = this.clr;
     sceneFillSector(this.adr); //заливка
     dbSaveSector(this.adr); //запись в базу
     this.hide(); //убрать затенение холста
