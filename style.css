@@ -1,9 +1,6 @@
 :root {
-	--dark: rgb(10, 33, 50); /* cold */
-	--light: rgb(200, 220, 250); /* cold */
 	--dark: rgb(40, 6, 6); /* warm */
 	--light: rgb(250, 250, 200); /* warm */
-
 
 	--grad-bgr: linear-gradient(20deg, var(--light), var(--dark));
 	--border-dark: 1px solid var(--dark);
@@ -33,33 +30,35 @@ body{
 	margin: 0 auto;
 }
 
-a {
-	color: rgb(4, 1, 91);
-}
-
-header,main,footer{
-	width: 100%;
-}
-
 header{
+	width: 100%;
 	height: 2px;
 }
+
 main {
+	width: 100%;
 	margin: 2px;
 	background: var(--grad-bgr);
 	border: var(--border-dark);
 	border-radius: 2px;
 }
+
 footer {
-	height: 20px;
 	width: 100%;
 	margin: 2px;
 	display: flex;
-	gap: 5px;
 	flex-direction: row;
 	justify-content:space-between;
 	align-items: center;
 }
+footer span{
+	font-size: 10px;
+}
+footer a {
+	font-size: 10px;
+	color: rgb(4, 1, 91);
+}
+
 
 /********************** блок управления (кнопки) **********************/
 .button-controls {
@@ -71,6 +70,12 @@ footer {
 	height: 25px;
 	width: 800px;
 	margin: 0px auto;
+}
+
+/******************** file name *************************/
+.file-name{
+	color: var(--light);
+	font-stretch: extra-expanded;
 }
 
 /******************* выпадающее меню **********************/
@@ -118,7 +123,7 @@ footer {
 .menu_content{
 	z-index: 1;
 	position: absolute;
-	top: 25px;
+	top: 22px;
 	left: 0px;
 	display: flex;
 	flex-direction: column;

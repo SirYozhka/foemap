@@ -20,6 +20,7 @@ bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
 var selected_color = null;
+var form; //класс формы редактирования сектора
 var img_background; //фоновое изображение водопада
 var img_borders; //границы
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
@@ -38,9 +39,7 @@ var colors = [
   { r: 250, g: 0, b: 0, a: alpha, name:"red" }, //красный
 ];
 
-var form; //класс формы редактирования сектора
-
-const defaultSectors = [{id: 0 }, // нумерация секторов с единицы!
+const defSectors = [{id: 0 }, // нумерация секторов с единицы!
   {id: 1, name: "A5A", os: 1, color: 0 },
   {id: 2, name: "A5D", os: 1, color: 0 },
   {id: 3, name: "B5C", os: 1, color: 0 },
@@ -149,7 +148,7 @@ function dbSectorsOpen() {
       
       userStore.add({id:0}); //добавляем в начало пустышку (для нумерации секторов с единицы)
       for (let sec = 1; sec <= 61; sec++) { 
-        arrSector[sec] = Object.assign({}, defaultSectors[sec]); //копируем настройки по умолчанию 
+        arrSector[sec] = Object.assign({}, defSectors[sec]); //копируем настройки по умолчанию 
         userStore.add(arrSector[sec]); //заполняем базу
       }
 
@@ -199,6 +198,7 @@ function loadingSceneImages() {
     img_background = new Image();
     img_background.src = "images/bgr.jpg";
     img_borders = new Image();
+    img_borders.src = "images/brd_cold.png";
     img_borders.src = "images/brd_warm.png";
     img_background.onload = () => {
       let scn = new Image();
@@ -315,20 +315,21 @@ function sceneFillSectorAll() { //заливка ВСЕХ секторов со�
 
 /***************** клик по сектору - выбор гильдии / заливка *********************************/
 canvas.addEventListener("click", (e) => {
+  form.hide(); //закрыть редактор если открыт (на всяк случай)
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
   let adr = data_address.data[offset]; //red component = number of address
-  
-  form.hide(); //закрыть редактор если открыт 
-  //todo или запретить выход из редактора по клику на сцене (перекрыть canvas элементом cover)
-  
   if (adr > 61) {  //клик не по сектору 
     NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору)."," Редактор сектора (правая кнопка)" );
     return;
   }
   
-  if (arrSector[adr].os == 0) { //клик по штабу - выбор цвета
-    selected_color = arrSector[adr].color;
-    NOTE("Выбрать опорники для гильдии " + arrSector[adr].name + " (кликнуть по сектору).");
+  if (arrSector[adr].os == 0) { // (.os == 0) это штаб
+    if (selected_color == arrSector[adr].color) 
+      selected_color = null;
+    else {
+      selected_color = arrSector[adr].color;
+      NOTE("Выбрать опорники для гильдии " + arrSector[adr].name + " (кликнуть по сектору).");
+    }
   } else if (selected_color) { //цвет выбран
     if (selected_color == arrSector[adr].color) //клик по той же гильдии - отмена выделения
       arrSector[adr].color = 0; //помечаем что сектор не занят гильдией
@@ -341,7 +342,6 @@ canvas.addEventListener("click", (e) => {
   }
 
   drawScene();
-
 });
 
 
@@ -390,7 +390,7 @@ class FormEditor{
         this.osd = [... this.nodes_osadki].findIndex(e=>e.checked);
         this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
         if (this.osd) //если ставим осадку то сбросить имя сектора на "по умолчанию"
-          this.inp_name.value = defaultSectors[this.adr].name;
+          this.inp_name.value = defSectors[this.adr].name;
         else { //если ставим "штаб" - сразу редактировать его имя (и выбрать цвет)
           this.inp_name.focus();
           this.inp_name.select();
@@ -400,7 +400,7 @@ class FormEditor{
   } //end constructor
 
   edit() { 
-    NOTE("Редактирование данных сектора: " + defaultSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
+    NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
     canvas.classList.add("shadow-filter"); //затенить холст
     this.form_editor.style.visibility = "visible"; //показать форму
     //позиционирование формы
@@ -436,17 +436,14 @@ class FormEditor{
     this.nam = this.inp_name.value; //название 
     this.osd = [... this.nodes_osadki].findIndex(e=>e.checked); //0 штаб или 123 кол-во осад
     this.clr = [... this.nodes_color].findIndex(e=>e.checked); //цвет
-    
-    if (!this.nam) {
+    if (!this.nam) { //пустое имя
       LOG("Empty name is not allowed!", RED);
       return false;
     }
-
     if (this.osd==0 && this.clr < 0) { // штаб без цвета
       LOG("Headquarters color is not selected!", RED);
       return false;
     }
-
     return true;
   }
 
@@ -460,7 +457,6 @@ class FormEditor{
   }
 
 } //end class
-
 
 
 /*************** копироваине карты в буфер обмена ******************/
@@ -493,7 +489,7 @@ btn_copy.addEventListener("click", () => {
 });
 
 
-/*************** очистить всю карту ******************/
+/*************** new - очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
 btn_new.addEventListener("click", () => {
   let result = confirm("Полностью очистить карту? \n (убираются также штабы и названия)");
@@ -501,8 +497,8 @@ btn_new.addEventListener("click", () => {
   selected_color=null; //снять выбор штаба
   container.classList.add("anim-clear");
   for (let i = 1; i <= 61; i++) {  //перезаписать настройки по умолчанию (id, x, y - не меняем !!!)
-    arrSector[i].name = defaultSectors[i].name; 
-    arrSector[i].os = defaultSectors[i].os; 
+    arrSector[i].name = defSectors[i].name; 
+    arrSector[i].os = defSectors[i].os; 
     arrSector[i].color = 0; 
   }
   dbSaveAllSectors(); //сохранить все сектора в IndexedDB
@@ -516,7 +512,7 @@ btn_new.addEventListener("click", () => {
 });
 
 
-/*************** очистить опорники ******************/
+/*************** clear - очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
   let result = confirm("Удалить только все опорники? \n (штабы и настройки не меняются)");
@@ -539,13 +535,23 @@ btn_clear.addEventListener("click", () => {
 });
 
 
+/************ запись данных карты в файл на локальный диск **********/
+document.addEventListener("keydown", (e)=>{keypressed(e)});
+function keypressed(e){
+  if (e.code == 'KeyS' && e.ctrlKey) {
+    e.preventDefault();
+    SaveFile();
+  }
+}
 
-/************ запись данных карты в json файл на диск клиента **********/
 const btn_save = document.querySelector(".btn-save");
-//todo записать в базу на сервер (с уникальным id)
-btn_save.addEventListener("click", async () => {
+const div_filename = document.querySelector(".file-name");
+btn_save.addEventListener("click", ()=>{SaveFile()} );
+
+async function SaveFile() {
+  //todo правильнее записать в базу на сервер (с уникальным id)
   NOTE("Сохранение данных карты в файл на диске.");
-  const content = JSON.stringify(arrSector,null,"\t");
+  const content = JSON.stringify(arrSector, null, "\t");
   let filename = genDateString();
   let filehandler;
 
@@ -569,9 +575,10 @@ btn_save.addEventListener("click", async () => {
     const writable = await filehandler.createWritable();
     await writable.write(content);
     await writable.close();
-    //LOG("Map metadata file "+filename+" is saved.");
-    NOTE("Файл данных карты "+filename+" можно переслать другому игроку", "для последующего редактирования.");
+    LOG("Map metadata file "+filename+" is saved.");
+    NOTE("Файл данных карты " +filename +" можно переслать другому игроку", "для последующего редактирования.");
     btn_load.blur();
+    div_filename.textContent = filename;
   }catch{
     LOG("Error saving map metadata!" , RED);
     NOTE("Ошибка записи файла данных карты.");
@@ -579,7 +586,6 @@ btn_save.addEventListener("click", async () => {
   
   function genDateString(){
     let addZero = (value)=>{ return (value <=9 ? '0' : '') +value; };
-    
     let date = new Date(Date.now());
     let y = date.getFullYear();
     let m = addZero(date.getMonth()+1);
@@ -587,14 +593,13 @@ btn_save.addEventListener("click", async () => {
     return "PBG"+y+m+d;
   }
 
-
-});
+};
 
 
 /************ чтение данных карты из json файла **********/
 const btn_load = document.querySelector(".btn-load");
-//todo правильнее загрузить из базы на сервере (с уникальным id)
 btn_load.addEventListener("click", async () => {
+  //todo правильнее загрузить из базы на сервере (с уникальным id)
   if (!('showOpenFilePicker' in window)){
     NOTE("Невозможно записать файл в вашем браузере."); 
     return;
@@ -624,15 +629,37 @@ btn_load.addEventListener("click", async () => {
     drawScene(); 
     LOG("Map metadata downloaded.");
     NOTE("");
+    div_filename.textContent = fname(file.name);
   } catch {
     NOTE("Ошибка загрузки файла данных карты!");
     LOG("Error reading map metadata!", RED);
   }
   btn_load.blur();
+
+  function fname(fs){ //возвращает имя файла
+    let n = fs.indexOf('.');
+    return fs.slice(0,n);
+  }
  
 });
 
+
 /********************************************************************/
+var div_footer=document.querySelector(".footer");
+var mode = true;
+div_footer.addEventListener("click", ()=>{
+  if (mode){ //cold
+    document.documentElement.style.setProperty("--dark", "rgb(10, 33, 50)");
+    document.documentElement.style.setProperty("--light", "rgb(200, 220, 250)");
+    img_borders.src = "images/brd_cold.png";
+  } else { //warm
+    document.documentElement.style.setProperty("--dark", "rgb(40, 6, 6)");
+    document.documentElement.style.setProperty("--light", "rgb(250, 250, 200)");
+    img_borders.src = "images/brd_warm.png";
+  }
+  drawScene();
+  mode = !mode;
+});
 
 // вид курсора
 function cursorStyle(e) {
