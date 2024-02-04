@@ -21,8 +21,9 @@ bufer_canvas.width = IMG_WITH; //зависит от параметров экр
 
 var selected_color = null;
 var form; //класс формы редактирования сектора
-var img_background; //фоновое изображение водопада
-var img_borders; //границы
+var img_background = new Image(); //фоновое изображение водопада
+var img_borders = new Image();
+var modeBrd = false;
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
 var data_scene; //холст для раскраски (просто прозрачный)
 var alpha = 200; //альфаканал для прозрачности заливки
@@ -56,8 +57,8 @@ const defSectors = [{id: 0 }, // нумерация секторов с един
   {id:14, name: "A4B", os: 1, color: 0 },
   {id:15, name: "A3B", os: 1, color: 0 },
   {id:16, name: "A5C", os: 1, color: 0 },
-  {id:17, name: "B2A", os: 3, color: 0 },
-  {id:18, name: "A4C", os: 2, color: 0 },
+  {id:17, name: "A4C", os: 3, color: 0 },
+  {id:18, name: "B2A", os: 2, color: 0 },
   {id:19, name: "B3A", os: 1, color: 0 }, //19
   {id:20, name: "B4A", os: 1, color: 0 },
   {id:21, name: "B5A", os: 1, color: 0 },
@@ -138,20 +139,15 @@ function dbSectorsOpen() {
       }
     };
 
-    //создание базы при первом запуске ( изменении версии )
-    dbRequest.onupgradeneeded = function (event) { 
+    dbRequest.onupgradeneeded = function (event) {  //создание базы при первом запуске ( изменении версии )
       LOG("Database (ver. " + dbVersion + ") setup ...");
+      arrSector = JSON.parse(JSON.stringify(defSectors)); //копируем настройки по умолчанию 
       let db = event.target.result;
       if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors"
         db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
-      let userStore =db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false}); //и сразу создать
-      
-      userStore.add({id:0}); //добавляем в начало пустышку (для нумерации секторов с единицы)
-      for (let sec = 1; sec <= 61; sec++) { 
-        arrSector[sec] = Object.assign({}, defSectors[sec]); //копируем настройки по умолчанию 
+      let userStore = db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false}); //и создать
+      for (let sec = 0; sec <= 61; sec++)
         userStore.add(arrSector[sec]); //заполняем базу
-      }
-
     };
 
     dbRequest.onerror = function () {
@@ -169,18 +165,15 @@ function dbSectorsOpen() {
     return JSON.parse(jsonTXT); //преобразование текста в объект JS
   } 
   */
-
 }
 
-function dbSaveSector(sec) { //запись в базу сектора sec
+function dbSaveSector(sec) { //записать в базу сектор sec из arrSector[sec]
   var txn = dbData.transaction("sectors", "readwrite");
-  let newItem = arrSector[sec];
-  let request = txn.objectStore("sectors").put(newItem);
-  request.onsuccess = function () {
-    //LOG("saved : " + arrSector[sec].name);
+  let request = txn.objectStore("sectors").put(arrSector[sec]);
+  request.onsuccess = ()=>{
     imgClipBoard.style.display = "none"; //убрать картинку буфера обмена
   };
-  request.onerror = function () {
+  request.onerror = ()=>{
     LOG("ERROR saving: " + request.error, RED);
   };
 }
@@ -195,11 +188,8 @@ function dbSaveAllSectors(){
 function loadingSceneImages() {
   return new Promise((resolve, reject) => {
     LOG("Loading images ..." , BLUE);
-    img_background = new Image();
+    img_borders.src = "images/brd_warm.png"; 
     img_background.src = "images/bgr.jpg";
-    img_borders = new Image();
-    img_borders.src = "images/brd_cold.png";
-    img_borders.src = "images/brd_warm.png";
     img_background.onload = () => {
       let scn = new Image();
       scn.src = "images/scene.png";
@@ -291,10 +281,7 @@ function sceneFillSector(adr) { //заливка сектора цветом col
   let color = colors[arrSector[adr].color];
   for (var i = 0; i < data_address.data.length; i += 4) {
     if (data_address.data[i] == adr) {
-      data_scene.data[i + 0] = color.r; //red
-      data_scene.data[i + 1] = color.g; //green
-      data_scene.data[i + 2] = color.b; //blue
-      data_scene.data[i + 3] = color.a; //alfa
+      fillPoint(i, color);
     }
   }
 }
@@ -304,14 +291,17 @@ function sceneFillSectorAll() { //заливка ВСЕХ секторов со�
   for (var i = 0; i < data_address.data.length; i += 4) {
     let adr = data_address.data[i];
     if (adr < 62) {
-      let color = colors[arrSector[adr].color];
-      data_scene.data[i + 0] = color.r; //red
-      data_scene.data[i + 1] = color.g; //green
-      data_scene.data[i + 2] = color.b; //blue
-      data_scene.data[i + 3] = color.a; //alfa
+      fillPoint(i, colors[arrSector[adr].color]);
     }
   }
 };
+
+function fillPoint(adr, color){
+  data_scene.data[adr + 0] = color.r; //red
+  data_scene.data[adr + 1] = color.g; //green
+  data_scene.data[adr + 2] = color.b; //blue
+  data_scene.data[adr + 3] = color.a; //alfa
+}
 
 /***************** клик по сектору - выбор гильдии / заливка *********************************/
 canvas.addEventListener("click", (e) => {
@@ -459,36 +449,6 @@ class FormEditor{
 } //end class
 
 
-/*************** копироваине карты в буфер обмена ******************/
-const btn_copy = document.querySelector(".btn-copy");
-const imgClipBoard = document.querySelector(".monitor img");
-btn_copy.addEventListener("click", () => {
-  selected_color=null; //снять выбор штаба
-  drawScene(); 
-  canvas.classList.add("anim-copy");
-  imgClipBoard.style.display = "none";
-  btn_copy.setAttribute("disabled", null);
-  canvas.toBlob((blob) => {
-    let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
-    navigator.clipboard.write(data).then(
-      () => {
-        imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-        NOTE("Карта скопирована в буфер обмена.", "Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ");
-        LOG("Imagemap copied into clipboard.");
-      },
-      (err) => {
-        LOG("Error imagemap copy: " + err , RED);
-      }
-    );
-  });
-  setTimeout(() => {
-    canvas.classList.remove("anim-copy");
-    imgClipBoard.style.display = "block";
-    btn_copy.removeAttribute("disabled");
-  }, 800);
-});
-
-
 /*************** new - очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
 btn_new.addEventListener("click", () => {
@@ -504,7 +464,7 @@ btn_new.addEventListener("click", () => {
   dbSaveAllSectors(); //сохранить все сектора в IndexedDB
   sceneFillSectorAll();
   drawScene();
-  setTimeout(() => {
+  setTimeout(() => { //дать возможность закончить анимацию
     container.classList.remove("anim-clear");
     LOG("New map created.")
   }, 300);
@@ -515,7 +475,7 @@ btn_new.addEventListener("click", () => {
 /*************** clear - очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
-  let result = confirm("Удалить только все опорники? \n (штабы и настройки не меняются)");
+  let result = confirm("Удалить опорники? \n (штабы останутся на местах)");
   if (!result) return;
   selected_color=null; //снять выбор штаба
   container.classList.add("anim-clear");
@@ -527,7 +487,7 @@ btn_clear.addEventListener("click", () => {
     }
   }
   drawScene();
-  setTimeout(() => {
+  setTimeout(() => { //дать возможность закончить анимацию
     container.classList.remove("anim-clear");
     LOG("Map cleared.")
   }, 300);
@@ -644,21 +604,57 @@ btn_load.addEventListener("click", async () => {
 });
 
 
+/*************** копироваине карты в буфер обмена ******************/
+const btn_imgcopy = document.querySelector(".btn-imgcopy");
+const imgClipBoard = document.querySelector(".monitor img");
+btn_imgcopy.addEventListener("click", () => {
+  selected_color=null; //снять выбор штаба
+  drawScene(); 
+  canvas.classList.add("anim-copy");
+  imgClipBoard.style.display = "none";
+  btn_imgcopy.setAttribute("disabled", null);
+  canvas.toBlob((blob) => {
+    let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
+    navigator.clipboard.write(data).then(
+      () => {
+        imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+        NOTE("Карта скопирована в буфер обмена.", "Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ");
+        LOG("Imagemap copied into clipboard.");
+      },
+      (err) => {
+        LOG("Error imagemap copy: " + err , RED);
+      }
+    );
+  });
+  setTimeout(() => {
+    canvas.classList.remove("anim-copy");
+    imgClipBoard.style.display = "block";
+    btn_imgcopy.removeAttribute("disabled");
+  }, 800);
+});
+
+
+/*************** save - сохранить картинку в файл ******************/
+const btn_imgsave = document.querySelector(".btn-imgsave");
+
+/*************** help - описание ******************/
+const btn_help = document.querySelector(".btn-help");
+
+
 /********************************************************************/
 var div_footer=document.querySelector(".footer");
-var mode = true;
 div_footer.addEventListener("click", ()=>{
-  if (mode){ //cold
+  modeBrd = !modeBrd;
+  if (modeBrd){ //cold
     document.documentElement.style.setProperty("--dark", "rgb(10, 33, 50)");
     document.documentElement.style.setProperty("--light", "rgb(200, 220, 250)");
-    img_borders.src = "images/brd_cold.png";
+    img_borders.src = "images/brd_cold.png"; 
   } else { //warm
     document.documentElement.style.setProperty("--dark", "rgb(40, 6, 6)");
     document.documentElement.style.setProperty("--light", "rgb(250, 250, 200)");
-    img_borders.src = "images/brd_warm.png";
+    img_borders.src = "images/brd_warm.png"; 
   }
   drawScene();
-  mode = !mode;
 });
 
 // вид курсора

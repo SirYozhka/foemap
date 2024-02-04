@@ -61,7 +61,7 @@ footer a {
 
 
 /********************** блок управления (кнопки) **********************/
-.button-controls {
+.button_controls {
 	display: flex;
 	flex-direction: row;
 	justify-content:space-between;
@@ -79,6 +79,10 @@ footer a {
 }
 
 /******************* выпадающее меню **********************/
+.menu_line{
+	display: flex;
+}
+
 .menu{
 	position: relative;
 	width: 50px;
@@ -97,13 +101,13 @@ footer a {
 	color: var(--light);
 	padding: 1px 15px 1px 5px;
 	cursor: pointer;
-	/*
+	
 	border-top: 1px solid var(--light);
 	border-left: 1px solid var(--light);
 	border-right: 1px solid rgb(195, 197, 168);
 	border-bottom: 1px solid rgb(142, 145, 120);
 	border-radius: 2px; 
-	*/
+	
 }
 
 .menu_button::after {
@@ -158,7 +162,7 @@ button {
 	cursor: pointer;
 	height: 17px;
 	margin: 0px;
-	width: 50px;
+	width: 60px;
 	padding: 0px;
 	color: var(--dark);
 	font-size: 12px;
