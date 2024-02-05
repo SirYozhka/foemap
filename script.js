@@ -636,6 +636,45 @@ btn_imgcopy.addEventListener("click", () => {
 
 /*************** save - сохранить картинку в файл ******************/
 const btn_imgsave = document.querySelector(".btn-imgsave");
+btn_imgsave.addEventListener("click", ()=>{
+  selected_color=null; //снять выбор штаба
+  drawScene(); 
+  SaveImage();
+});
+
+async function SaveImage() {
+  let filehandler;
+  const options = {
+    //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
+    suggestedName: "mapsnapshot",
+    types: [{
+      description: 'Image Files',
+      accept: {'image/jpeg': '.jpg'},
+    }],
+  };
+
+  try {
+    filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
+  } catch { //если окно просто закрыли
+    NOTE("");
+    return;
+  };
+
+  canvas.toBlob(async (blob) => {
+    try{
+      const writable = await filehandler.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      LOG("Image map is saved.");
+      NOTE("Сохраненное изображение карты можно переслать или опубликовать.");
+    }catch{
+      LOG("Error saving image map!" , RED);
+      NOTE("Ошибка записи изображения карты.");
+    }
+  });
+
+};
+
 
 /*************** help - описание ******************/
 const btn_help = document.querySelector(".btn-help");
