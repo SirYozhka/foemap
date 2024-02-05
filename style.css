@@ -4,6 +4,7 @@
 
 	--grad-bgr: linear-gradient(20deg, var(--light), var(--dark));
 	--border-dark: 1px solid var(--dark);
+	--border-light: 1px solid var(--light);
 	--shadow-dark: 0px 0px 4px 2px var(--dark);
 	--shadow-light: 0px 0px 2px 1px var(--light);
 	--shadow-light-strong: 0px 0px 4px 2px var(--light);
@@ -102,12 +103,11 @@ footer a {
 	padding: 1px 15px 1px 5px;
 	cursor: pointer;
 	
-	border-top: 1px solid var(--light);
-	border-left: 1px solid var(--light);
-	border-right: 1px solid rgb(195, 197, 168);
-	border-bottom: 1px solid rgb(142, 145, 120);
-	border-radius: 2px; 
-	
+	border-radius: 2px;	
+	border-top: var(--border-light);
+	border-left: var(--border-light);
+	border-right: 1px solid rgb(140, 140, 140);
+	border-bottom: 1px solid rgb(140, 140, 140);
 }
 
 .menu_button::after {
@@ -291,7 +291,7 @@ canvas {
 	appearance: none;
 	outline: none;
 	font-weight: 700;
-	border: 1px solid var(--dark);
+	border: var(--border-dark);
 	background-color: var(--light);
 }
 
@@ -371,7 +371,7 @@ canvas {
 }
 
 .input_color input::before {
-	content: url(images/onepx.png);
+	content: url("images/onepx.png");
 	opacity: 0.4;
 }
 

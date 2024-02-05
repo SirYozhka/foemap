@@ -328,7 +328,7 @@ canvas.addEventListener("click", (e) => {
     sceneFillSector(adr); //покрасить сектор в выбранный цвет 
     dbSaveSector(adr);
   } else { //цвет не выбран
-    NOTE("Необходимо сначала выбрать гильдию (кликнуть по штабу).");
+    NOTE("Сначала нужно назначить штабы (правая кнопка - редактор).","И выбрать гильдию (клик по штабу).");
   }
 
   drawScene();
@@ -430,8 +430,9 @@ class FormEditor{
       LOG("Empty name is not allowed!", RED);
       return false;
     }
-    if (this.osd==0 && this.clr < 0) { // штаб без цвета
+    if (this.osd == 0 && this.clr == 0) { // штаб без цвета
       LOG("Headquarters color is not selected!", RED);
+      NOTE("Выберите цвет штаба.");
       return false;
     }
     return true;
@@ -703,10 +704,13 @@ function cursorStyle(e) {
   if (!adr || adr > 61 || adr < 1){ //за пределами секторов
     container.style.cursor = "default";
   } else {
-    if (arrSector[adr].os == 0) {    //штабы (осадки == 0)
-      container.style.cursor = "pointer";
-    } else { //обычные сектора 
-      container.style.cursor = "cell";
+    if (arrSector[adr].os == 0) {    //штаб - пипетка
+      container.style.cursor = "url('images/pip.png') 0 16, pointer";
+    } else { //обычный сектор
+      if (selected_color) //цвет выбран
+        container.style.cursor = "url('images/pbt.png') 0 16, cell";
+      else //цвет не выбран
+        container.style.cursor = "help"; //not-allowed
     }
   }
 }
