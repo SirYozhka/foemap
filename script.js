@@ -27,6 +27,7 @@ var modeBrd = false;
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
 var data_scene; //холст для раскраски (просто прозрачный)
 var alpha = 200; //альфаканал для прозрачности заливки
+var map_link; //ссылка на загруженную карту на imgbb.com
 
 var colors = [ 
   { r: 0, g: 0, b: 0, a: 0 , name:"transparent"}, //нулевой - прозрачный
@@ -447,7 +448,7 @@ class FormEditor{
     this.hide(); //убрать затенение холста
   }
 
-} //end class
+} //end edit class
 
 
 /*************** new - очистить всю карту ******************/
@@ -675,6 +676,55 @@ async function SaveImage() {
   });
 
 };
+
+
+
+/*************** upload - загрузка на сервер imgbb ******************/
+//todo хотелось бы загружать на imgbb.com сразу blob из canvas, но не позволяют ограничения CORS
+const btn_imgbb = document.querySelector(".btn-imgbb"); 
+const inp_imgbb = document.querySelector(".input_imgbb");
+
+btn_imgbb.addEventListener("click", ()=>{
+  //inp_imgbb.value="mapsnapshot.jpg";  //this is impossible
+  inp_imgbb.click();
+})
+
+inp_imgbb.addEventListener("change", async (e) => {
+  selected_color = null; //снять выделение выбора штаба
+  drawScene();
+
+  var formData = new FormData();
+  let fileName = e.target.files[0];
+  formData.append("image", fileName);
+
+  const myRequest = new Request(
+    "https://api.imgbb.com/1/upload?key=26f6c3a3ce8d263ae81844d87abcd8ef", {
+    method: "POST",
+    mode: "cors",
+    body: formData, //blob не получается, CORS ругается
+  }
+  );
+
+  try {
+    const response = await fetch(myRequest);
+    if (!response.ok) {
+      throw new Error("Error network IMGBB.COM connection!");
+    }
+    const result = await response.json();
+    map_link = result.data.url_viewer;
+    LOG("Map image uploaded to imgbb.com server.");
+    NOTE("Ссылка на карту: <a target='_blank' href='" + map_link + "' > " + map_link +" </a>");
+  } catch (error) {
+    LOG("ERROR:", error);
+  }
+});
+  
+  
+
+
+
+
+
 
 
 /*************** help - описание ******************/
