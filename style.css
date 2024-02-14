@@ -82,12 +82,13 @@ footer a {
 /******************* выпадающее меню **********************/
 .menu_line{
 	display: flex;
+	gap: 5px;
 }
 
 .menu{
 	position: relative;
 	width: 50px;
-	margin: 5px;
+	margin: 0px;
 	font-size: 12px;
 	font-weight: 700;
 	line-height: 1.6;	
@@ -162,7 +163,7 @@ button {
 	cursor: pointer;
 	height: 17px;
 	margin: 0px;
-	width: 60px;
+	width: 50px;
 	padding: 0px;
 	color: var(--dark);
 	font-size: 12px;
@@ -422,6 +423,25 @@ canvas {
 	filter: brightness(0.5);
 	transition-property: filter;
 	transition-duration: 0.5;
+}
+
+
+/*************** help ***********************/
+.help-box {
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	z-index: 3;
+	top: 10px;
+	right: 10px;
+	width: 400px;
+	height: 400px;
+	padding: 5px;
+	background-color: var(--light);
+	border: 3px double var(--dark);
+	border-radius: 2px;
+	overflow-y: auto;	
+	cursor: auto;
 }
 
 

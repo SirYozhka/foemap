@@ -11,8 +11,7 @@
 
 <body>
   <header>
-    <img src="images/brd_cold.png" class="brd_cold" style="display: none;">
-    <img src="images/brd_warm.png" class="brd_warm" style="display: none;">
+    <img src="images/border.png" class="brd_cold" style="display: none;"> <!-- предзагрузка -->
   </header>
   
   <main>
@@ -42,8 +41,11 @@
       <div class="file-name">
         <!-- name -->
       </div>
-
-      <button class="btn-help" data-text="описание функций">help</button>
+      
+      <div class="menu_line">
+        <button class="btn-help" data-text="описание функций">help</button>
+        <button class="btn-theme" data-text="сменить цветовую тему">theme</button>
+      </div>
       
 
     </div>
@@ -84,9 +86,16 @@
         <img>
       </div>
       
-      <div id="log-box">
-        <!-- DEBUG log area -->
+      <!-- log area -->
+      <div id="log-box">        
       </div>
+
+      <!-- help area -->
+      <div class="help-box" style="visibility: hidden;">
+        <span>Редактор карты секторов-опорников ПБГ для браузерной онлайн-игры <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
+        </span>
+      </div>
+      
 
     </div>
     <div class="footer">
@@ -98,9 +107,7 @@
   </main>
 
   <footer>
-    <span>
-      Редактор карты секторов-опорников ПБГ <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
-    </span>
+    <span>...</span>
     <span class="copyright">
       © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
     </span>

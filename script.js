@@ -22,8 +22,7 @@ bufer_canvas.width = IMG_WITH; //зависит от параметров экр
 var selected_color = null;
 var form; //класс формы редактирования сектора
 var img_background = new Image(); //фоновое изображение водопада
-var img_borders = new Image();
-var modeBrd = false;
+var img_borders = new Image(); //границы секторов
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
 var data_scene; //холст для раскраски (просто прозрачный)
 var alpha = 200; //альфаканал для прозрачности заливки
@@ -189,7 +188,7 @@ function dbSaveAllSectors(){
 function loadingSceneImages() {
   return new Promise((resolve, reject) => {
     LOG("Loading images ..." , BLUE);
-    img_borders.src = "images/brd_warm.png"; 
+    img_borders.src = "images/border.png"; 
     img_background.src = "images/bgr.jpg";
     img_background.onload = () => {
       let scn = new Image();
@@ -244,7 +243,7 @@ function loadingSceneImages() {
 
 /************************ отрисовка сцены *********************************/
 ctx.textAlign = "center";
-ctx.font = "bold 18px arial";
+ctx.font = "bold 16px arial";
 ctx.fontStretch = "ultra-condensed";
 ctx.shadowOffsetX = 0.3;
 ctx.shadowOffsetY = 0.3;
@@ -306,7 +305,8 @@ function fillPoint(adr, color){
 
 /***************** клик по сектору - выбор гильдии / заливка *********************************/
 canvas.addEventListener("click", (e) => {
-  form.hide(); //закрыть редактор если открыт (на всяк случай)
+  form.hide(); //закрыть другой редактор если открыт (на всяк случай)
+  help.hide(); //закрыть help если открыт
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
   let adr = data_address.data[offset]; //red component = number of address
   if (adr > 61) {  //клик не по сектору 
@@ -393,6 +393,7 @@ class FormEditor{
   edit() { 
     NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
     canvas.classList.add("shadow-filter"); //затенить холст
+    help.hide();
     this.form_editor.style.visibility = "visible"; //показать форму
     //позиционирование формы
     let dx = arrSector[this.adr].x - this.form_editor.clientWidth / 2;
@@ -685,7 +686,7 @@ const btn_imgbb = document.querySelector(".btn-imgbb");
 const inp_imgbb = document.querySelector(".input_imgbb");
 
 btn_imgbb.addEventListener("click", ()=>{
-  //inp_imgbb.value="mapsnapshot.jpg";  //this is impossible
+  //inp_imgbb.value="mapsnapshot.jpg";  //impossible to assign default value
   inp_imgbb.click();
 })
 
@@ -699,10 +700,10 @@ inp_imgbb.addEventListener("change", async (e) => {
 
   const myRequest = new Request(
     "https://api.imgbb.com/1/upload?key=26f6c3a3ce8d263ae81844d87abcd8ef", {
-    method: "POST",
-    mode: "cors",
-    body: formData, //blob не получается, CORS ругается
-  }
+      method: "POST",
+      mode: "cors",
+      body: formData, //blob не получается (CORS ругается)
+    }
   );
 
   try {
@@ -713,39 +714,70 @@ inp_imgbb.addEventListener("change", async (e) => {
     const result = await response.json();
     map_link = result.data.url_viewer;
     LOG("Map image uploaded to imgbb.com server.");
-    NOTE("Ссылка на карту: <a target='_blank' href='" + map_link + "' > " + map_link +" </a>");
+    NOTE("Ссылка на карту: <a target='_blank' href='" + map_link + "' > " + map_link.slice(8) +" </a>");
   } catch (error) {
     LOG("ERROR:", error);
   }
 });
   
-  
-
-
-
-
-
 
 
 /*************** help - описание ******************/
 const btn_help = document.querySelector(".btn-help");
-
-
-/********************************************************************/
-var div_footer=document.querySelector(".footer");
-div_footer.addEventListener("click", ()=>{
-  modeBrd = !modeBrd;
-  if (modeBrd){ //cold
-    document.documentElement.style.setProperty("--dark", "rgb(10, 33, 50)");
-    document.documentElement.style.setProperty("--light", "rgb(200, 220, 250)");
-    img_borders.src = "images/brd_cold.png"; 
-  } else { //warm
-    document.documentElement.style.setProperty("--dark", "rgb(40, 6, 6)");
-    document.documentElement.style.setProperty("--light", "rgb(250, 250, 200)");
-    img_borders.src = "images/brd_warm.png"; 
+const div_help = document.querySelector(".help-box");
+var help = {
+  mode: false,
+  hide: ()=>{
+    div_help.style.visibility = "hidden";
+    help.mode = false;
+  },
+  show: ()=>{
+    div_help.style.visibility = "visible";
+    help.mode = true;
+  },
+  change: ()=>{
+    if (help.mode) help.hide();
+    else help.show();
   }
-  drawScene();
+}
+
+btn_help.addEventListener("click", ()=>{ 
+  help.change();
 });
+
+div_help.addEventListener("click", ()=>{ 
+  help.hide();
+});
+
+
+// смена цветовой схемы warm/cold
+const theme = {
+  button: document.querySelector(".btn-theme"),
+  mode: undefined,
+  set: (md)=>{
+    theme.mode = md;
+    if (theme.mode == "warm"){
+      document.documentElement.style.setProperty("--dark", "rgb(40, 6, 6)");
+      document.documentElement.style.setProperty("--light", "rgb(250, 250, 200)");
+    } else if (theme.mode == "cold"){
+      document.documentElement.style.setProperty("--dark", "rgb(10, 33, 50)");
+      document.documentElement.style.setProperty("--light", "rgb(200, 220, 250)");
+    } else {
+      LOG("Unknown theme", RED);
+    }
+  },
+  change: ()=>{
+    if (theme.mode == "warm") 
+      theme.set("cold");
+    else 
+      theme.set("warm");
+  }
+}
+
+theme.button.addEventListener("click", ()=>{
+  theme.change()
+});
+
 
 // вид курсора
 function cursorStyle(e) {
