@@ -19,6 +19,7 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
+const div_filename = document.querySelector(".file-name");
 var selected_color = null;
 var form; //класс формы редактирования сектора
 var img_background = new Image(); //фоновое изображение водопада
@@ -26,7 +27,6 @@ var img_borders = new Image(); //границы секторов
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
 var data_scene; //холст для раскраски (просто прозрачный)
 var alpha = 200; //альфаканал для прозрачности заливки
-var map_link; //ссылка на загруженную карту на imgbb.com
 
 var colors = [ 
   { r: 0, g: 0, b: 0, a: 0 , name:"transparent"}, //нулевой - прозрачный
@@ -508,7 +508,6 @@ function keypressed(e){
 }
 
 const btn_save = document.querySelector(".btn-save");
-const div_filename = document.querySelector(".file-name");
 btn_save.addEventListener("click", ()=>{SaveFile()} );
 
 async function SaveFile() {
@@ -681,28 +680,19 @@ async function SaveImage() {
 
 
 /*************** upload - загрузка на сервер imgbb ******************/
-//todo хотелось бы загружать на imgbb.com сразу blob из canvas, но не позволяют ограничения CORS
 const btn_imgbb = document.querySelector(".btn-imgbb"); 
-const inp_imgbb = document.querySelector(".input_imgbb");
-
-btn_imgbb.addEventListener("click", ()=>{
-  //inp_imgbb.value="mapsnapshot.jpg";  //impossible to assign default value
-  inp_imgbb.click();
-})
-
-inp_imgbb.addEventListener("change", async (e) => {
+btn_imgbb.addEventListener("click", async () => {
   selected_color = null; //снять выделение выбора штаба
   drawScene();
 
-  var formData = new FormData();
-  let fileName = e.target.files[0];
-  formData.append("image", fileName);
-
+  let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  let formData = new FormData();
+  formData.append("image", blob, "image.png");
+ 
   const myRequest = new Request(
     "https://api.imgbb.com/1/upload?key=26f6c3a3ce8d263ae81844d87abcd8ef", {
       method: "POST",
-      mode: "cors",
-      body: formData, //blob не получается (CORS ругается)
+      body: formData
     }
   );
 
@@ -712,11 +702,15 @@ inp_imgbb.addEventListener("change", async (e) => {
       throw new Error("Error network IMGBB.COM connection!");
     }
     const result = await response.json();
-    map_link = result.data.url_viewer;
+    let map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
+    let short_link = map_link.slice(8);
+    let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
+    NOTE("Ссылка на карту: " + full_link);
+    div_filename.innerHTML = full_link;
     LOG("Map image uploaded to imgbb.com server.");
-    NOTE("Ссылка на карту: <a target='_blank' href='" + map_link + "' > " + map_link.slice(8) +" </a>");
+    LOG(short_link, BLUE);
   } catch (error) {
-    LOG("ERROR:", error);
+    LOG("ERROR: " + error, RED);
   }
 });
   

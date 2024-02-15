@@ -78,6 +78,10 @@ footer a {
 	color: var(--light);
 	font-stretch: extra-expanded;
 }
+.file-name a{
+	color: var(--light);
+	font-stretch: extra-expanded;
+}
 
 /******************* выпадающее меню **********************/
 .menu_line{
