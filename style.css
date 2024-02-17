@@ -52,13 +52,6 @@ footer {
 	justify-content:space-between;
 	align-items: center;
 }
-footer span{
-	font-size: 10px;
-}
-footer a {
-	font-size: 10px;
-	color: rgb(4, 1, 91);
-}
 
 
 /********************** блок управления (кнопки) **********************/
@@ -442,10 +435,33 @@ canvas {
 	height: 400px;
 	padding: 5px;
 	background-color: var(--light);
-	border: 3px double var(--dark);
+	border: var(--border-dark);
+	box-shadow: var(--shadow-light);
 	border-radius: 2px;
 	overflow-y: auto;	
 	cursor: auto;
+}
+
+.help-box h1{
+	font-size: 14px;
+}
+
+.help-box h1,
+.help-box span{
+	text-align: center;
+}
+
+.help-box p{
+	text-indent: 20px;
+	margin-top: 15px;
+}
+
+.copyright{
+	font-size: 10px;
+}
+.copyright a {
+	font-size: 10px;
+	color: rgb(4, 1, 91);
 }
 
 

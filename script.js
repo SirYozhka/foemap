@@ -248,11 +248,12 @@ ctx.fontStretch = "ultra-condensed";
 ctx.shadowOffsetX = 0.3;
 ctx.shadowOffsetY = 0.3;
 ctx.shadowBlur = 4;
+var color_light = "lightgoldenrodyellow";
 
 function drawScene() {
   //фон
   ctx.fillStyle = "rgba(0,0,0,0)";
-  ctx.shadowColor = "transparent";
+  ctx.shadowColor = color_light;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
   //карта секторов
@@ -263,11 +264,11 @@ function drawScene() {
   //подписи секторов
   for (let s = 1; s <= 61; s++) { 
     if (arrSector[s].color == selected_color) { //выбранная гильдия
-      ctx.fillStyle = "lightgoldenrodyellow";
+      ctx.fillStyle = color_light;
       ctx.shadowColor = "black";
     } else { //просто штаб
       ctx.fillStyle = "black";
-      ctx.shadowColor = "lightgoldenrodyellow";
+      ctx.shadowColor = color_light;
     }
     let osadki = (arrSector[s].os==0) ? "штаб" : "o".repeat(arrSector[s].os); //🞔
     for (let i = 0; i < 2; i++){ //для "усиления" тени двойная прорисовка
@@ -678,8 +679,7 @@ async function SaveImage() {
 };
 
 
-
-/*************** upload - загрузка на сервер imgbb ******************/
+/*************** upload - загрузка на сервер imgbb.com ******************/
 const btn_imgbb = document.querySelector(".btn-imgbb"); 
 btn_imgbb.addEventListener("click", async () => {
   selected_color = null; //снять выделение выбора штаба
@@ -703,18 +703,26 @@ btn_imgbb.addEventListener("click", async () => {
     }
     const result = await response.json();
     let map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
-    let short_link = map_link.slice(8);
+    let short_link = map_link.slice(8); //короткая ссылка (без https://)
+    writeClipboardText(short_link);
     let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
-    NOTE("Ссылка на карту: " + full_link);
+    NOTE("Ссылка на карту: " + full_link + " скопирована в буфер обмена.", "Ctrl+V вставить ссылку в сообщение.");
     div_filename.innerHTML = full_link;
     LOG("Map image uploaded to imgbb.com server.");
-    LOG(short_link, BLUE);
+    LOG("Link " + short_link + "copied into clipboard.", BLUE);    
   } catch (error) {
     LOG("ERROR: " + error, RED);
   }
 });
-  
 
+//запись текста в буфер обмена
+async function writeClipboardText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    LOG(error.message, RED);
+  }
+}
 
 /*************** help - описание ******************/
 const btn_help = document.querySelector(".btn-help");
@@ -734,31 +742,28 @@ var help = {
     else help.show();
   }
 }
+btn_help.addEventListener("click", ()=>{   help.change(); });
 
-btn_help.addEventListener("click", ()=>{ 
-  help.change();
-});
-
-div_help.addEventListener("click", ()=>{ 
-  help.hide();
-});
 
 
 // смена цветовой схемы warm/cold
 const theme = {
   button: document.querySelector(".btn-theme"),
-  mode: undefined,
+  mode: "warm",
   set: (md)=>{
     theme.mode = md;
     if (theme.mode == "warm"){
+      color_light = "lightgoldenrodyellow";
       document.documentElement.style.setProperty("--dark", "rgb(40, 6, 6)");
       document.documentElement.style.setProperty("--light", "rgb(250, 250, 200)");
     } else if (theme.mode == "cold"){
+      color_light = "lightskyblue";
       document.documentElement.style.setProperty("--dark", "rgb(10, 33, 50)");
       document.documentElement.style.setProperty("--light", "rgb(200, 220, 250)");
     } else {
       LOG("Unknown theme", RED);
     }
+    drawScene();
   },
   change: ()=>{
     if (theme.mode == "warm") 
@@ -767,10 +772,7 @@ const theme = {
       theme.set("warm");
   }
 }
-
-theme.button.addEventListener("click", ()=>{
-  theme.change()
-});
+theme.button.addEventListener("click", ()=>{  theme.change() });
 
 
 // вид курсора

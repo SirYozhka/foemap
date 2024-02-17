@@ -21,8 +21,8 @@
           <div class="menu_button">file</div>
           <div class="menu_content">
             <button class="btn-new" data-text="создать новую карту">new</button>
-            <button class="btn-load" data-text="загрузить карту из файла на компьютере">open</button>
             <button class="btn-save" data-text="записать карту в файл на компьютере">save</button>
+            <button class="btn-load" data-text="загрузить карту из файла на компьютере">open</button>
             <button class="btn-clear" data-text="очистить выбор опорников">clear</button>
           </div>
         </div>
@@ -31,7 +31,7 @@
           <div class="menu_content">
             <button class="btn-imgcopy" data-text="копировать изображение карты в буфер обмена">copy </button>
             <button class="btn-imgsave" data-text="записать изображение карты в файл на компьютере">save </button>
-            <button class="btn-imgbb" data-text="загрузить изображение карты на imgbb.com">upload </button>
+            <button class="btn-imgbb" data-text="загрузить изображение карты на сайт imgbb.com">upload </button>
           </div>
         </div>
       </div>
@@ -91,8 +91,47 @@
 
       <!-- help area -->
       <div class="help-box" style="visibility: hidden;">
-        <span>Редактор карты секторов-опорников ПБГ для браузерной онлайн-игры <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
+        <h1>
+          Редактор карты секторов-опорников ПБГ для браузерной онлайн-игры <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
+        </h1>
+        
+        <p>
+          Редактирование карты состоит из двух этапов: настройка карты (распределение штабов гильдий и выбор количества мест под башни) , распределение опорников.
+          По завершении работы, карту можно сохранить, переслать, опубликовать.
+        </p>
+        
+        <p>
+          <h2>1. Настройка карты.</h2>
+          Для входа в редактор нажмите правую кнопку мыши на нужном секторе. 
+          Для выбора штаба - введите назавание гильдии, отметьте выбор "штаб" и выберите цвет гильдии.
+          Чтобы выбрать количество опорников - просто кликните на соответствующую кнопку.<br>
+          Для сохранания изменений нажмите ENTER. Отмена - ESC.<br>
+        </p>
+
+        <p>
+          <h2>2. Распределение опорников. </h2>
+          Выбор опорников. Кликните по штабу левой кнопкой мыши. Выбирайте сектора, которые планируете назначить опорниками.
+        </p>
+
+        <p>
+          <h2>Меню "file".</h2>
+          new - создание новой пустой карты поля (все сектора будут иметь стандартные названия)<br>
+          save - запись данных карты в файл (формата json), который можно переслать другому игроку для редактирования<br>
+          open - открыть полученный файл данных для дальнейшего редактирования
+          clear - очистить выбор опорников (распределение штабов и осадок не изменяются)
+        </p>
+
+        <p>
+          <h2>Меню "image".</h2>
+          copy - скопировать изображение карты в буфер обмена (можно вставить в мессенджер и переслать согам) <br>
+          save - записать изображение карты в файл формата jpg (можно вставить в мессенджер и переслать согам) <br>
+          upload - публикация карты на сайт imgbb.com (вы получите ссылку на карту, которую можно вставить в сообщение в центре сообщения прямо в игре)
+        </p>
+
+        <span class="copyright">
+            © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
         </span>
+        
       </div>
       
 
@@ -107,9 +146,7 @@
 
   <footer>
     <span>...</span>
-    <span class="copyright">
-      © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
-    </span>
+    <span>...</span>
   </footer>
  
 
