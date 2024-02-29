@@ -351,7 +351,9 @@ class FormEditor{
     this.nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
     this.div_inp_color = document.querySelector(".input_color");
     this.nodes_color = document.querySelectorAll(".input_color input[type='radio']");
-
+    this.btn_save = document.querySelector(".btn-edit-save");
+    this.btn_canc = document.querySelector(".btn-edit-cancel");
+    
     canvas.addEventListener("contextmenu", (event) => { //клик правой кнопкой - редактор надписи
       event.preventDefault();
       event.stopPropagation();
@@ -381,14 +383,31 @@ class FormEditor{
       item.addEventListener("change", (e)=>{ 
         this.osd = [... this.nodes_osadki].findIndex(e=>e.checked);
         this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
-        if (this.osd) //если ставим осадку то сбросить имя сектора на "по умолчанию"
+        if (this.osd){ //если ставим осадку то сбросить имя сектора на "по умолчанию" и отключить цвет
           this.inp_name.value = defSectors[this.adr].name;
+          this.clr = 0;
+          this.nodes_color[this.clr].checked = true; //поставить галочку (нет цвета - невидимый radio)
+        }
         else { //если ставим "штаб" - сразу редактировать его имя (и выбрать цвет)
           this.inp_name.focus();
           this.inp_name.select();
         }
       })
     }
+
+    this.btn_save.addEventListener("click", ()=>{
+      if (this.check()){
+        this.save();
+        drawScene();
+        NOTE("Данные записаны, карта обновлена.");
+      }
+    })
+
+    this.btn_canc.addEventListener("click", ()=>{
+      this.hide();
+      NOTE("Данные не изменены.");      
+    })
+
   } //end constructor
 
   edit() { 
@@ -467,11 +486,13 @@ btn_new.addEventListener("click", () => {
   }
   dbSaveAllSectors(); //сохранить все сектора в IndexedDB
   sceneFillSectorAll();
-  drawScene();
+  setTimeout(() => { //перерисовать сцену в середине анимации
+    drawScene();
+  }, 500);  
   setTimeout(() => { //дать возможность закончить анимацию
     container.classList.remove("anim-clear");
     LOG("New map created.")
-  }, 300);
+  }, 1000);
 
 });
 
@@ -490,11 +511,13 @@ btn_clear.addEventListener("click", () => {
       dbSaveSector(i); //отметить в IndexedDB
     }
   }
-  drawScene();
+  setTimeout(() => { //перерисовать сцену в середине анимации
+    drawScene();
+  }, 500);
   setTimeout(() => { //дать возможность закончить анимацию
     container.classList.remove("anim-clear");
     LOG("Map cleared.")
-  }, 300);
+  }, 1000);
 
 });
 
@@ -609,12 +632,13 @@ btn_load.addEventListener("click", async () => {
 
 /*************** копироваине карты в буфер обмена ******************/
 const btn_imgcopy = document.querySelector(".btn-imgcopy");
+const divClipBoard = document.querySelector(".monitor");
 const imgClipBoard = document.querySelector(".monitor img");
 btn_imgcopy.addEventListener("click", () => {
   selected_color=null; //снять выбор штаба
   drawScene(); 
   canvas.classList.add("anim-copy");
-  imgClipBoard.style.display = "none";
+  divClipBoard.style.display = "none";
   btn_imgcopy.setAttribute("disabled", null);
   canvas.toBlob((blob) => {
     let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
@@ -631,7 +655,7 @@ btn_imgcopy.addEventListener("click", () => {
   });
   setTimeout(() => {
     canvas.classList.remove("anim-copy");
-    imgClipBoard.style.display = "block";
+    divClipBoard.style.display = "block";
     btn_imgcopy.removeAttribute("disabled");
   }, 800);
 });

@@ -44,16 +44,6 @@ main {
 	border-radius: 2px;
 }
 
-footer {
-	width: 100%;
-	margin: 2px;
-	display: flex;
-	flex-direction: row;
-	justify-content:space-between;
-	align-items: center;
-}
-
-
 /********************** блок управления (кнопки) **********************/
 .button_controls {
 	display: flex;
@@ -160,7 +150,7 @@ button {
 	cursor: pointer;
 	height: 17px;
 	margin: 0px;
-	width: 50px;
+	width: 60px;
 	padding: 0px;
 	color: var(--dark);
 	font-size: 12px;
@@ -236,38 +226,29 @@ button:disabled {
 }
 
 canvas {
-	position: absolute;
-	top: 0px;
-	left:0px;
 	width: 800px;
 	height: 600px;
 }
 
 /************************** анимации *****************************/
-.anim-clear {
-	/*дрожание*/
+.anim-clear {	
 	animation-name: frm_clear;
-	animation-duration: 100ms;
-	animation-timing-function: ease-in;
-	animation-iteration-count: 3;
+	animation-duration: 1s;
+	animation-timing-function: linear;
+	animation-iteration-count: 1;
 }
 
 @keyframes frm_clear {
-	to {
-		transform: scale(1.01);
+	50%   {    
+		transform: rotateX(90deg);
+	}
+	to   {    
+		transform: rotateX(0deg);
 	}
 }
 
-.anim-copy {
-	/*сдвиг+уменьшение в правый верхний угол*/
-	transition-duration: 800ms;
-	transition-timing-function: linear;
-	transform: scale(0.1);
-	transform-origin: 795px 5px;
-}
-
 /*************** монитор буфера обмена ***********************/
-.monitor img {
+.monitor {
 	display: none;
 	position: absolute;
 	top: 5px;
@@ -277,6 +258,44 @@ canvas {
 	background-color: var(--light);
 	border: 3px double var(--dark);
 	border-radius: 2px;
+}
+
+.monitor img {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+/*сдвиг+уменьшение в правый верхний угол*/
+.anim-copy {
+	transition-duration: 800ms;
+	transition-timing-function: linear;
+	transform: scale(0.1);
+	transform-origin: 795px 5px;
+}
+
+.monitor img:hover::after { /* подсказка */
+	content: attr(data-text);
+	position: absolute;
+	width: 80px;
+	min-height: 30px;
+	padding: 3px;
+	right: 15px;
+	top: 25px;
+	z-index: 1;
+	font-size: 12px;
+	font-weight: 300;
+	color: black;
+	border: 1px solid var(--dark);
+	background-color: rgba(250, 250, 250, 1);
+	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
+	pointer-events: none;
+	animation-name: msg_close;
+	animation-delay: 3s;
+	animation-duration: 500ms;
+	animation-timing-function: ease-in;
+	animation-fill-mode: forwards;
+	animation-iteration-count: 1;
 }
 
 /**************************** editor **********************************/
@@ -370,6 +389,7 @@ canvas {
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
+	margin-bottom: 3px;
 }
 
 .input_color input{
@@ -425,6 +445,17 @@ canvas {
 }
 .input_color input:nth-child(9){
 	background-color: rgb(250, 3, 3);
+}
+
+/************ save / cancel *********************/
+.sector_editor .input_save{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	width: 100%;
 }
 
 
