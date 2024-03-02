@@ -398,15 +398,21 @@ class FormEditor{
           this.inp_name.select();
         }
       })
-    }
+    };
 
     this.btn_save.addEventListener("click", ()=>{
       if (this.check()){
         this.save();
         drawScene();
+        this.hide();
         NOTE("Данные записаны, карта обновлена.");
       }
-    })
+    });
+
+    this.btn_canc.addEventListener("click", ()=>{
+      this.hide();
+        NOTE("");      
+    });
 
   } //end constructor
 
@@ -465,8 +471,7 @@ class FormEditor{
     arrSector[this.adr].os = this.osd;
     arrSector[this.adr].color = this.clr;
     sceneFillSector(this.adr); //заливка
-    dbSaveSector(this.adr); //запись в базу
-    this.hide(); //убрать затенение холста
+    dbSaveSector(this.adr); //запись в базу    
   }
 
 } //end edit class
@@ -738,7 +743,7 @@ btn_imgbb.addEventListener("click", async () => {
   }
 });
 
-//запись текста в буфер обмена
+// запись текста в буфер обмена
 async function writeClipboardText(text) {
   try {
     await navigator.clipboard.writeText(text);
@@ -747,17 +752,17 @@ async function writeClipboardText(text) {
   }
 }
 
-/*************** help - описание ******************/
+// help - описание функциональности
 const btn_help = document.querySelector(".btn-help");
-const div_help = document.querySelector(".help-box");
 var help = {
+  div: document.querySelector(".help-box"),
   mode: false,
   hide: ()=>{
-    div_help.style.visibility = "hidden";
+    help.div.style.visibility = "hidden";
     help.mode = false;
   },
   show: ()=>{
-    div_help.style.visibility = "visible";
+    help.div.style.visibility = "visible";
     help.mode = true;
   },
   change: ()=>{
@@ -766,7 +771,6 @@ var help = {
   }
 }
 btn_help.addEventListener("click", ()=>{   help.change(); });
-
 
 
 // смена цветовой схемы warm/cold
@@ -781,8 +785,8 @@ const theme = {
       document.documentElement.style.setProperty("--light", "rgb(250, 250, 200)");
     } else if (theme.mode == "cold"){
       color_light = "lightskyblue";
-      document.documentElement.style.setProperty("--dark", "rgb(10, 33, 50)");
-      document.documentElement.style.setProperty("--light", "rgb(200, 220, 250)");
+      document.documentElement.style.setProperty("--dark", "rgb(10, 50, 50)");
+      document.documentElement.style.setProperty("--light", "rgb(200, 200, 250)");
     } else {
       LOG("Unknown theme", RED);
     }
