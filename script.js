@@ -19,6 +19,7 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
+const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
 const div_filename = document.querySelector(".file-name");
 var selected_color = null;
 var form; //класс формы редактирования сектора
@@ -118,6 +119,13 @@ window.addEventListener("load", () => {
   form = new FormEditor();
 });
 
+window.addEventListener("keydown", (e) => { //общий ESC для любого окна
+  if (e.code === "Escape") {
+    help.hide(); 
+    form.hide();
+    NOTE("");
+  }
+});
 
 /************* IndexedDB (хранение данных на клиенте) *************************/
 const dbName = "foesectors";
@@ -171,7 +179,7 @@ function dbSaveSector(sec) { //записать в базу сектор sec и�
   var txn = dbData.transaction("sectors", "readwrite");
   let request = txn.objectStore("sectors").put(arrSector[sec]);
   request.onsuccess = ()=>{
-    imgClipBoard.style.display = "none"; //убрать картинку буфера обмена
+    divClipBoard.style.display = "none"; //убрать картинку буфера обмена
   };
   request.onerror = ()=>{
     LOG("ERROR saving: " + request.error, RED);
@@ -244,7 +252,8 @@ function loadingSceneImages() {
 /************************ отрисовка сцены *********************************/
 ctx.textAlign = "center";
 ctx.font = "bold 16px arial";
-ctx.fontStretch = "ultra-condensed";
+ctx.fontStretch = "ultra-condensed"; 
+ctx.textRendering = "geometricPrecision";
 ctx.shadowOffsetX = 0.3;
 ctx.shadowOffsetY = 0.3;
 ctx.shadowBlur = 4;
@@ -270,11 +279,11 @@ function drawScene() {
       ctx.fillStyle = "black";
       ctx.shadowColor = color_light;
     }
-    let osadki = (arrSector[s].os==0) ? "штаб" : "o".repeat(arrSector[s].os); //🞔
-    for (let i = 0; i < 2; i++){ //для "усиления" тени двойная прорисовка
-      ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y);
-      ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);
-    }
+    let osadki = (arrSector[s].os==0) ? "штаб" : "🞅".repeat(arrSector[s].os); //🞔🞕🞅🞇🞖🞚🞛
+    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y);
+    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y); //для "усиления" тени двойная прорисовка
+    ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);
+    ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);  //для "усиления" тени двойная прорисовка
   }
 }
 
@@ -372,11 +381,7 @@ class FormEditor{
           drawScene();
           NOTE("Данные записаны, карта обновлена.");
         }
-      }
-      if (e.code === "Escape") {
-        this.hide();
-        NOTE("Данные не изменены.");
-      }
+      }      
     });
 
     for (const item of this.nodes_osadki) { //для всех кнопок (штаб/осадки)
@@ -403,17 +408,12 @@ class FormEditor{
       }
     })
 
-    this.btn_canc.addEventListener("click", ()=>{
-      this.hide();
-      NOTE("Данные не изменены.");      
-    })
-
   } //end constructor
 
   edit() { 
+    help.hide(); //на всяк случай
     NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
-    canvas.classList.add("shadow-filter"); //затенить холст
-    help.hide();
+    curtain.style.display = "block";
     this.form_editor.style.visibility = "visible"; //показать форму
     //позиционирование формы
     let dx = arrSector[this.adr].x - this.form_editor.clientWidth / 2;
@@ -438,8 +438,8 @@ class FormEditor{
     this.nodes_color[this.clr].checked = true; //поставить галочку (нет цвета - невидимый radio)
   };
 
-  hide() { //скрыть форму + осветлить холст
-    canvas.classList.remove("shadow-filter");
+  hide() { //скрыть форму + осветлить холст    
+    curtain.style.display = "none";
     this.form_editor.style.visibility = "hidden";
     this.div_inp_color.style.visibility = "hidden";
   };
@@ -637,9 +637,8 @@ const imgClipBoard = document.querySelector(".monitor img");
 btn_imgcopy.addEventListener("click", () => {
   selected_color=null; //снять выбор штаба
   drawScene(); 
-  canvas.classList.add("anim-copy");
-  divClipBoard.style.display = "none";
-  btn_imgcopy.setAttribute("disabled", null);
+  canvas.classList.add("anim-copy");  
+  btn_imgcopy.setAttribute("disabled", null); //временно заблокировать кнопку copy
   canvas.toBlob((blob) => {
     let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
     navigator.clipboard.write(data).then(
@@ -656,7 +655,7 @@ btn_imgcopy.addEventListener("click", () => {
   setTimeout(() => {
     canvas.classList.remove("anim-copy");
     divClipBoard.style.display = "block";
-    btn_imgcopy.removeAttribute("disabled");
+    btn_imgcopy.removeAttribute("disabled"); //разблокировать кнопку copy
   }, 800);
 });
 

@@ -15,6 +15,10 @@
   </header>
   
   <main>
+    <div class="curtain" style="display: none;">
+      <!-- шторка на весь main для блокировки нажатий при редактировании и других операциях -->
+    </div>
+
     <div class="button_controls">
       <div class="menu_line">
         <div class="menu">
@@ -85,8 +89,8 @@
       </form>
 
       <!-- монитор буфера обмена (для отображения скопированой карты) -->
-      <div class="monitor">
-        <img data-text="clipboard image">
+      <div class="monitor" data-text="изображение в буфере обмена">
+        <img>
       </div>
       
       <!-- log area -->
@@ -96,7 +100,7 @@
       <!-- help area -->
       <div class="help-box" style="visibility: hidden;">
         <h1>
-          Редактор карты секторов-опорников ПБГ для браузерной онлайн-игры <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
+          Редактор карты секторов-опорников ПБГ <br>для браузерной онлайн-игры <a href="https://www.innogames.com/games/forge-of-empires/"  target="_blank">"FORGE OF EMPIRES"</a>
         </h1>
         
         <p>
@@ -133,7 +137,7 @@
         </p>
 
         <span class="copyright">
-            © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.2)
+            © 2024 <a href="tg://resolve?domain=SirYozhka">SirYozhka</a> (version 1.3)
         </span>
         
       </div>
@@ -144,8 +148,8 @@
       <div class="label-box">
         Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка).
       </div>
-    <div>
-
+    <div>     
+    
   </main>
 
 
