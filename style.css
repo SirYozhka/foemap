@@ -124,7 +124,7 @@ div.curtain{
 	border-bottom: 1px solid rgb(140, 140, 140);
 }
 
-.menu_button::after {
+.menu_button::after { /* стрелка вниз */
 	content: " ";
 	position: absolute;
 	top: 50%;
@@ -150,7 +150,8 @@ div.curtain{
 	height: 0px;
 	overflow: hidden;
 	border-bottom: none;
-	transition: height 150ms ease-in;
+	transition: height 200ms ease-in;
+	
 }
 
 .menu:hover .menu_content{
@@ -472,45 +473,17 @@ canvas {
 
 /*************** help ***********************/
 .help-box {
-	display: flex;
-	flex-direction: column;
+	z-index: 1;
 	position: absolute;
-	z-index: 3;
 	top: 10px;
+	bottom: 10px;
 	right: 10px;
-	width: 600px;
-	height: 500px;
-	padding: 5px;
-	background-color: var(--light);
+	left: 10px;	
 	border: var(--border-dark);
 	box-shadow: var(--shadow-light);
 	border-radius: 2px;
-	overflow-y: auto;	
-	cursor: auto;
+	overflow: hidden;
 }
-
-.help-box h1{
-	font-size: 14px;
-}
-
-.help-box h1,
-.help-box span{
-	text-align: center;
-}
-
-.help-box p{
-	text-indent: 20px;
-	margin-top: 15px;
-}
-
-.copyright{
-	font-size: 10px;
-}
-.copyright a {
-	font-size: 10px;
-	color: rgb(4, 1, 91);
-}
-
 
 /************************** блок вывода подсказок **********************************/
 .footer{

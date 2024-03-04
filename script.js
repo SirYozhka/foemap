@@ -758,10 +758,12 @@ var help = {
   div: document.querySelector(".help-box"),
   mode: false,
   hide: ()=>{
+    curtain.style.display = "none";
     help.div.style.visibility = "hidden";
     help.mode = false;
   },
   show: ()=>{
+    curtain.style.display = "block";
     help.div.style.visibility = "visible";
     help.mode = true;
   },
@@ -771,7 +773,7 @@ var help = {
   }
 }
 btn_help.addEventListener("click", ()=>{   help.change(); });
-
+btn_help.click();
 
 // смена цветовой схемы warm/cold
 const theme = {
