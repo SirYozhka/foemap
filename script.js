@@ -19,6 +19,8 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
+var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
+
 const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
 const div_filename = document.querySelector(".file-name");
 var selected_color = null;
@@ -148,6 +150,7 @@ function dbSectorsOpen() {
     };
 
     dbRequest.onupgradeneeded = function (event) {  //создание базы при первом запуске ( изменении версии )
+      btn_help.click(); //показать help при первом запуске
       LOG("Database (ver. " + dbVersion + ") setup ...");
       arrSector = JSON.parse(JSON.stringify(defSectors)); //копируем настройки по умолчанию 
       let db = event.target.result;
@@ -257,7 +260,6 @@ ctx.textRendering = "geometricPrecision";
 ctx.shadowOffsetX = 0.3;
 ctx.shadowOffsetY = 0.3;
 ctx.shadowBlur = 4;
-var color_light = "lightgoldenrodyellow";
 
 function drawScene() {
   //фон
@@ -752,8 +754,9 @@ async function writeClipboardText(text) {
   }
 }
 
-// help - описание функциональности
+// показать/скрыть help 
 const btn_help = document.querySelector(".btn-help");
+const btn_help_close = document.querySelector(".help-box_close");
 var help = {
   div: document.querySelector(".help-box"),
   mode: false,
@@ -773,35 +776,37 @@ var help = {
   }
 }
 btn_help.addEventListener("click", ()=>{   help.change(); });
-btn_help.click();
+btn_help_close.addEventListener("click", ()=>{   help.hide(); });
+
 
 // смена цветовой схемы warm/cold
+var frameName = document.getElementById("help-box");  //чтобы цвет менять и во фрейме
+var frameCnt;
+frameName.onload = ()=>{
+  frameCnt =frameName.contentWindow.document;
+}
 const theme = {
-  button: document.querySelector(".btn-theme"),
-  mode: "warm",
-  set: (md)=>{
-    theme.mode = md;
-    if (theme.mode == "warm"){
-      color_light = "lightgoldenrodyellow";
-      document.documentElement.style.setProperty("--dark", "rgb(40, 6, 6)");
-      document.documentElement.style.setProperty("--light", "rgb(250, 250, 200)");
-    } else if (theme.mode == "cold"){
-      color_light = "lightskyblue";
-      document.documentElement.style.setProperty("--dark", "rgb(10, 50, 50)");
-      document.documentElement.style.setProperty("--light", "rgb(200, 200, 250)");
-    } else {
-      LOG("Unknown theme", RED);
-    }
-    drawScene();
-  },
+  hue: 20,
   change: ()=>{
-    if (theme.mode == "warm") 
-      theme.set("cold");
-    else 
-      theme.set("warm");
+    console.log(frameCnt);
+    theme.hue +=20;
+    if (theme.hue>360) theme.hue = 0;
+    let clr = getHLSColor(theme.hue);   
+    color_light = clr.light; 
+    document.documentElement.style.setProperty("--dark", clr.dark);
+    document.documentElement.style.setProperty("--light", clr.light);
+    frameCnt.documentElement.style.setProperty("--dark", clr.dark);
+    frameCnt.documentElement.style.setProperty("--light", clr.light);
+    drawScene();
   }
 }
-theme.button.addEventListener("click", ()=>{  theme.change() });
+function getHLSColor(hue) {  
+  if (!hue) hue = Math.floor(Math.random() * 360);  
+  let clrL = "hsl(" + hue + ", 90%, 90%)";
+  let clrD = "hsl(" + hue + ", 90%, 10%)";
+  return {light:clrL , dark:clrD};
+}
+document.querySelector(".btn-theme").addEventListener("click", ()=>{  theme.change() });
 
 
 // вид курсора
@@ -822,7 +827,7 @@ function cursorStyle(e) {
   }
 }
 
-//вывод в строку состояния
+// вывод в строку состояния
 function NOTE(msg1, msg2="") {
   document.querySelector(".label-box").innerHTML = msg1+"<br>"+msg2;
 }

@@ -1,0 +1,547 @@
+html {
+	background-color: gray;
+	font-size: 12px;
+	line-height: 1.2;
+}
+
+body{
+	height: 100vh;
+	width: 100vh;
+	min-width: 810px;
+	margin: 0 auto;
+}
+
+header{
+	width: 100%;
+	height: 2px;
+}
+
+main {
+	position: relative;
+	width: 100%;
+	margin: 2px;
+	background: var(--grad-bgr);
+	border: var(--border-dark);
+	border-radius: 2px;
+}
+
+/*************** шторка на весь main для блокировки нажатий ************************/
+div.curtain{	
+	z-index: 1;		
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	cursor: not-allowed;
+	background-color: black;
+
+	opacity: 0;
+	animation-name: opacity-down;
+	animation-duration: 500ms;
+	animation-timing-function: linear;
+	animation-fill-mode: forwards;
+	animation-iteration-count: 1;
+}
+@keyframes opacity-down {
+	to {
+		opacity: 0.5;
+	}
+	
+}
+
+/********************** блок управления (кнопки) **********************/
+.button_controls {
+	display: flex;
+	flex-direction: row;
+	justify-content:space-between;
+	align-items: center;
+	position: relative;
+	height: 25px;
+	width: 800px;
+	margin: 0px auto;
+}
+
+/******************** file name *************************/
+.file-name{
+	color: var(--light);
+	font-stretch: extra-expanded;
+}
+.file-name a{
+	color: var(--light);
+	font-stretch: extra-expanded;
+}
+
+/******************* выпадающее меню **********************/
+.menu_line{
+	display: flex;
+	gap: 5px;
+}
+
+.menu{
+	position: relative;
+	width: 50px;
+	margin: 0px;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.6;	
+}
+
+.menu_button{
+	height: 20px;
+	width: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--light);
+	padding: 1px 15px 1px 5px;
+	cursor: pointer;
+	
+	border-radius: 2px;	
+	border-top: var(--border-light);
+	border-left: var(--border-light);
+	border-right: 1px solid rgb(140, 140, 140);
+	border-bottom: 1px solid rgb(140, 140, 140);
+}
+
+.menu_button::after { /* стрелка вниз */
+	content: " ";
+	position: absolute;
+	top: 50%;
+	right: 3px;
+	transform: translateY(-50%);
+	display: block;
+	width: 0px;
+	height: 0px;
+	border-style: solid;
+	border-width: 7px 5px 0px 5px;
+	border-color: var(--light) transparent transparent transparent;
+}
+
+.menu_content{
+	z-index: 1;
+	position: absolute;
+	top: 22px;
+	left: 0px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	width: 100%;
+	height: 0px;
+	overflow: hidden;
+	border-bottom: none;
+	transition: height 200ms ease-in;
+	
+}
+
+.menu:hover .menu_content{
+	height: 150px;
+	overflow: visible;
+}
+
+.menu_content button{
+	padding-left: 3px;
+	display: flex;
+	align-items: center;
+}
+
+.menu_content button:hover::after { /* позиция заметки */
+	position: absolute;
+	left: 30px;
+	top: 25px;
+}
+
+ /***************** кнопка(и) ****************/
+button {
+	position: relative;
+	cursor: pointer;
+	height: 17px;
+	margin: 0px;
+	width: 60px;
+	padding: 0px;
+	color: var(--dark);
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.0;
+	background: var(--light);
+	border: var(--border-dark);
+	border-radius: 2px;
+	box-shadow: var(--shadow-light);
+}
+
+button:hover {
+	outline: var(--border-dark);
+	box-shadow: var(--shadow-light-strong);
+}
+
+button:hover::after { 	
+	position: absolute;
+	right: 15px;
+	top: 25px;
+}
+
+/********* выскакивающая заметка (медленно гаснет через 3 сек) **********/
+[data-text]:hover::after { 
+	content: attr(data-text);	
+	width: 80px;
+	min-height: 10px;
+	padding: 3px;
+	z-index: 2;
+	font-size: 12px;
+	font-weight: 300;
+	color: black;
+	border: 1px solid var(--dark);
+	background-color: rgba(250, 250, 250, 1);
+	box-shadow: 0px 0px 2px 1px rgba(55, 55, 55, 0.5);
+	pointer-events: none;
+	animation-name: msg_close;
+	animation-delay: 3s;
+	animation-duration: 500ms;
+	animation-timing-function: ease-in;
+	animation-fill-mode: forwards;
+	animation-iteration-count: 1;
+} 
+
+@keyframes msg_close {
+	to {
+		opacity: 0.01;
+	}
+}
+
+
+button:active {
+	background-color: rgb(252, 252, 245);
+}
+
+button:active::after {
+	display: none;
+}
+
+button:disabled {
+	background-color: rgb(208, 208, 208);
+	cursor: not-allowed;
+}
+
+/*********************** сцена *********************************/
+.container {
+	position: relative;
+	margin: 2px auto;
+	padding: 0px;
+	width: 800px;
+	height: 600px;
+	background: url("images/bgr.jpg");
+	outline: 1px solid var(--dark);
+	border-radius: 1px;
+	box-shadow: -1px -1px 3px var(--light);
+	overflow: hidden;
+}
+
+canvas {
+	width: 800px;
+	height: 600px;
+}
+
+/************************** анимации *****************************/
+.anim-clear {	
+	animation-name: frm_clear;
+	animation-duration: 1s;
+	animation-timing-function: linear;
+	animation-iteration-count: 1;
+}
+
+@keyframes frm_clear {
+	50%   {    
+		transform: rotateX(90deg);
+	}
+	to   {    
+		transform: rotateX(0deg);
+	}
+}
+
+/*************** монитор буфера обмена ***********************/
+.monitor {
+	display: none;
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	width: 80px;
+	height: 60px;
+	background-color: var(--light);
+	border: 3px double var(--dark);
+	border-radius: 2px;
+}
+.monitor:hover::after { /* позиция заметки */
+	position: absolute;
+	bottom: -10px;
+	left: 5px;
+}
+.monitor img {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+
+/*сдвиг+уменьшение в правый верхний угол*/
+.anim-copy {
+	transition-duration: 800ms;
+	transition-timing-function: linear;
+	transform: scale(0.1);
+	transform-origin: 795px 5px;
+}
+
+/**************************** editor **********************************/
+.sector_editor {
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	position: absolute;
+	top: 30px;
+	left: 30px;
+	width: 200px;
+  	outline: 1px solid var(--dark);
+	outline-offset: 0px;
+	border-radius: 2px;
+	box-shadow: var(--shadow-light);
+	background-color: var(--light);
+	padding: 3px;
+}
+
+.sector_editor input{
+	appearance: none;
+	outline: none;
+	font-weight: 700;
+	border: var(--border-dark);
+	background-color: var(--light);
+}
+
+.sector_editor input:hover{
+	outline: var(--border-dark);
+}
+
+/**** название input[type="text"] ****/
+.sector_editor input[type="text"]{
+	width: 100%;
+	height: 20px;
+	padding-left: 3px;
+	margin-bottom: 3px;
+	color: var(--dark);
+}
+
+.sector_editor input[type="text"]:hover{
+	background-color: white;
+}
+
+.sector_editor input[type="text"]:focus{
+	background-color: white;
+}
+
+/****** выбор штаб или 123 осадки input[type="radio"] ******/
+.sector_editor .input_osad{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-bottom: 3px;
+}
+
+.input_osad input[type="radio"] {
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	width: 40px;
+	height: 20px;
+	padding: 0px, 2px, 0px, 2px;
+	color: var(--dark);
+}
+
+.input_osad input[type="radio"]::before {
+	content: attr(value);
+}
+
+.input_osad input[type="radio"]:hover {
+	background-color: white;
+}
+
+.input_osad input[type="radio"]:checked {
+	background-color: var(--dark);
+	color: var(--light);
+}
+
+/******** цвет input[type="radio"] **********/
+.sector_editor .input_color{
+	visibility: hidden;
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-bottom: 3px;
+}
+
+.input_color input{
+	appearance: none;
+	cursor: pointer;
+	width: 20px;
+	height: 20px;
+	border: var(--border-dark);
+	overflow: hidden;	
+}
+
+.input_color input::before {
+	content: url("images/onepx.png");
+	opacity: 0.4;
+}
+
+.input_color input:hover::before {
+	opacity: 0;
+}
+
+.input_color input:checked::before {
+	display: grid;
+	place-items: center;
+	color: var(--dark);
+	content: "✔"; 
+	font-size: 18px;
+	opacity: 1;
+}
+
+.input_color input:nth-child(1){
+	background-color: rgba(0, 0, 0,0);
+}
+.input_color input:nth-child(2){
+	background-color: rgb(250, 3, 250);
+}
+.input_color input:nth-child(3){
+	background-color: rgb(135, 3, 250);
+}
+.input_color input:nth-child(4){
+	background-color: rgb(19, 3, 250);
+}
+.input_color input:nth-child(5){
+	background-color: rgb(250, 110, 3);
+}
+.input_color input:nth-child(6){
+	background-color: rgb(3, 205, 250);
+}
+.input_color input:nth-child(7){
+	background-color: rgb(250, 238, 3);
+}
+.input_color input:nth-child(8){
+	background-color: rgb(1, 189, 7);
+}
+.input_color input:nth-child(9){
+	background-color: rgb(250, 3, 3);
+}
+
+/************ save / cancel *********************/
+.sector_editor .input_save{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	width: 100%;
+}
+
+
+/*************** help ***********************/
+.help-box {
+	z-index: 1;
+	position: absolute;
+	top: 10px;
+	bottom: 10px;
+	right: 10px;
+	left: 40px;
+	background-color: var(--light);
+	color: var(--dark);
+	border: var(--border-dark);
+	box-shadow: var(--shadow-light);
+	border-radius: 2px;
+}
+
+#help-box{
+	margin-top: 20px;	
+	width: calc(100% - 1px);
+	height: calc(100% - 20px);
+	overflow-y: auto;
+}
+
+.help-box_close{
+	position: absolute;
+	top: 0px;	
+	right: 0px;
+	width: 20px;
+	font-size: 18px;
+	text-align: center;
+	cursor: pointer;	
+}
+
+.help-box_close:hover::after{
+	position: absolute;
+	top: 18px;
+	right: 18px;
+	width: 30px;	
+}
+
+
+/************************** блок вывода подсказок **********************************/
+.footer{
+	height: 30px; 
+	position: relative;
+}
+
+.label-box {
+	position: absolute;
+	width: 100%;
+	top: 0px;
+	left: 10px;
+	font-size: 12px;
+	color: var(--dark);
+}
+
+/********************* лог ********************************/
+#log-box {
+	position: absolute;
+	bottom: 1px;
+	left: 2px;
+	width: auto;
+	height: 68px;
+	max-height: 150px;
+	padding: 2px;
+	cursor: auto;
+	overflow: hidden;
+}
+
+#log-box p{
+	font-size: 10px;
+	font-weight: 100;
+	line-height: 11px;
+	color: var(--light);
+	opacity: 1;
+	transition: opacity 8s linear;
+}
+
+#log-box:hover {
+	background-color: rgba(19, 34, 44, 0.7);
+	outline: 1px solid rgb(6, 23, 40);
+	border-right: none;
+	overflow-y: auto;
+	scrollbar-width: 5px;
+	scrollbar-color: rgb(77, 122, 167) rgb(6, 23, 40);
+}
+
+#log-box:hover p{
+	transition: none;
+	opacity: 0.5 !important;
+}
+#log-box p:hover{
+	background-color: rgb(0, 18, 30);
+	opacity: 1.0 !important;
+}

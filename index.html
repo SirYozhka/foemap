@@ -6,6 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width" />
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="index.css">
   <script src="script.js" defer></script>
 </head>
 
@@ -25,8 +26,8 @@
           <div class="menu_button">file</div>
           <div class="menu_content">
             <button class="btn-new" data-text="создать новую карту">new</button>
-            <button class="btn-save" data-text="записать данные карты в файл">save</button>
-            <button class="btn-load" data-text="загрузить данные карты из файла">open</button>
+            <button class="btn-save" data-text="записать карту в файл">save</button>
+            <button class="btn-load" data-text="загрузить карту из файла">open</button>
             <button class="btn-clear" data-text="очистить опорники">clear</button>
           </div>
         </div>
@@ -45,7 +46,7 @@
       </div>
       
       <div class="menu_line">
-        <button class="btn-help" data-text="описание функций">help</button>
+        <button class="btn-help" data-text="описание">help</button>
         <button class="btn-theme" data-text="сменить цветовую тему">theme</button>
       </div>
       
@@ -99,9 +100,10 @@
 
       <!-- help area -->
       <div class="help-box" style="visibility: hidden;">
-        <iframe src="help_ru.html" width="100%" height="100%" frameborder="0">
+        <div class="help-box_close" data-text="close">x</div>
+        <iframe src="help_ru.html" id="help-box" frameborder="0">
           <a href="help_ru.html" target="_blank">help</a>
-        </iframe>
+        </iframe>        
       </div>
       
 
