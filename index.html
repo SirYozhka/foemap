@@ -59,17 +59,14 @@
       </canvas>
 
       <!-- редактор секторов -->
-      <form class="sector_editor" style="visibility: hidden;" onsubmit="return false" >
-
+      <form class="sector_editor" style="display: none;" onsubmit="return false" >
         <input type="text" class="input_name" name="name" autocomplete="off"/>
-                
         <div class="input_osad">
           <input type="radio" name="os" value="штаб" />
           <input type="radio" name="os" value="o" />
           <input type="radio" name="os" value="oo" />
           <input type="radio" name="os" value="ooo" />
 				</div>
-        
         <div class="input_color">
           <input type="radio" name="clr" value="0" style="display: none;"/> <!--прозрачный-->
           <input type="radio" name="clr" value="1" /> <!--розовый-->
@@ -81,12 +78,10 @@
           <input type="radio" name="clr" value="7" /> <!--зеленый-->
           <input type="radio" name="clr" value="8" /> <!--красный-->
         </div>
-
         <div class="input_end">
-          <button class="btn-edit-save" data-text="сохранить ENTER">SAVE</button>
-          <button class="btn-edit-cancel" data-text="отмена ESC">CANCEL</button>
+          <button class="btn-edit-save" >SAVE</button>
+          <button class="btn-edit-cancel" >CANCEL</button>
         </div>
-
       </form>
 
       <!-- монитор буфера обмена (для отображения скопированой карты) -->

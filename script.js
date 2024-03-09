@@ -116,18 +116,26 @@ window.addEventListener("load", () => {
   .then(loadingSceneImages)
   .then(()=>{
     canvas.addEventListener("mousemove", (e) => { cursorStyle(e); }); //тут из-за возможного случайного дергания мышкой при загрузке страницы
+    form = new FormEditor();
     drawScene();
   });
-  form = new FormEditor();
 });
 
-window.addEventListener("keydown", (e) => { //общий ESC для любого окна
-  if (e.code === "Escape") {
+
+/*********** нажатия клавиш в документе ***/
+document.addEventListener("keydown", (e)=>{keypressed(e)});
+function keypressed(e){
+  if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
+    e.preventDefault();
+    SaveFile();
+  }
+  if (e.code === "Escape") { //общий ESC для любого окна
     help.hide(); 
     form.hide();
     NOTE("");
   }
-});
+}
+
 
 /************* IndexedDB (хранение данных на клиенте) *************************/
 const dbName = "foesectors";
@@ -315,6 +323,7 @@ function fillPoint(adr, color){
   data_scene.data[adr + 3] = color.a; //alfa
 }
 
+
 /***************** клик по сектору - выбор гильдии / заливка *********************************/
 canvas.addEventListener("click", (e) => {
   form.hide(); //закрыть другой редактор если открыт (на всяк случай)
@@ -352,9 +361,6 @@ canvas.addEventListener("click", (e) => {
 /****************** РЕДАКТОР подписи сектора ****************************/
 class FormEditor{
   adr = null;
-  nam = "";
-  osd = null;
-  clr = null;
   
   constructor() { 
     this.form_editor = document.querySelector(".sector_editor");
@@ -375,54 +381,42 @@ class FormEditor{
       drawScene(); 
       this.edit();
     });
-
-    this.form_editor.addEventListener("keydown", (e) => { //запись только по кнопкам
+    
+    /* нажатие на ENTER всё равно вызывает событие click на первой <button>
+    this.form_editor.addEventListener("keydown", (e) => { //запись по кнопкам
       if (e.code === "Enter" || e.code === "NumpadEnter") {
-        if (this.check()){
-          this.save();
-          drawScene();
-          NOTE("Данные записаны, карта обновлена.");
-        }
+        this.save();        
       }      
+    }); */
+    
+    this.btn_save.addEventListener("click", ()=>{ //кнопка SAVE
+      this.save();      
+    });
+
+    this.btn_canc.addEventListener("click", ()=>{ //кнопка CANCEL
+      this.hide();        
     });
 
     for (const item of this.nodes_osadki) { //для всех кнопок (штаб/осадки)
       item.addEventListener("change", (e)=>{ 
-        this.osd = [... this.nodes_osadki].findIndex(e=>e.checked);
-        this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
-        if (this.osd){ //если ставим осадку то сбросить имя сектора на "по умолчанию" и отключить цвет
+        let osd = [... this.nodes_osadki].findIndex(e=>e.checked);
+        this.div_inp_color.style.display = (osd ? "none" : "flex"); // = 0 показать панель выбора цвета
+        if (osd){ //если ставим осадку то сбросить имя сектора на "по умолчанию" и отключить цвет
           this.inp_name.value = defSectors[this.adr].name;
-          this.clr = 0;
-          this.nodes_color[this.clr].checked = true; //поставить галочку (нет цвета - невидимый radio)
-        }
-        else { //если ставим "штаб" - сразу редактировать его имя (и выбрать цвет)
+          this.nodes_color[0].checked = true; //поставить галочку (нет цвета - невидимый radio)
+        } else { //если ставим "штаб" - сразу редактировать его имя
           this.inp_name.focus();
           this.inp_name.select();
         }
       })
     };
 
-    this.btn_save.addEventListener("click", ()=>{
-      if (this.check()){
-        this.save();
-        drawScene();
-        this.hide();
-        NOTE("Данные записаны, карта обновлена.");
-      }
-    });
-
-    this.btn_canc.addEventListener("click", ()=>{
-      this.hide();
-        NOTE("");      
-    });
-
   } //end constructor
 
-  edit() { 
-    help.hide(); //на всяк случай
+  edit() {     
     NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
     curtain.style.display = "block";
-    this.form_editor.style.visibility = "visible"; //показать форму
+    this.form_editor.style.display = "flex";
     //позиционирование формы
     let dx = arrSector[this.adr].x - this.form_editor.clientWidth / 2;
     if (dx < 0) 
@@ -439,41 +433,39 @@ class FormEditor{
     //заполнение полей формы текущими данными из arrSector
     this.inp_name.value = arrSector[this.adr].name; //название сектора(гильдии)
     this.inp_name.focus();
-    this.osd=arrSector[this.adr].os;  //кол-во осад в секторе (если osd == 0 тогда там штаб)
-    this.nodes_osadki[this.osd].checked = true; //поставить галочку
-    this.div_inp_color.style.visibility = (this.osd ? "hidden" : "visible"); // = 0 показать панель выбора цвета
-    this.clr = arrSector[this.adr].color; //запомнить цвет сектора
-    this.nodes_color[this.clr].checked = true; //поставить галочку (нет цвета - невидимый radio)
+    let osd=arrSector[this.adr].os;  //кол-во осад в секторе (если osd == 0 тогда там штаб)
+    this.nodes_osadki[osd].checked = true; //поставить галочку
+    this.div_inp_color.style.display = (osd ? "none" : "flex"); // показать/скрыть панель выбора цвета
+    let clr = arrSector[this.adr].color; //цвет сектора
+    this.nodes_color[clr].checked = true; //поставить галочку (если нет цвета будет невидимый radio)
   };
 
-  hide() { //скрыть форму + осветлить холст    
-    curtain.style.display = "none";
-    this.form_editor.style.visibility = "hidden";
-    this.div_inp_color.style.visibility = "hidden";
+  hide() { //скрыть форму 
+    curtain.style.display = "none"; //разблокировать холст
+    this.form_editor.style.display = "none";  
+    NOTE("");  
   };
 
-  check(){ //проверка данных на корректность
-    this.nam = this.inp_name.value; //название 
-    this.osd = [... this.nodes_osadki].findIndex(e=>e.checked); //0 штаб или 123 кол-во осад
-    this.clr = [... this.nodes_color].findIndex(e=>e.checked); //цвет
-    if (!this.nam) { //пустое имя
-      LOG("Empty name is not allowed!", RED);
-      return false;
+  save(){ //проверка данных на корректность и запись
+    let nam = this.inp_name.value; //название 
+    let osd = [... this.nodes_osadki].findIndex(e=>e.checked); //0 штаб или 123 кол-во осад
+    let clr = [... this.nodes_color].findIndex(e=>e.checked); //цвет
+    if (!nam) { //пустое имя
+      NOTE("Пустое название недопустимо.");
+      return;
     }
-    if (this.osd == 0 && this.clr == 0) { // штаб без цвета
-      LOG("Headquarters color is not selected!", RED);
+    if (osd == 0 && clr == 0) { // штаб без цвета      
       NOTE("Выберите цвет штаба.");
-      return false;
+      return;
     }
-    return true;
-  }
-
-  save(){
-    arrSector[this.adr].name = this.nam;
-    arrSector[this.adr].os = this.osd;
-    arrSector[this.adr].color = this.clr;
-    sceneFillSector(this.adr); //заливка
+    arrSector[this.adr].name = nam;
+    arrSector[this.adr].os = osd;
+    arrSector[this.adr].color = clr;
     dbSaveSector(this.adr); //запись в базу    
+    sceneFillSector(this.adr); //заливка
+    drawScene();
+    this.hide();
+    NOTE("Данные записаны, карта обновлена.");
   }
 
 } //end edit class
@@ -530,14 +522,6 @@ btn_clear.addEventListener("click", () => {
 
 
 /************ запись данных карты в файл на локальный диск **********/
-document.addEventListener("keydown", (e)=>{keypressed(e)});
-function keypressed(e){
-  if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S
-    e.preventDefault();
-    SaveFile();
-  }
-}
-
 const btn_save = document.querySelector(".btn-save");
 btn_save.addEventListener("click", ()=>{ SaveFile() } );
 

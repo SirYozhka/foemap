@@ -308,6 +308,7 @@ canvas {
 	box-shadow: var(--shadow-light);
 	background-color: var(--light);
 	padding: 3px;
+	cursor: auto;
 }
 
 .sector_editor input{
@@ -374,8 +375,7 @@ canvas {
 }
 
 /******** цвет input[type="radio"] **********/
-.sector_editor .input_color{
-	visibility: hidden;
+.sector_editor .input_color{	
 	display: flex;
 	flex-wrap: nowrap;
 	flex-direction: row;
