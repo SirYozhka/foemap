@@ -113,11 +113,11 @@ var arrSector = []; //текущее хранилище данных карты
 window.addEventListener("load", () => {
   LOG("Initialization started ..." , BLUE);
   dbSectorsOpen()
-    .then(loadingSceneImages)
-    .then(()=>{
-      drawScene();
-      canvas.addEventListener("mousemove", (e) => { cursorStyle(e); });
-    });
+  .then(loadingSceneImages)
+  .then(()=>{
+    canvas.addEventListener("mousemove", (e) => { cursorStyle(e); }); //тут из-за возможного случайного дергания мышкой при загрузке страницы
+    drawScene();
+  });
   form = new FormEditor();
 });
 
@@ -197,9 +197,9 @@ function dbSaveAllSectors(){
 
 /************************ загрузка изображений карты *************************/
 function loadingSceneImages() {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     LOG("Loading images ..." , BLUE);
-    img_borders.src = "images/border.png"; 
+    img_borders.src = "images/border.png";
     img_background.src = "images/bgr.jpg";
     img_background.onload = () => {
       let scn = new Image();
@@ -532,17 +532,18 @@ btn_clear.addEventListener("click", () => {
 /************ запись данных карты в файл на локальный диск **********/
 document.addEventListener("keydown", (e)=>{keypressed(e)});
 function keypressed(e){
-  if (e.code == 'KeyS' && e.ctrlKey) {
+  if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S
     e.preventDefault();
     SaveFile();
   }
 }
 
 const btn_save = document.querySelector(".btn-save");
-btn_save.addEventListener("click", ()=>{SaveFile()} );
+btn_save.addEventListener("click", ()=>{ SaveFile() } );
 
 async function SaveFile() {
   //todo правильнее записать в базу на сервер (с уникальным id)
+  curtain.style.display = "block";
   NOTE("Сохранение данных карты в файл на диске.");
   const content = JSON.stringify(arrSector, null, "\t");
   let filename = genDateString();
@@ -561,6 +562,7 @@ async function SaveFile() {
     filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
   } catch { //если окно просто зарыли
     NOTE("");
+    curtain.style.display = "none";
     return;
   }
 
@@ -572,9 +574,11 @@ async function SaveFile() {
     NOTE("Файл данных карты " +filename +" можно переслать другому игроку", "для последующего редактирования.");
     btn_load.blur();
     div_filename.textContent = filename;
+    curtain.style.display = "none";
   }catch{
     LOG("Error saving map metadata!" , RED);
     NOTE("Ошибка записи файла данных карты.");
+    curtain.style.display = "none";
   }
   
   function genDateString(){
@@ -589,6 +593,7 @@ async function SaveFile() {
 };
 
 
+
 /************ чтение данных карты из json файла **********/
 const btn_load = document.querySelector(".btn-load");
 btn_load.addEventListener("click", async () => {
@@ -599,6 +604,7 @@ btn_load.addEventListener("click", async () => {
     //todo альтернативный ввод выбора файла для загрузки
   }
   
+  curtain.style.display = "block";
   NOTE("Выбор файла данных карты ...");
   let fileHandler;
   try{
@@ -610,6 +616,7 @@ btn_load.addEventListener("click", async () => {
     fileHandler = await window.showOpenFilePicker(options); //открывает окно для выбора клиентом локального файла
   } catch { //если окно просто зарыли
     NOTE("");
+    curtain.style.display = "none";
     return;
   }
   
@@ -623,9 +630,11 @@ btn_load.addEventListener("click", async () => {
     LOG("Map metadata downloaded.");
     NOTE("");
     div_filename.textContent = fname(file.name);
+    curtain.style.display = "none";
   } catch {
     NOTE("Ошибка загрузки файла данных карты!");
     LOG("Error reading map metadata!", RED);
+    curtain.style.display = "none";
   }
   btn_load.blur();
 
@@ -670,6 +679,8 @@ btn_imgcopy.addEventListener("click", () => {
 /*************** save - сохранить картинку в файл ******************/
 const btn_imgsave = document.querySelector(".btn-imgsave");
 btn_imgsave.addEventListener("click", ()=>{
+  btn_imgsave.blur();
+  curtain.style.display = "block";
   selected_color=null; //снять выбор штаба
   drawScene(); 
   SaveImage();
@@ -690,6 +701,7 @@ async function SaveImage() {
     filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
   } catch { //если окно просто закрыли
     NOTE("");
+    curtain.style.display = "none";
     return;
   };
 
@@ -700,9 +712,11 @@ async function SaveImage() {
       await writable.close();
       LOG("Image map is saved.");
       NOTE("Сохраненное изображение карты можно переслать или опубликовать.");
+      curtain.style.display = "none";
     }catch{
       LOG("Error saving image map!" , RED);
       NOTE("Ошибка записи изображения карты.");
+      curtain.style.display = "none";
     }
   });
 
@@ -755,42 +769,32 @@ async function writeClipboardText(text) {
 }
 
 // показать/скрыть help 
-const btn_help = document.querySelector(".btn-help");
-const btn_help_close = document.querySelector(".help-box_close");
 var help = {
-  div: document.querySelector(".help-box"),
-  mode: false,
+  div: document.querySelector(".help-box"),  
   hide: ()=>{
     curtain.style.display = "none";
-    help.div.style.visibility = "hidden";
-    help.mode = false;
+    help.div.style.visibility = "hidden";    
   },
   show: ()=>{
     curtain.style.display = "block";
-    help.div.style.visibility = "visible";
-    help.mode = true;
-  },
-  change: ()=>{
-    if (help.mode) help.hide();
-    else help.show();
-  }
+    help.div.style.visibility = "visible";    
+  }  
 }
-btn_help.addEventListener("click", ()=>{   help.change(); });
-btn_help_close.addEventListener("click", ()=>{   help.hide(); });
+document.querySelector(".btn-help").addEventListener("click", ()=>{   help.show(); });
+document.querySelector(".help-box_close").addEventListener("click", ()=>{   help.hide(); });
 
 
-// смена цветовой схемы warm/cold
-var frameName = document.getElementById("help-box");  //чтобы цвет менять и во фрейме
+// подбор цветовой схемы 
+var frameHelpName = document.getElementById("helpbox");
 var frameCnt;
-frameName.onload = ()=>{
-  frameCnt =frameName.contentWindow.document;
+frameHelpName.onload = ()=>{
+  frameCnt = frameHelpName.contentDocument; //чтобы цвет менять и во фрейме
+  //console.log(frameCnt);
 }
 const theme = {
   hue: 20,
-  change: ()=>{
-    console.log(frameCnt);
-    theme.hue +=20;
-    if (theme.hue>360) theme.hue = 0;
+  change: ()=>{    
+    if (theme.hue +=20 > 360) theme.hue = 0;
     let clr = getHLSColor(theme.hue);   
     color_light = clr.light; 
     document.documentElement.style.setProperty("--dark", clr.dark);

@@ -4,7 +4,7 @@ html {
 	font-size: 14px;
 	line-height: 1.2;
 	overflow-y: auto;
-	scrollbar-width: 5px;
+	scrollbar-width: auto;
 	scrollbar-color: var(--dark) var(--light);	
 }
 

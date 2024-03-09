@@ -12,12 +12,12 @@
 
 <body>
   <header>
-    <img src="images/border.png" class="brd_cold" style="display: none;"> <!-- предзагрузка -->
+    <img src="images/border.png" style="display: none;"> <!-- предзагрузка -->    
   </header>
   
   <main>
     <div class="curtain" style="display: none;">
-      <!-- шторка на весь main для блокировки нажатий при редактировании и других операциях -->
+      <!-- затенённая штора на весь main с блокировкой нажатий при редактировании и других операциях -->
     </div>
 
     <div class="button_controls">
@@ -41,7 +41,7 @@
         </div>
       </div>
 
-      <div class="file-name">
+      <div class="file-name" contenteditable>
         <!-- name -->
       </div>
       
@@ -100,19 +100,17 @@
 
       <!-- help area -->
       <div class="help-box" style="visibility: hidden;">
-        <div class="help-box_close" data-text="close">x</div>
-        <iframe src="help_ru.html" id="help-box" frameborder="0">
+        <div class="help-box_close" data-text="close">🞫</div>
+        <iframe id="helpbox" sandbox="allow-same-origin" src="help_ru.html">
           <a href="help_ru.html" target="_blank">help</a>
         </iframe>        
       </div>
       
 
     </div>
-    <div class="footer">
-      <div class="label-box">
-        Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка).
-      </div>
-    <div>     
+    <div class="label-box">
+      Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка).
+    </div>
     
   </main>
 

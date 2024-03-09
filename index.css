@@ -239,6 +239,7 @@ button:disabled {
 canvas {
 	width: 800px;
 	height: 600px;
+	/*mask-image: url(images/border.png);	*/
 }
 
 /************************** анимации *****************************/
@@ -463,10 +464,12 @@ canvas {
 	color: var(--dark);
 	border: var(--border-dark);
 	box-shadow: var(--shadow-light);
-	border-radius: 2px;
+	border-radius: 2px;	
 }
 
-#help-box{
+#helpbox{
+	border: none;
+	border-top: 1px solid var(--dark);
 	margin-top: 20px;	
 	width: calc(100% - 1px);
 	height: calc(100% - 20px);
@@ -480,7 +483,7 @@ canvas {
 	width: 20px;
 	font-size: 18px;
 	text-align: center;
-	cursor: pointer;	
+	cursor: pointer;		
 }
 
 .help-box_close:hover::after{
@@ -492,17 +495,10 @@ canvas {
 
 
 /************************** блок вывода подсказок **********************************/
-.footer{
-	height: 30px; 
-	position: relative;
-}
-
 .label-box {
-	position: absolute;
 	width: 100%;
-	top: 0px;
-	left: 10px;
-	font-size: 12px;
+	height: 30px; 
+	padding-left: 5px;	
 	color: var(--dark);
 }
 
@@ -533,7 +529,7 @@ canvas {
 	outline: 1px solid rgb(6, 23, 40);
 	border-right: none;
 	overflow-y: auto;
-	scrollbar-width: 5px;
+	scrollbar-width: thin;
 	scrollbar-color: rgb(77, 122, 167) rgb(6, 23, 40);
 }
 
