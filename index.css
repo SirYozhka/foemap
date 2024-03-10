@@ -273,8 +273,9 @@ canvas {
 }
 .monitor:hover::after { /* позиция заметки */
 	position: absolute;
-	bottom: -10px;
-	left: 5px;
+	top: 60px;
+	left: -30px;
+	width: 100px;
 }
 .monitor img {
 	position: relative;
@@ -292,7 +293,7 @@ canvas {
 }
 
 /**************************** editor **********************************/
-.sector_editor {
+.sector_editor {	
 	z-index: 2;
 	display: flex;
 	flex-direction: column;
@@ -308,6 +309,7 @@ canvas {
 	box-shadow: var(--shadow-light);
 	background-color: var(--light);
 	padding: 3px;
+	margin: 2px;
 	cursor: auto;
 }
 

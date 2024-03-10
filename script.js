@@ -136,6 +136,11 @@ function keypressed(e){
   }
 }
 
+curtain.addEventListener("click", ()=>{  
+  help.hide(); 
+  form.hide();
+  NOTE("");
+});
 
 /************* IndexedDB (хранение данных на клиенте) *************************/
 const dbName = "foesectors";
@@ -644,6 +649,7 @@ btn_imgcopy.addEventListener("click", () => {
     navigator.clipboard.write(data).then(
       () => {
         imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+        divClipBoard.setAttribute("data-text", "изображение карты в буфере обмена");
         NOTE("Карта скопирована в буфер обмена.", "Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ");
         LOG("Imagemap copied into clipboard.");
       },
@@ -712,8 +718,10 @@ const btn_imgbb = document.querySelector(".btn-imgbb");
 btn_imgbb.addEventListener("click", async () => {
   selected_color = null; //снять выделение выбора штаба
   drawScene();
+  canvas.classList.add("anim-copy");
 
   let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
   let formData = new FormData();
   formData.append("image", blob, "image.png");
  
@@ -729,28 +737,31 @@ btn_imgbb.addEventListener("click", async () => {
     if (!response.ok) {
       throw new Error("Error network IMGBB.COM connection!");
     }
-    const result = await response.json();
+    const result = await response.json(); 
+    LOG("Map image uploaded to imgbb.com server.");
     let map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
-    let short_link = map_link.slice(8); //короткая ссылка (без https://)
+    let short_link= map_link.slice(8); //короткая ссылка (без https://)
     writeClipboardText(short_link);
     let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
-    NOTE("Ссылка на карту: " + full_link + " скопирована в буфер обмена.", "Ctrl+V вставить ссылку в сообщение.");
     div_filename.innerHTML = full_link;
-    LOG("Map image uploaded to imgbb.com server.");
-    LOG("Link " + short_link + "copied into clipboard.", BLUE);    
+    NOTE("Ссылка на карту: " + full_link + " скопирована в буфер обмена.", "Ctrl+V вставить ссылку в сообщение.");
+    LOG("Link " + short_link + " copied into clipboard.", BLUE);  
+    setTimeout(() => {
+      canvas.classList.remove("anim-copy");
+      divClipBoard.style.display = "block";  
+      divClipBoard.setAttribute("data-text", "изображение карты на imgbb.com      (click to copy link)");
+    }, 800);
+    divClipBoard.addEventListener("click", ()=>{
+      writeClipboardText(short_link);
+    })
   } catch (error) {
     LOG("ERROR: " + error, RED);
+    NOTE("Ошибка загрузки изображения на сайт imgbb.com");
   }
 });
 
-// запись текста в буфер обмена
-async function writeClipboardText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (error) {
-    LOG(error.message, RED);
-  }
-}
+
+
 
 // показать/скрыть help 
 var help = {
@@ -772,15 +783,15 @@ document.querySelector(".help-box_close").addEventListener("click", ()=>{   help
 var frameHelpName = document.getElementById("helpbox");
 var frameCnt;
 frameHelpName.onload = ()=>{
-  frameCnt = frameHelpName.contentDocument; //чтобы цвет менять и во фрейме
-  //console.log(frameCnt);
+  frameCnt = frameHelpName.contentWindow.document; //чтобы цвет менять и во фрейме  
 }
 const theme = {
   hue: 20,
   change: ()=>{    
-    if (theme.hue +=20 > 360) theme.hue = 0;
+    theme.hue +=20;
+    if (theme.hue > 360) theme.hue = 0;
     let clr = getHLSColor(theme.hue);   
-    color_light = clr.light; 
+    color_light = clr.light;  //глобал: для текстовых надписей в канвасе
     document.documentElement.style.setProperty("--dark", clr.dark);
     document.documentElement.style.setProperty("--light", clr.light);
     frameCnt.documentElement.style.setProperty("--dark", clr.dark);
@@ -789,7 +800,7 @@ const theme = {
   }
 }
 function getHLSColor(hue) {  
-  if (!hue) hue = Math.floor(Math.random() * 360);  
+  if (!hue) hue = Math.floor(Math.random() * 360);  //без параметра - случайный цвет
   let clrL = "hsl(" + hue + ", 90%, 90%)";
   let clrD = "hsl(" + hue + ", 90%, 10%)";
   return {light:clrL , dark:clrD};
@@ -830,4 +841,13 @@ function LOG(message, color=YELLOW) {
     p_msg.style.opacity = "0.3";
     p_msg.scrollIntoView();
   }, 100);
+}
+
+// запись текста в буфер обмена
+async function writeClipboardText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    LOG(error.message, RED);
+  }
 }
