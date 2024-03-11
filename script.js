@@ -3,8 +3,9 @@
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
 
+//цвета для заметок NOTE(string, COLOR);
 const BLUE = "rgb(200,200,255)"; // текущий процесс
-const YELLOW = "rgb(250,255,200)"; //стандартные
+const YELLOW = "rgb(250,255,200)"; //стандартные (по умолчанию)
 const RED = "rgb(255,150,150)"; // ошибки
 
 const container = document.querySelector(".container"); //контейнер сцены
@@ -113,6 +114,7 @@ var arrSector = []; //текущее хранилище данных карты
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", () => {
   LOG("Initialization started ..." , BLUE);
+  NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
   dbSectorsOpen()
   .then(loadingSceneImages)
   .then(()=>{
@@ -120,7 +122,7 @@ window.addEventListener("load", () => {
     form = new FormEditor();
     drawScene();
   });
-  Confirm = new ModalFenster("Подтвердите действие");
+  Confirm = new ModalFenster("Подтвердите действие:");
 });
 
 
@@ -349,7 +351,7 @@ canvas.addEventListener("click", (e) => {
       selected_color = null;
     else {
       selected_color = arrSector[adr].color;
-      NOTE("Выбрать опорники для гильдии " + arrSector[adr].name + " (кликнуть по сектору).");
+      NOTE(`Выбрать опорники для гильдии ${arrSector[adr].name} (кликнуть по сектору).`);
     }
   } else if (selected_color) { //цвет выбран
     if (selected_color == arrSector[adr].color) //клик по той же гильдии - отмена выделения
@@ -484,7 +486,7 @@ class FormEditor{
 /*************** new - очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
 btn_new.addEventListener("click", () => {
-  Confirm.open("Создать новую чистую карту? <br> (названия всех секторов и количество осадок буду установлены по умолчанию)", ClearMap);
+  Confirm.open("Создать новую карту? <br> Изменения будут сброшены! <br> Все сектора будут иметь стандартные названия и количество мест под здания.", ClearMap);
 });
 
 function ClearMap() {
@@ -511,7 +513,7 @@ function ClearMap() {
 /*************** clear - очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
-  Confirm.open("Удалить опорники? <br> (штабы останутся на местах)" , ClearOsadki);  
+  Confirm.open("Отменить выбор опорников? <br> (штабы останутся на местах)" , ClearOsadki);
 });
 
 function ClearOsadki(){
@@ -798,7 +800,7 @@ class ModalFenster{
   m_callback; //внешняя функция, выполняющаяся при нажании OK или ENTER
   
   constructor(title){    
-    this.m_title.textContent = title || "Window title.";
+    this.m_title.textContent = title || "Confirm";
     this.m_window.addEventListener("keydown", (e) => {
       if (e.code === "Enter" || e.code === "NumpadEnter"){    
         this.m_callback(); 
@@ -818,11 +820,11 @@ class ModalFenster{
   }
   
   open(message, callback){
+    curtain.style.display = "block";
     this.m_message.innerHTML = message;
     this.m_callback = callback;
-    curtain.style.display = "block";
     this.m_window.style.display = "flex";    
-    this.m_window.setAttribute("tabindex", "0"); //чтобы работали события клавиатуры
+    this.m_window.setAttribute("tabindex", "0"); //чтобы сработало событие нажатия ENTER
     this.m_window.focus();  
   }
 

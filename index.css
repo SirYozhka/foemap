@@ -453,7 +453,6 @@ canvas {
 	width: 100%;
 }
 
-
 /*************** help ***********************/
 .help-box {
 	z-index: 2;
@@ -532,10 +531,10 @@ div.modal_header{
 	border-top-left-radius: 2px;
 	border-top-right-radius: 2px;
 }
-span.modal_title{
+div.modal_title{
 	margin-left: 5px;
 }
-span.modal_close{
+div.modal_close{
 	font-size: 20px;
 	line-height: 10px;
 	color: var(--light);
@@ -543,15 +542,16 @@ span.modal_close{
 	width: 20px;
 	text-align: center;	
 }
-span.modal_close:hover{
+div.modal_close:hover{
 	color: white;	
 	transform: scale(1.1);
 }
-span.modal_main{
+div.modal_message{
+	padding: 5px;
 	text-align: center;	
 }
-button.modal_ok{
-	width: 40px;
+div.modal_window button{
+	width: 60px;
 	margin: 5px;
 	cursor: pointer;
 }
