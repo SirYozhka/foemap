@@ -22,6 +22,7 @@ bufer_canvas.width = IMG_WITH; //зависит от параметров экр
 var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
 
 const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
+var Confirm; //окно подтверждения действия клясс ModalFenster
 const div_filename = document.querySelector(".file-name");
 var selected_color = null;
 var form; //класс формы редактирования сектора
@@ -119,6 +120,7 @@ window.addEventListener("load", () => {
     form = new FormEditor();
     drawScene();
   });
+  Confirm = new ModalFenster("Подтвердите действие");
 });
 
 
@@ -129,9 +131,10 @@ function keypressed(e){
     e.preventDefault();
     SaveFile();
   }
-  if (e.code === "Escape") { //общий ESC для любого окна
+  if (e.code === "Escape") { //общий ESC для любого окна - закрывает все/любые окна
     help.hide(); 
     form.hide();
+    Confirm.close();
     NOTE("");
   }
 }
@@ -139,6 +142,7 @@ function keypressed(e){
 curtain.addEventListener("click", ()=>{  
   help.hide(); 
   form.hide();
+  Confirm.close();
   NOTE("");
 });
 
@@ -387,12 +391,13 @@ class FormEditor{
       this.edit();
     });
     
-    /* нажатие на ENTER всё равно вызывает событие click на первой <button>
-    this.form_editor.addEventListener("keydown", (e) => { //запись по кнопкам
+    /* необязатльно, т.к. нажатие на ENTER всё равно вызывает событие click на первой <button> */
+    this.form_editor.addEventListener("keydown", (e) => { //запись по кнопке ENTER
       if (e.code === "Enter" || e.code === "NumpadEnter") {
         this.save();        
+        this.hide();
       }      
-    }); */
+    });
     
     this.btn_save.addEventListener("click", ()=>{ //кнопка SAVE
       this.save();      
@@ -479,8 +484,10 @@ class FormEditor{
 /*************** new - очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
 btn_new.addEventListener("click", () => {
-  let result = confirm("Полностью очистить карту? \n (убираются также штабы и названия)");
-  if (!result) return;
+  Confirm.open("Создать новую чистую карту? <br> (названия всех секторов и количество осадок буду установлены по умолчанию)", ClearMap);
+});
+
+function ClearMap() {
   selected_color=null; //снять выбор штаба
   container.classList.add("anim-clear");
   for (let i = 1; i <= 61; i++) {  //перезаписать настройки по умолчанию (id, x, y - не меняем !!!)
@@ -498,14 +505,16 @@ btn_new.addEventListener("click", () => {
     LOG("New map created.")
   }, 1000);
 
-});
+};
 
 
 /*************** clear - очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
-  let result = confirm("Удалить опорники? \n (штабы останутся на местах)");
-  if (!result) return;
+  Confirm.open("Удалить опорники? <br> (штабы останутся на местах)" , ClearOsadki);  
+});
+
+function ClearOsadki(){
   selected_color=null; //снять выбор штаба
   container.classList.add("anim-clear");
   for (let i = 1; i <= 61; i++) {
@@ -522,8 +531,7 @@ btn_clear.addEventListener("click", () => {
     container.classList.remove("anim-clear");
     LOG("Map cleared.")
   }, 1000);
-
-});
+}
 
 
 /************ запись данных карты в файл на локальный диск **********/
@@ -548,14 +556,15 @@ async function SaveFile() {
   };
 
   try {
-    filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
+    filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла    
+    filename = filehandler.name;
   } catch { //если окно просто зарыли
     NOTE("");
     curtain.style.display = "none";
     return;
   }
 
-  try{
+  try {
     const writable = await filehandler.createWritable();
     await writable.write(content);
     await writable.close();
@@ -564,7 +573,7 @@ async function SaveFile() {
     btn_load.blur();
     div_filename.textContent = filename;
     curtain.style.display = "none";
-  }catch{
+  } catch {
     LOG("Error saving map metadata!" , RED);
     NOTE("Ошибка записи файла данных карты.");
     curtain.style.display = "none";
@@ -761,22 +770,68 @@ btn_imgbb.addEventListener("click", async () => {
 });
 
 
-
-
 // показать/скрыть help 
 var help = {
   div: document.querySelector(".help-box"),  
   hide: ()=>{
     curtain.style.display = "none";
-    help.div.style.visibility = "hidden";    
+    help.div.style.display = "none";    
   },
   show: ()=>{
     curtain.style.display = "block";
-    help.div.style.visibility = "visible";    
+    help.div.style.display = "flex";    
   }  
 }
 document.querySelector(".btn-help").addEventListener("click", ()=>{   help.show(); });
 document.querySelector(".help-box_close").addEventListener("click", ()=>{   help.hide(); });
+
+
+
+//*********************** модальное окно *************************/
+class ModalFenster{  
+  m_window = document.querySelector(".modal_window");
+  m_title = document.querySelector(".modal_title");  
+  m_message = document.querySelector(".modal_message");
+  m_close = document.querySelector(".modal_close");
+  m_buttonOk = document.querySelector(".modal_ok"); 
+  m_buttonCanc = document.querySelector(".modal_cancel"); 
+  m_callback; //внешняя функция, выполняющаяся при нажании OK или ENTER
+  
+  constructor(title){    
+    this.m_title.textContent = title || "Window title.";
+    this.m_window.addEventListener("keydown", (e) => {
+      if (e.code === "Enter" || e.code === "NumpadEnter"){    
+        this.m_callback(); 
+        this.close();
+      }
+    });
+    this.m_buttonOk.addEventListener("click", ()=>{      
+      this.m_callback(); 
+      this.close();
+    });
+    this.m_close.addEventListener("click", ()=>{  
+      this.close();
+    });
+    this.m_buttonCanc.addEventListener("click", ()=>{  
+      this.close();
+    });
+  }
+  
+  open(message, callback){
+    this.m_message.innerHTML = message;
+    this.m_callback = callback;
+    curtain.style.display = "block";
+    this.m_window.style.display = "flex";    
+    this.m_window.setAttribute("tabindex", "0"); //чтобы работали события клавиатуры
+    this.m_window.focus();  
+  }
+
+  close(){
+    curtain.style.display = "none";
+    this.m_window.style.display = "none";    
+  }
+
+}
 
 
 // подбор цветовой схемы 

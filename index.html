@@ -45,7 +45,7 @@
         <!-- name -->
       </div>
       
-      <div class="menu_line">
+      <div class="menu_line">        
         <button class="btn-help" data-text="описание">help</button>
         <button class="btn-theme" data-text="сменить цветовую тему">theme</button>
       </div>
@@ -94,15 +94,30 @@
       </div>
 
       <!-- help area -->
-      <div class="help-box" style="visibility: hidden;">
+      <div class="help-box" style="display: none;">
         <div class="help-box_close" data-text="close">🞫</div>
         <iframe id="helpbox" sandbox="allow-same-origin" src="help_ru.html">
           <a href="help_ru.html" target="_blank">help</a>
         </iframe>        
       </div>
-      
+
+      <!-- модальное окно confirm -->
+      <div class="modal_window" style="display: none;">
+        <div class="modal_header">
+          <span class="modal_title"> <!-- Заголовок окна --> </span>
+          <span class="modal_close">🞫</span>
+        </div>
+        <span class="modal_message">
+          <!-- Текст окна -->
+        </span>
+        <div>
+          <button class="modal_ok">OK</button>
+          <button class="modal_cancel">CANCEL</button>
+        </div>
+    </div>
 
     </div>
+
     <div class="label-box">
       Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). Редактор (правая кнопка).
     </div>
