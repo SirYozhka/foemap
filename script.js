@@ -1,5 +1,72 @@
 "use strict";
 
+//*********************** модальное окно *************************/
+class ModalFenster{  
+  m_window = document.querySelector(".modal_window");
+  m_controls = document.querySelector(".modal_controls");
+  m_title = "Window title";  //заголовок окна  
+  m_buttons; //блок кнопок
+      
+  constructor(title, buttons){    
+    this.m_title = title;
+    this.m_buttons = buttons;
+    document.querySelector(".modal_close").addEventListener("click", ()=>{  
+      this.close();
+    });
+    this.m_window.addEventListener("keydown", (e) => { 
+      if ((e.code === "Enter" || e.code === "NumpadEnter") && !m_ctrl){  //если нет блока кнопок то закрыть на ENTER
+        this.close();
+      }
+      if (e.code === "Escape") { //общий ESC для любого окна - закрывает все/любые окна
+        this.close();
+      }
+    }); 
+    curtain.addEventListener("click", ()=>{  
+      this.close();
+    });
+  }
+
+  open(body){
+    curtain.style.display = "block"; //блок-шторка на весь экран
+    document.querySelector(".modal_title").textContent = this.m_title;
+    document.querySelector(".modal_body").innerHTML = body;
+    if (this.m_buttons){
+      this.m_controls.innerHTML = ""; //очистить TODO - вероятна утечка памяти из-за неудалённых листенеров !!!
+      this.m_controls.style.visibility = "visible";
+      let n = this.m_buttons.length;
+      for (let i=0; i<n; i++){
+        let btn = document.createElement("button");
+        btn.textContent = this.m_buttons[i].name;
+        this.m_controls.appendChild(btn);
+        btn.addEventListener("click", ()=>{
+          this.m_buttons[i].callback();
+          this.close();
+        })       
+      }        
+    } else 
+      this.m_controls.style.visibility = "hidden";
+    this.m_window.style.display = "flex";    
+    this.m_window.setAttribute("tabindex", "0"); //чтобы сработало событие нажатия ENTER
+    this.m_window.focus();  
+  }
+
+  close(){
+    curtain.style.display = "none";
+    this.m_window.style.display = "none";    
+    NOTE("");
+  }
+
+}
+
+/* DEBUG
+var test = document.querySelector(".btn-test");
+test.style.visibility = "visible";
+test.addEventListener("click", ()=>{  
+  //conf_clear_fenster.open("clear sectors");
+});
+*/
+
+
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
 
@@ -9,6 +76,8 @@ const YELLOW = "rgb(250,255,200)"; //стандартные (по умолчан
 const RED = "rgb(255,150,150)"; // ошибки
 
 const container = document.querySelector(".container"); //контейнер сцены
+const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
+const div_filename = document.querySelector(".file-name");
 
 const canvas = document.querySelector("canvas"); // "экранный" канвас
 const ctx = canvas.getContext("2d", { alpha: false });
@@ -20,18 +89,17 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
-var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
+canvas.addEventListener("mousemove", (e) => { cursorStyle(e); }); //тут из-за возможного случайного дергания мышкой при загрузке страницы
 
-const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
-var Confirm; //окно подтверждения действия клясс ModalFenster
-const div_filename = document.querySelector(".file-name");
+var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
 var selected_color = null;
-var form; //класс формы редактирования сектора
-var img_background = new Image(); //фоновое изображение водопада
+var sector_editor; //класс формы редактирования сектора
+var img_background = new Image(); //фоновое изображение водопада/вулкана
 var img_borders = new Image(); //границы секторов
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
 var data_scene; //холст для раскраски (просто прозрачный)
 var alpha = 200; //альфаканал для прозрачности заливки
+
 
 var colors = [ 
   { r: 0, g: 0, b: 0, a: 0 , name:"transparent"}, //нулевой - прозрачный
@@ -45,8 +113,8 @@ var colors = [
   { r: 250, g: 0, b: 0, a: alpha, name:"red" }, //красный
 ];
 
-const defSectors = [{id: 0 }, // нумерация секторов с единицы!
-  {id: 1, name: "A5A", os: 1, color: 0 },
+const def_sec2 = [{id: 0, name:"waterfall", os: 2}, // os = 2 - флаг для используемой базы
+  {id: 1, name: "A5A", os: 1, color: 0 }, // нумерация секторов с единицы!
   {id: 2, name: "A5D", os: 1, color: 0 },
   {id: 3, name: "B5C", os: 1, color: 0 },
   {id: 4, name: "C5B", os: 1, color: 0 },
@@ -108,49 +176,133 @@ const defSectors = [{id: 0 }, // нумерация секторов с един
   {id:60, name: "F4C", os: 2, color: 0 },
   {id:61, name: "F5D", os: 1, color: 0 },
 ];
-var arrSector = []; //текущее хранилище данных карты
+const def_sec1 = [{id: 0, name:"vulcan", os: 1}, // os = 1 - флаг для используемой базы
+  {id: 1, name: "A1M", os: 3, color: 0 }, // нумерация секторов с единицы!
+  {id: 2, name: "B1O", os: 3, color: 0 },
+  {id: 3, name: "C1N", os: 3, color: 0 },
+  {id: 4, name: "D1B", os: 3, color: 0 },
+  {id: 5, name: "A2S", os: 2, color: 0 },
+  {id: 6, name: "A2T", os: 2, color: 0 },
+  {id: 7, name: "B2S", os: 2, color: 0 },
+  {id: 8, name: "B2T", os: 2, color: 0 },
+  {id: 9, name: "C2S", os: 2, color: 0 },
+  {id:10, name: "C2T", os: 2, color: 0 }, // 10
+  {id:11, name: "D2S", os: 2, color: 0 },
+  {id:12, name: "D2T", os: 2, color: 0 },
+  {id:13, name: "A3V", os: 1, color: 0 },
+  {id:14, name: "A3X", os: 1, color: 0 },
+  {id:15, name: "A3Y", os: 1, color: 0 },
+  {id:16, name: "A3Z", os: 1, color: 0 },
+  {id:17, name: "B3V", os: 1, color: 0 },
+  {id:18, name: "B3X", os: 1, color: 0 },
+  {id:19, name: "B3Y", os: 1, color: 0 }, //19
+  {id:20, name: "B3Z", os: 1, color: 0 },
+  {id:21, name: "C3V", os: 1, color: 0 },
+  {id:22, name: "C3X", os: 1, color: 0 },
+  {id:23, name: "C3Y", os: 1, color: 0 },
+  {id:24, name: "C3Z", os: 1, color: 0 },
+  {id:25, name: "D3V", os: 1, color: 0 },
+  {id:26, name: "D3X", os: 1, color: 0 },
+  {id:27, name: "D3Y", os: 1, color: 0 },
+  {id:28, name: "D3Z", os: 1, color: 0 },
+  {id:29, name: "A4A", os: 1, color: 0 },
+  {id:30, name: "A4B", os: 1, color: 0 },
+  {id:31, name: "A4C", os: 1, color: 0 },
+  {id:32, name: "A4D", os: 1, color: 0 },
+  {id:33, name: "A4E", os: 1, color: 0 },
+  {id:34, name: "A4F", os: 1, color: 0 },
+  {id:35, name: "A4G", os: 1, color: 0 },
+  {id:36, name: "A4H", os: 1, color: 0 },
+  {id:37, name: "B4A", os: 1, color: 0 },
+  {id:38, name: "B4B", os: 1, color: 0 },
+  {id:39, name: "B4C", os: 1, color: 0 },
+  {id:40, name: "B4D", os: 1, color: 0 },
+  {id:41, name: "B4E", os: 1, color: 0 },
+  {id:42, name: "B4F", os: 1, color: 0 },
+  {id:43, name: "B4G", os: 1, color: 0 },
+  {id:44, name: "B4H", os: 1, color: 0 },
+  {id:45, name: "C4A", os: 1, color: 0 },
+  {id:46, name: "C4B", os: 1, color: 0 },
+  {id:47, name: "C4C", os: 1, color: 0 },
+  {id:48, name: "C4D", os: 1, color: 0 },
+  {id:49, name: "C4E", os: 1, color: 0 },
+  {id:50, name: "C4F", os: 1, color: 0 },
+  {id:51, name: "C4G", os: 1, color: 0 },
+  {id:52, name: "C4H", os: 1, color: 0 },
+  {id:53, name: "D4A", os: 1, color: 0 },
+  {id:54, name: "D4B", os: 1, color: 0 },
+  {id:55, name: "D4C", os: 1, color: 0 },
+  {id:56, name: "D4D", os: 1, color: 0 },
+  {id:57, name: "D4E", os: 1, color: 0 },
+  {id:58, name: "D4F", os: 1, color: 0 },
+  {id:59, name: "D4G", os: 1, color: 0 },
+  {id:60, name: "D4H", os: 1, color: 0 },
+  {id:61, name: "0", os: 1, color: 0 },
+];
+var arrSector = []; //оперативное хранилище данных карты
+
+
+var nmap = 1; //по умолчанию карта вулкана
+var nsec = 60; //вулкан 60 секторов (водопад - 61)
+var defSectors = def_sec1;
+
+function MapChoise(map){
+  nmap = map; 
+  if (map == 1){
+    nsec = 60; //вулкан 60 секторов
+    defSectors = def_sec1;
+  } else {
+    nsec = 61; //водопад 61 секторов
+    defSectors = def_sec2;
+  }
+}
+  
+
+/******************** загрузка содержимого help.html *************************/
+//todo убрать фрейм грузить текст хелпа в общем html
+var helpHTML;
+var frameName = document.getElementById("helpbox"); //получить содержимое iframe
+frameName.addEventListener("load", ()=>{    
+  let frameCnt = frameName.contentWindow.document; 
+  helpHTML = frameCnt.querySelector("body").innerHTML;  
+});
+
+let msg_fenster = new ModalFenster("Описание.");
+
+document.querySelector(".btn-help").addEventListener("click", ()=>{     // показать/скрыть help 
+  msg_fenster.open(helpHTML);
+});
 
 
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", () => {
   LOG("Initialization started ..." , BLUE);
-  NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
+  
   dbSectorsOpen()
-  .then(loadingSceneImages)
-  .then(()=>{
-    canvas.addEventListener("mousemove", (e) => { cursorStyle(e); }); //тут из-за возможного случайного дергания мышкой при загрузке страницы
-    form = new FormEditor();
-    drawScene();
-  });
-  Confirm = new ModalFenster("Подтвердите действие:");
+    .then(loadingSceneImages)
+    .then(drawScene);
+  
+  sector_editor = new FormEditor();
+  NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
 });
 
 
-/*********** нажатия клавиш в документе ***/
+/*********************** нажатия клавиш в документе **************************/
 document.addEventListener("keydown", (e)=>{keypressed(e)});
 function keypressed(e){
   if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
     e.preventDefault();
     SaveFile();
   }
-  if (e.code === "Escape") { //общий ESC для любого окна - закрывает все/любые окна
-    help.hide(); 
-    form.hide();
-    Confirm.close();
-    NOTE("");
-  }
 }
 
-curtain.addEventListener("click", ()=>{  
-  help.hide(); 
-  form.hide();
-  Confirm.close();
-  NOTE("");
-});
+curtain.addEventListener("click",()=>{
+  sector_editor.hide();
+})
 
 /************* IndexedDB (хранение данных на клиенте) *************************/
 const dbName = "foesectors";
-const dbVersion = 2; //версия базы
+const dbVersion = 3; //версия базы
 var dbData; //экземпляр объекта базы
 
 function dbSectorsOpen() {
@@ -169,14 +321,14 @@ function dbSectorsOpen() {
     };
 
     dbRequest.onupgradeneeded = function (event) {  //создание базы при первом запуске ( изменении версии )
-      btn_help.click(); //показать help при первом запуске
+      msg_fenster.open(helpHTML); //показать help при первом запуске
       LOG("Database (ver. " + dbVersion + ") setup ...");
       arrSector = JSON.parse(JSON.stringify(defSectors)); //копируем настройки по умолчанию 
       let db = event.target.result;
       if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors"
         db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
       let userStore = db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false}); //и создать
-      for (let sec = 0; sec <= 61; sec++)
+      for (let sec = 0; sec <= 61; sec++) //для вулкана 61-й сектор пустой но размер базы тот же для простоты
         userStore.add(arrSector[sec]); //заполняем базу
     };
 
@@ -218,19 +370,22 @@ function dbSaveAllSectors(){
 function loadingSceneImages() {
   return new Promise(async (resolve, reject) => {
     LOG("Loading images ..." , BLUE);
-    img_borders.src = "images/border.png";
-    img_background.src = "images/bgr.jpg";
+    img_borders.src = "images/border"+nmap+".png";
+    img_background.src = "images/bgr"+nmap+".jpg";
     img_background.onload = () => {
+      container.style.background = 'url("images/bgr'+nmap+'.jpg")';
       let scn = new Image();
       scn.src = "images/scene.png";
       scn.onload = () => {
         LOG("Calculation scene ..." , BLUE);
-        let adr = new Image();
-        adr.src = "images/addresses.bmp";
+        bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
         bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
         data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let adr = new Image();
+        adr.src = "images/addresses" + nmap + ".bmp";
         adr.onload = () => {
           LOG("Calculation addresses ..." , BLUE);
+          bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
           bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
           data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
           calculationSectorsCenters();
@@ -245,24 +400,26 @@ function loadingSceneImages() {
   // поиск центров секторов и закраска секторов в цвет гильдии
   function calculationSectorsCenters() {
     let maxX = [],  minX = [],  maxY = [],  minY = [];
-    for (let s = 1; s <= 61; s++) {
+    for (let s = 1; s <= nsec; s++) { 
       maxX[s] = 0;
       minX[s] = IMG_WITH;
       maxY[s] = 0;
       minY[s] = IMG_HEGHT;
     }
-    for (let i = 0; i < data_address.data.length; i += 4) {
-      let s = data_address.data[i]; //red компонента содержит порядковый номер сектора
-      if (s < 62) { //остальное поле сцены оставить прозрачным
+    let n=data_address.data.length;
+    for (let i = 0; i < n; i += 4) {
+      let r = data_address.data[i]; //red компонента содержит порядковый номер сектора
+      if (data_address.data[i+1] !=0 || data_address.data[i+2] !=0) continue; //случайные пиксели (todo надо бы улучшить address.bmp)
+      if (r <= nsec) { 
         let y = ~~(i / 4 / IMG_WITH);
         let x = i / 4 - y * IMG_WITH;
-        if (x > maxX[s]) maxX[s] = x;
-        if (y > maxY[s]) maxY[s] = y;
-        if (x < minX[s]) minX[s] = x;
-        if (y < minY[s]) minY[s] = y;
+        if (x > maxX[r]) maxX[r] = x;
+        if (y > maxY[r]) maxY[r] = y;
+        if (x < minX[r]) minX[r] = x;
+        if (y < minY[r]) minY[r] = y;
       }
     }
-    for (let s = 1; s <= 61; s++) { 
+    for (let s = 1; s <= nsec; s++) { 
       arrSector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
       arrSector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
     }
@@ -273,7 +430,7 @@ function loadingSceneImages() {
 
 /************************ отрисовка сцены *********************************/
 ctx.textAlign = "center";
-ctx.font = "bold 16px arial";
+ctx.font = "bold 14px arial";
 ctx.fontStretch = "ultra-condensed"; 
 ctx.textRendering = "geometricPrecision";
 ctx.shadowOffsetX = 0.3;
@@ -292,7 +449,7 @@ function drawScene() {
   //границы секторов
   ctx.drawImage(img_borders, 0, 0, canvas.width, canvas.height);
   //подписи секторов
-  for (let s = 1; s <= 61; s++) { 
+  for (let s = 1; s <= nsec; s++) { 
     if (arrSector[s].color == selected_color) { //выбранная гильдия
       ctx.fillStyle = color_light;
       ctx.shadowColor = "black";
@@ -300,9 +457,10 @@ function drawScene() {
       ctx.fillStyle = "black";
       ctx.shadowColor = color_light;
     }
-    let osadki = (arrSector[s].os==0) ? "штаб" : "🞅".repeat(arrSector[s].os); //🞔🞕🞅🞇🞖🞚🞛
     ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y);
     ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y); //для "усиления" тени двойная прорисовка
+    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y); //для "усиления" тени двойная прорисовка
+    let osadki = (arrSector[s].os==0) ? "штаб" : "🞇".repeat(arrSector[s].os); //🞔🞕🞅🞇🞖🞚🞛
     ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);
     ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);  //для "усиления" тени двойная прорисовка
   }
@@ -310,7 +468,8 @@ function drawScene() {
 
 function sceneFillSector(adr) { //заливка сектора цветом color
   let color = colors[arrSector[adr].color];
-  for (var i = 0; i < data_address.data.length; i += 4) {
+  let n=data_address.data.length;
+  for (var i = 0; i < n; i += 4) {
     if (data_address.data[i] == adr) {
       fillPoint(i, color);
     }
@@ -319,7 +478,8 @@ function sceneFillSector(adr) { //заливка сектора цветом col
 
 function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом
   LOG("Filling sectors with colors..." , BLUE);
-  for (var i = 0; i < data_address.data.length; i += 4) {
+  let n=data_address.data.length;
+  for (var i = 0; i < n; i += 4) {
     let adr = data_address.data[i];
     if (adr < 62) {
       fillPoint(i, colors[arrSector[adr].color]);
@@ -335,13 +495,12 @@ function fillPoint(adr, color){
 }
 
 
+
 /***************** клик по сектору - выбор гильдии / заливка *********************************/
-canvas.addEventListener("click", (e) => {
-  form.hide(); //закрыть другой редактор если открыт (на всяк случай)
-  help.hide(); //закрыть help если открыт
+canvas.addEventListener("click", (e) => {  
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
   let adr = data_address.data[offset]; //red component = number of address
-  if (adr > 61) {  //клик не по сектору 
+  if (adr > nsec) {  //клик не по сектору 
     NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору)."," Редактор сектора (правая кнопка)" );
     return;
   }
@@ -387,7 +546,7 @@ class FormEditor{
       event.stopPropagation();
       let offset=(event.offsetY * IMG_WITH + event.offsetX) * 4;
       this.adr = data_address.data[offset]; // number of address (red component)
-      if (this.adr < 1 || this.adr > 61) return; //клик не на секторе
+      if (this.adr < 1 || this.adr > nsec) return; //клик не на секторе
       selected_color=null; //снять выбор штаба
       drawScene(); 
       this.edit();
@@ -399,7 +558,11 @@ class FormEditor{
         this.save();        
         this.hide();
       }      
+      if (e.code === "Escape") {          
+        this.hide();
+      }      
     });
+    
     
     this.btn_save.addEventListener("click", ()=>{ //кнопка SAVE
       this.save();      
@@ -485,21 +648,29 @@ class FormEditor{
 
 /*************** new - очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
+var conf_new_fenster = new ModalFenster("Создание новой карты.", [
+  {name:"ВУЛКАН", callback: ()=>{ClearMap(1)}},
+  {name:"ВОДОПАД", callback: ()=>{ClearMap(2)}},
+]);
 btn_new.addEventListener("click", () => {
-  Confirm.open("Создать новую карту? <br> Изменения будут сброшены! <br> Все сектора будут иметь стандартные названия и количество мест под здания.", ClearMap);
+  conf_new_fenster.open("<div style='text-align:center;'><h2>Выберите карту</h2> <br> ВНИМАНИЕ! <br> Текущие изменения не сохраняются! </div>");
 });
 
-function ClearMap() {
-  selected_color=null; //снять выбор штаба
+
+function ClearMap(map) {
+  MapChoise(map);
   container.classList.add("anim-clear");
-  for (let i = 1; i <= 61; i++) {  //перезаписать настройки по умолчанию (id, x, y - не меняем !!!)
+  for (let i = 1; i <= nsec; i++) {  //перезаписать настройки по умолчанию (id, x, y - не меняем !!!)
     arrSector[i].name = defSectors[i].name; 
     arrSector[i].os = defSectors[i].os; 
     arrSector[i].color = 0; 
+    arrSector[i].x = 0; 
+    arrSector[i].y = 0; 
   }
-  dbSaveAllSectors(); //сохранить все сектора в IndexedDB
-  sceneFillSectorAll();
+  loadingSceneImages().then(dbSaveAllSectors);
+  
   setTimeout(() => { //перерисовать сцену в середине анимации
+    selected_color=null; //снять выбор штаба
     drawScene();
   }, 500);  
   setTimeout(() => { //дать возможность закончить анимацию
@@ -512,14 +683,18 @@ function ClearMap() {
 
 /*************** clear - очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
+var conf_clear_fenster = new ModalFenster("Подтвердите действие:", [
+  {name:"OK", callback: ClearOsadki},
+  {name:"CANCEL", callback: ()=>{}},
+]);
 btn_clear.addEventListener("click", () => {
-  Confirm.open("Отменить выбор опорников? <br> (штабы останутся на местах)" , ClearOsadki);
+  conf_clear_fenster.open("Отменить выбор опорников? <br> (штабы останутся на местах)");
 });
 
 function ClearOsadki(){
   selected_color=null; //снять выбор штаба
   container.classList.add("anim-clear");
-  for (let i = 1; i <= 61; i++) {
+  for (let i = 1; i <= nsec; i++) {
     if (arrSector[i].os!=0){ // не штаб
       arrSector[i].color = 0; //отметить что сектор не занят
       sceneFillSector(i, colors[0]); //убрать заливку
@@ -599,12 +774,12 @@ const btn_load = document.querySelector(".btn-load");
 btn_load.addEventListener("click", async () => {
   //todo правильнее загрузить из базы на сервере (с уникальным id)
   if (!('showOpenFilePicker' in window)){
-    NOTE("Невозможно записать файл в вашем браузере."); 
+    NOTE("Невозможно открыть файл в вашем браузере."); 
     return;
     //todo альтернативный ввод выбора файла для загрузки
   }
   
-  curtain.style.display = "block";
+  curtain.style.display = "block"; //шторка
   NOTE("Выбор файла данных карты ...");
   let fileHandler;
   try{
@@ -624,9 +799,15 @@ btn_load.addEventListener("click", async () => {
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
     arrSector = JSON.parse(contents);
-    dbSaveAllSectors();
-    sceneFillSectorAll();
-    drawScene(); 
+    let map = arrSector[0].os;
+    if(!map) map = 2; //todo для старых json файлов     
+    MapChoise(map);
+    loadingSceneImages()
+      .then(dbSaveAllSectors)
+      .then(()=>{
+        sceneFillSectorAll;
+        drawScene(); 
+      });
     LOG("Map metadata downloaded.");
     NOTE("");
     div_filename.textContent = fname(file.name);
@@ -644,6 +825,7 @@ btn_load.addEventListener("click", async () => {
   }
  
 });
+
 
 
 /*************** копироваине карты в буфер обмена ******************/
@@ -675,6 +857,7 @@ btn_imgcopy.addEventListener("click", () => {
     btn_imgcopy.removeAttribute("disabled"); //разблокировать кнопку copy
   }, 800);
 });
+
 
 
 /*************** save - сохранить картинку в файл ******************/
@@ -722,6 +905,7 @@ async function SaveImage() {
   });
 
 };
+
 
 
 /*************** upload - загрузка на сервер imgbb.com ******************/
@@ -772,76 +956,12 @@ btn_imgbb.addEventListener("click", async () => {
 });
 
 
-// показать/скрыть help 
-var help = {
-  div: document.querySelector(".help-box"),  
-  hide: ()=>{
-    curtain.style.display = "none";
-    help.div.style.display = "none";    
-  },
-  show: ()=>{
-    curtain.style.display = "block";
-    help.div.style.display = "flex";    
-  }  
-}
-document.querySelector(".btn-help").addEventListener("click", ()=>{   help.show(); });
-document.querySelector(".help-box_close").addEventListener("click", ()=>{   help.hide(); });
 
-
-
-//*********************** модальное окно *************************/
-class ModalFenster{  
-  m_window = document.querySelector(".modal_window");
-  m_title = document.querySelector(".modal_title");  
-  m_message = document.querySelector(".modal_message");
-  m_close = document.querySelector(".modal_close");
-  m_buttonOk = document.querySelector(".modal_ok"); 
-  m_buttonCanc = document.querySelector(".modal_cancel"); 
-  m_callback; //внешняя функция, выполняющаяся при нажании OK или ENTER
-  
-  constructor(title){    
-    this.m_title.textContent = title || "Confirm";
-    this.m_window.addEventListener("keydown", (e) => {
-      if (e.code === "Enter" || e.code === "NumpadEnter"){    
-        this.m_callback(); 
-        this.close();
-      }
-    });
-    this.m_buttonOk.addEventListener("click", ()=>{      
-      this.m_callback(); 
-      this.close();
-    });
-    this.m_close.addEventListener("click", ()=>{  
-      this.close();
-    });
-    this.m_buttonCanc.addEventListener("click", ()=>{  
-      this.close();
-    });
-  }
-  
-  open(message, callback){
-    curtain.style.display = "block";
-    this.m_message.innerHTML = message;
-    this.m_callback = callback;
-    this.m_window.style.display = "flex";    
-    this.m_window.setAttribute("tabindex", "0"); //чтобы сработало событие нажатия ENTER
-    this.m_window.focus();  
-  }
-
-  close(){
-    curtain.style.display = "none";
-    this.m_window.style.display = "none";    
-  }
-
-}
-
+/******************************************************************
+******************* СЕРВИСНЫЕ ФУНКЦИИ *****************************
+*******************************************************************/
 
 // подбор цветовой схемы 
-var frameHelpName = document.getElementById("helpbox");
-var frameCnt;
-frameHelpName.onload = ()=>{
-  frameCnt = frameHelpName.contentWindow.document; //чтобы цвет менять и во фрейме  
-}
 const theme = {
   hue: 20,
   change: ()=>{    
@@ -850,9 +970,7 @@ const theme = {
     let clr = getHLSColor(theme.hue);   
     color_light = clr.light;  //глобал: для текстовых надписей в канвасе
     document.documentElement.style.setProperty("--dark", clr.dark);
-    document.documentElement.style.setProperty("--light", clr.light);
-    frameCnt.documentElement.style.setProperty("--dark", clr.dark);
-    frameCnt.documentElement.style.setProperty("--light", clr.light);
+    document.documentElement.style.setProperty("--light", clr.light);    
     drawScene();
   }
 }
@@ -867,9 +985,14 @@ document.querySelector(".btn-theme").addEventListener("click", ()=>{  theme.chan
 
 // вид курсора
 function cursorStyle(e) {
-  let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
-  let adr = data_address.data[offset]; //получить red component = number of address
-  if (!adr || adr > 61 || adr < 1){ //за пределами секторов
+  let adr;
+  try {
+    let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
+    adr = data_address.data[offset]; //получить red component = number of address
+  } catch {
+    return;
+  }
+  if (!adr || adr > nsec || adr < 1){ //за пределами секторов
     container.style.cursor = "default";
   } else {
     if (arrSector[adr].os == 0) {    //штаб - пипетка

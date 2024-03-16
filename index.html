@@ -7,12 +7,15 @@
   <meta name="viewport" content="width=device-width" />
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="index.css">
+  
   <script src="script.js" defer></script>
 </head>
 
 <body>
   <header>
-    <img src="images/border.png" style="display: none;"> <!-- предзагрузка -->    
+    <img src="images/border1.png" style="display: none;"> <!-- предзагрузка -->    
+    <img src="images/border2.png" style="display: none;"> <!-- предзагрузка -->  
+    <iframe id="helpbox" src="help_ru.html" style="display: none;"></iframe> <!-- help html --> 
   </header>
   
   <main>
@@ -46,6 +49,7 @@
       </div>
       
       <div class="menu_line">        
+        <button class="btn-test" data-text="DEBUG" style="visibility: hidden;">test</button>
         <button class="btn-help" data-text="описание">help</button>
         <button class="btn-theme" data-text="сменить цветовую тему">theme</button>
       </div>
@@ -93,27 +97,18 @@
       <div id="log-box">
       </div>
 
-      <!-- help area -->
-      <div class="help-box" style="display: none;">
-        <div class="help-box_close" data-text="close">🞫</div>
-        <iframe id="helpbox" sandbox="allow-same-origin" src="help_ru.html">
-          <a href="help_ru.html" target="_blank">help</a>
-        </iframe>        
-      </div>
-
-      <!-- модальное окно confirm -->
+      <!-- модальное окно -->
       <div class="modal_window" style="display: none;">
         <div class="modal_header">
           <div class="modal_title"> <!-- Заголовок окна --> </div>
           <div class="modal_close">🞫</div>
         </div>
-        <div class="modal_message">
-          <!-- Текст окна -->
-        </div>
-        <div>
-          <button class="modal_ok">OK</button>
-          <button class="modal_cancel">CANCEL</button>
-        </div>
+        <div class="modal_body">
+          <!-- Содержимое окна -->
+        </div>     
+        <div class="modal_controls" style="visibility: hidden;">          
+          <!-- Кнопки окна (при наличии) -->        
+        </div>                
       </div>
 
     </div>
@@ -124,7 +119,7 @@
     
   </main>
 
-
+  
 </body>
 
 </html>
