@@ -643,7 +643,8 @@ class FormEditor{
     NOTE("Данные записаны, карта обновлена.");
   }
 
-} //end edit class
+} //end class FormEditor
+
 
 
 /*************** new - очистить всю карту ******************/
