@@ -1,5 +1,5 @@
 "use strict";
-import { ModalFenster } from "./modal";
+//import { ModalFenster } from "./modal";
 
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
@@ -8,12 +8,6 @@ const IMG_HEGHT = 600; // (px)
 const YELLOW = "rgb(250,255,200)"; //готово (цвет по умолчанию)
 const BLUE = "rgb(200,200,255)"; // процесс
 const RED = "rgb(255,150,150)"; // ошибки
-
-const fenster = new ModalFenster(); //модальное окно
-const idb = new IndexedDB("foesectors", 5);  //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
-const img_background = new Image(); //фоновое изображение водопада/вулкана
-const img_borders = new Image(); //границы секторов
-var editor; //форма редактирования сектора
 
 const container = document.querySelector(".container"); //контейнер сцены
 const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
@@ -48,6 +42,13 @@ const colors = [
   { r: 50, g: 250, b: 50, a: alpha, name:"green" }, //зелёный
   { r: 250, g: 0, b: 0, a: alpha, name:"red" }, //красный
 ];
+
+const img_background = new Image(); //фоновое изображение водопада/вулкана
+const img_borders = new Image(); //границы секторов
+const fenster = new ModalFenster(); //модальное окно
+const idb = new IndexedDB("foesectors", 5);  //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
+const editor = new FormEditor(); //форма редактирования сектора
+
 
 /******************** выбор карты **************************************/
 var nmap; //номер карты: 1-вулкан, 2-водопад
@@ -193,8 +194,9 @@ function MapChoise(map){
 
 var arrSector = []; //оперативное хранилище данных карты
 
-/******************** загрузка содержимого help.html через скрытый фрейм *************************/
-//todo убрать фрейм грузить хелп из json или txt ?? https://developer.mozilla.org/ru/docs/Learn/JavaScript/Asynchronous/Promises
+
+/******************** загрузка содержимого help.html (из скрытого фрейма) *************************/
+//todo убрать фрейм / грузить хелп из json или txt ?? https://developer.mozilla.org/ru/docs/Learn/JavaScript/Asynchronous/Promises
 var helpHTML; //содержимое в формате html
 document.getElementById("helpbox").addEventListener("load", (event)=>{      
   let content = event.target.contentWindow.document;
@@ -209,7 +211,7 @@ document.querySelector(".btn-help").addEventListener("click", ()=>{     // по�
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", async () => {
   LOG("Initialization ..." , BLUE);
-  editor = new FormEditor();  
+  //editor = new FormEditor();  
   await idb.open();   
   if (idb.empty) { //при первом запуске выбрать карту     
     btn_new.click();    
@@ -388,131 +390,6 @@ canvas.addEventListener("click", (e) => {
 
 
 
-
-/****************** РЕДАКТОР подписи сектора ****************************/
-class FormEditor{
-  adr = null;
-  
-  constructor() {
-    this.curtain = document.querySelector(".curtain");
-    this.form = document.querySelector(".sector_editor");
-    this.inp_name = document.querySelector(".input_name");
-    this.nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
-    this.div_inp_color = document.querySelector(".input_color");
-    this.nodes_color = document.querySelectorAll(".input_color input[type='radio']");
-    this.btn_save = document.querySelector(".btn-edit-save");
-    this.btn_canc = document.querySelector(".btn-edit-cancel");
-    
-    canvas.addEventListener("contextmenu", (event) => { //клик правой кнопкой - редактор надписи
-      event.preventDefault();
-      event.stopPropagation();
-      let offset=(event.offsetY * IMG_WITH + event.offsetX) * 4;
-      this.adr = data_address.data[offset]; // number of address (red component)
-      if (this.adr < 1 || this.adr > nsec) return; //клик не на секторе
-      selected_color=null; //снять выбор штаба
-      drawScene(); 
-      this.edit();
-    });
-
-    this.curtain.addEventListener("click",()=>{
-      this.hide();
-    })
-    
-    /* необязатльно, т.к. нажатие на ENTER всё равно вызывает событие click на первой <button> */
-    this.form.addEventListener("keydown", (e) => { //запись по кнопке ENTER
-      if (e.code === "Enter" || e.code === "NumpadEnter") {
-        this.save();        
-        this.hide();
-      }      
-      if (e.code === "Escape") {          
-        this.hide();
-      }      
-    });
-    
-    this.btn_save.addEventListener("click", ()=>{ //кнопка SAVE
-      this.save();      
-    });
-
-    this.btn_canc.addEventListener("click", ()=>{ //кнопка CANCEL
-      this.hide();        
-    });
-
-    for (const item of this.nodes_osadki) { //для всех кнопок (штаб/осадки)
-      item.addEventListener("change", (e)=>{ 
-        let osd = [... this.nodes_osadki].findIndex(e=>e.checked);
-        this.div_inp_color.style.display = (osd ? "none" : "flex"); // = 0 показать панель выбора цвета
-        if (osd){ //если ставим осадку то сбросить имя сектора на "по умолчанию" и отключить цвет
-          this.inp_name.value = defSectors[this.adr].name;
-          this.nodes_color[0].checked = true; //поставить галочку (нет цвета - невидимый radio)
-        } else { //если ставим "штаб" - сразу редактировать его имя
-          this.inp_name.focus();
-          this.inp_name.select();
-        }
-      })
-    };
-
-  } //end constructor
-
-  edit() {     
-    NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
-    curtain.style.display = "block";
-    this.form.style.display = "flex";
-    //позиционирование формы
-    let dx = arrSector[this.adr].x - this.form.clientWidth / 2;
-    if (dx < 0) 
-      dx = 2;
-    if (dx + this.form.clientWidth > IMG_WITH)
-      dx = IMG_WITH - this.form.clientWidth - 2;
-    let dy = arrSector[this.adr].y - this.form.clientHeight / 2;
-    if (dy < 0) 
-      dy = 2;
-    if (dy + this.form.clientHeight > IMG_HEGHT)
-      dy = IMG_HEGHT - this.form.clientHeight - 2;
-    this.form.style.left = dx + "px";
-    this.form.style.top = dy + "px";
-    //заполнение полей формы текущими данными из arrSector
-    this.inp_name.value = arrSector[this.adr].name; //название сектора(гильдии)
-    this.inp_name.focus();
-    let osd=arrSector[this.adr].os;  //кол-во осад в секторе (если osd == 0 тогда там штаб)
-    this.nodes_osadki[osd].checked = true; //поставить галочку
-    this.div_inp_color.style.display = (osd ? "none" : "flex"); // показать/скрыть панель выбора цвета
-    let clr = arrSector[this.adr].color; //цвет сектора
-    this.nodes_color[clr].checked = true; //поставить галочку (если нет цвета будет невидимый radio)
-  };
-
-  hide() { //скрыть форму 
-    curtain.style.display = "none"; //разблокировать холст
-    this.form.style.display = "none";  
-    NOTE("");  
-  };
-
-  save(){ //проверка данных на корректность и запись
-    let nam = this.inp_name.value; //название 
-    let osd = [... this.nodes_osadki].findIndex(e=>e.checked); //0 штаб или 123 кол-во осад
-    let clr = [... this.nodes_color].findIndex(e=>e.checked); //цвет
-    if (!nam) { //пустое имя
-      NOTE("Пустое название недопустимо.");
-      return;
-    }
-    if (osd == 0 && clr == 0) { // штаб без цвета      
-      NOTE("Выберите цвет штаба.");
-      return;
-    }
-    arrSector[this.adr].name = nam;
-    arrSector[this.adr].os = osd;
-    arrSector[this.adr].color = clr;
-    idb.save_sector(this.adr); //запись в базу    
-    sceneFillSector(this.adr); //заливка
-    drawScene();
-    this.hide();
-    NOTE("Данные записаны, карта обновлена.");
-  }
-
-} //end class FormEditor
-
-
-
-
 /*************** new - очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
 btn_new.addEventListener("click", () => {
@@ -555,7 +432,7 @@ const btn_clear = document.querySelector(".btn-clear");
 btn_clear.addEventListener("click", () => {
   fenster.open(
     "Подтвердите действие:",
-    "Удалить выбор всех опорников? <br> (штабы останутся на местах)",
+    "Удалить выбор опорников? <br> (штабы останутся на местах)",
     [ 
       {name:"OK", callback: ClearOsadki},
       {name:"CANCEL", callback: ()=>{}}
@@ -564,8 +441,8 @@ btn_clear.addEventListener("click", () => {
 });
 
 function ClearOsadki(){
-  selected_color=null; //снять выбор штаба
   container.classList.add("anim-clear");
+  selected_color=null; //снять выбор штаба
   for (let i = 1; i <= nsec; i++) {
     if (arrSector[i].os!=0){ // не штаб
       arrSector[i].color = 0; //отметить что сектор не занят
@@ -595,8 +472,8 @@ function keypressed(e){
 const btn_save = document.querySelector(".btn-save");
 btn_save.addEventListener("click", ()=>{ SaveFile() } );
 
-async function SaveFile() {
-  //todo правильнее записать в базу на сервер (с уникальным id)
+//todo правильнее записать в базу на сервер (с уникальным id)
+async function SaveFile() {  
   curtain.style.display = "block";
   NOTE("Сохранение данных карты в файл на диске.");
   const content = JSON.stringify(arrSector, null, "\t");
