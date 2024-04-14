@@ -8,13 +8,14 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="index.css">
   
-  <script src="script.js" defer></script>
+  <script type="module" src="./modal.js"></script>  
+  <script src="./indexeddb.js"></script> 
+  <script src="./images.js"></script>  
+  <script src="./script.js" defer></script>
 </head>
 
 <body>
-  <header>
-    <img src="images/border1.png" style="display: none;"> <!-- предзагрузка -->    
-    <img src="images/border2.png" style="display: none;"> <!-- предзагрузка -->  
+  <header>     
     <iframe id="helpbox" src="help_ru.html" style="display: none;"></iframe> <!-- help html --> 
   </header>
   
@@ -107,7 +108,9 @@
           <!-- Содержимое окна -->
         </div>     
         <div class="modal_controls" style="visibility: hidden;">          
-          <!-- Кнопки окна (при наличии) -->        
+          <!-- Кнопки окна (при наличии) -->   
+          <button type="button" class="modal_button"></button>    
+          <button type="button" class="modal_button"></button>
         </div>                
       </div>
 

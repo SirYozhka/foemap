@@ -1,79 +1,19 @@
 "use strict";
-
-//*********************** модальное окно *************************/
-class ModalFenster{  
-  m_window = document.querySelector(".modal_window");
-  m_controls = document.querySelector(".modal_controls");
-  m_title = "Window title";  //заголовок окна  
-  m_buttons; //блок кнопок
-      
-  constructor(title, buttons){    
-    this.m_title = title;
-    this.m_buttons = buttons;
-    document.querySelector(".modal_close").addEventListener("click", ()=>{  
-      this.close();
-    });
-    this.m_window.addEventListener("keydown", (e) => { 
-      if ((e.code === "Enter" || e.code === "NumpadEnter") && !m_ctrl){  //если нет блока кнопок то закрыть на ENTER
-        this.close();
-      }
-      if (e.code === "Escape") { //общий ESC для любого окна - закрывает все/любые окна
-        this.close();
-      }
-    }); 
-    curtain.addEventListener("click", ()=>{  
-      this.close();
-    });
-  }
-
-  open(body){
-    curtain.style.display = "block"; //блок-шторка на весь экран
-    document.querySelector(".modal_title").textContent = this.m_title;
-    document.querySelector(".modal_body").innerHTML = body;
-    if (this.m_buttons){
-      this.m_controls.innerHTML = ""; //очистить TODO - вероятна утечка памяти из-за неудалённых листенеров !!!
-      this.m_controls.style.visibility = "visible";
-      let n = this.m_buttons.length;
-      for (let i=0; i<n; i++){
-        let btn = document.createElement("button");
-        btn.textContent = this.m_buttons[i].name;
-        this.m_controls.appendChild(btn);
-        btn.addEventListener("click", ()=>{
-          this.m_buttons[i].callback();
-          this.close();
-        })       
-      }        
-    } else 
-      this.m_controls.style.visibility = "hidden";
-    this.m_window.style.display = "flex";    
-    this.m_window.setAttribute("tabindex", "0"); //чтобы сработало событие нажатия ENTER
-    this.m_window.focus();  
-  }
-
-  close(){
-    curtain.style.display = "none";
-    this.m_window.style.display = "none";    
-    NOTE("");
-  }
-
-}
-
-/* DEBUG
-var test = document.querySelector(".btn-test");
-test.style.visibility = "visible";
-test.addEventListener("click", ()=>{  
-  //conf_clear_fenster.open("clear sectors");
-});
-*/
-
+import { ModalFenster } from "./modal";
 
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
 
 //цвета для заметок NOTE(string, COLOR);
-const BLUE = "rgb(200,200,255)"; // текущий процесс
-const YELLOW = "rgb(250,255,200)"; //стандартные (по умолчанию)
+const YELLOW = "rgb(250,255,200)"; //готово (цвет по умолчанию)
+const BLUE = "rgb(200,200,255)"; // процесс
 const RED = "rgb(255,150,150)"; // ошибки
+
+const fenster = new ModalFenster(); //модальное окно
+const idb = new IndexedDB("foesectors", 5);  //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
+const img_background = new Image(); //фоновое изображение водопада/вулкана
+const img_borders = new Image(); //границы секторов
+var editor; //форма редактирования сектора
 
 const container = document.querySelector(".container"); //контейнер сцены
 const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
@@ -83,25 +23,21 @@ const canvas = document.querySelector("canvas"); // "экранный" канв�
 const ctx = canvas.getContext("2d", { alpha: false });
 canvas.height = IMG_HEGHT; //вертикальное разрешение
 canvas.width = IMG_WITH; //зависит от параметров экрана
-
 const bufer_canvas = new OffscreenCanvas(IMG_WITH, IMG_HEGHT); //буферный канвас
 const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
-canvas.addEventListener("mousemove", (e) => { cursorStyle(e); }); //тут из-за возможного случайного дергания мышкой при загрузке страницы
-
 var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
-var selected_color = null;
-var sector_editor; //класс формы редактирования сектора
-var img_background = new Image(); //фоновое изображение водопада/вулкана
-var img_borders = new Image(); //границы секторов
+
+canvas.addEventListener("mousemove", (e) => { cursorStyle(e); });
+
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
 var data_scene; //холст для раскраски (просто прозрачный)
-var alpha = 200; //альфаканал для прозрачности заливки
 
-
-var colors = [ 
+var selected_color = null; //по сути - выбор гильдии
+const alpha = 200; //альфаканал для прозрачности заливки
+const colors = [ 
   { r: 0, g: 0, b: 0, a: 0 , name:"transparent"}, //нулевой - прозрачный
   { r: 250, g: 0, b: 250, a: alpha, name:"pink" }, //розовый
   { r: 100, g: 0, b: 180, a: alpha, name:"violet" }, //фиолетовый
@@ -113,70 +49,13 @@ var colors = [
   { r: 250, g: 0, b: 0, a: alpha, name:"red" }, //красный
 ];
 
-const def_sec2 = [{id: 0, name:"waterfall", os: 2}, // os = 2 - флаг для используемой базы
-  {id: 1, name: "A5A", os: 1, color: 0 }, // нумерация секторов с единицы!
-  {id: 2, name: "A5D", os: 1, color: 0 },
-  {id: 3, name: "B5C", os: 1, color: 0 },
-  {id: 4, name: "C5B", os: 1, color: 0 },
-  {id: 5, name: "D5A", os: 1, color: 0 },
-  {id: 6, name: "D5D", os: 1, color: 0 },
-  {id: 7, name: "E5C", os: 1, color: 0 },
-  {id: 8, name: "F5B", os: 1, color: 0 },
-  {id: 9, name: "X1X", os: 3, color: 0 },
-  {id:10, name: "A4A", os: 1, color: 0 }, // 10
-  {id:11, name: "A3A", os: 2, color: 0 },
-  {id:12, name: "A2A", os: 2, color: 0 },
-  {id:13, name: "A5B", os: 1, color: 0 },
-  {id:14, name: "A4B", os: 1, color: 0 },
-  {id:15, name: "A3B", os: 1, color: 0 },
-  {id:16, name: "A5C", os: 1, color: 0 },
-  {id:17, name: "A4C", os: 3, color: 0 },
-  {id:18, name: "B2A", os: 2, color: 0 },
-  {id:19, name: "B3A", os: 1, color: 0 }, //19
-  {id:20, name: "B4A", os: 1, color: 0 },
-  {id:21, name: "B5A", os: 1, color: 0 },
-  {id:22, name: "B3B", os: 2, color: 0 },
-  {id:23, name: "B4B", os: 2, color: 0 },
-  {id:24, name: "B5B", os: 1, color: 0 },
-  {id:25, name: "B4C", os: 1, color: 0 },
-  {id:26, name: "B5D", os: 1, color: 0 },
-  {id:27, name: "C2A", os: 2, color: 0 },
-  {id:28, name: "C3A", os: 1, color: 0 },
-  {id:29, name: "C4A", os: 2, color: 0 },
-  {id:30, name: "C5A", os: 1, color: 0 },
-  {id:31, name: "C3B", os: 1, color: 0 },
-  {id:32, name: "C4B", os: 2, color: 0 },
-  {id:33, name: "C5C", os: 1, color: 0 },
-  {id:34, name: "C4C", os: 2, color: 0 },
-  {id:35, name: "C5D", os: 1, color: 0 },
-  {id:36, name: "D2A", os: 3, color: 0 },
-  {id:37, name: "D3A", os: 2, color: 0 },
-  {id:38, name: "D4A", os: 1, color: 0 },
-  {id:39, name: "D3B", os: 1, color: 0 },
-  {id:40, name: "D4B", os: 1, color: 0 },
-  {id:41, name: "D5B", os: 1, color: 0 },
-  {id:42, name: "D4C", os: 1, color: 0 },
-  {id:43, name: "D5C", os: 1, color: 0 },
-  {id:44, name: "E2A", os: 2, color: 0 },
-  {id:45, name: "E3A", os: 1, color: 0 },
-  {id:46, name: "E4A", os: 2, color: 0 },
-  {id:47, name: "E5A", os: 1, color: 0 },
-  {id:48, name: "E3B", os: 2, color: 0 },
-  {id:49, name: "E4B", os: 2, color: 0 },
-  {id:50, name: "E5B", os: 1, color: 0 },
-  {id:51, name: "E4C", os: 2, color: 0 },
-  {id:52, name: "E5D", os: 1, color: 0 },
-  {id:53, name: "F2A", os: 3, color: 0 },
-  {id:54, name: "F3A", os: 2, color: 0 },
-  {id:55, name: "F4A", os: 2, color: 0 },
-  {id:56, name: "F5A", os: 1, color: 0 },
-  {id:57, name: "F3B", os: 1, color: 0 },
-  {id:58, name: "F4B", os: 2, color: 0 },
-  {id:59, name: "F5C", os: 1, color: 0 },
-  {id:60, name: "F4C", os: 2, color: 0 },
-  {id:61, name: "F5D", os: 1, color: 0 },
-];
-const def_sec1 = [{id: 0, name:"vulcan", os: 1}, // os = 1 - флаг для используемой базы
+/******************** выбор карты **************************************/
+var nmap; //номер карты: 1-вулкан, 2-водопад
+var nsec; //количество секторов на карте: вулкан - 60 / водопад - 61
+var defSectors; //массив стандартных названий секторов
+
+function MapChoise(map){  
+  const def_sec1 = [{id: 0, name:"vulcan", os: 1, color: 0}, // os = 1 - флаг для используемой базы
   {id: 1, name: "A1M", os: 3, color: 0 }, // нумерация секторов с единицы!
   {id: 2, name: "B1O", os: 3, color: 0 },
   {id: 3, name: "C1N", os: 3, color: 0 },
@@ -238,167 +117,145 @@ const def_sec1 = [{id: 0, name:"vulcan", os: 1}, // os = 1 - флаг для и�
   {id:59, name: "D4G", os: 1, color: 0 },
   {id:60, name: "D4H", os: 1, color: 0 },
   {id:61, name: "0", os: 1, color: 0 },
-];
-var arrSector = []; //оперативное хранилище данных карты
-
-
-var nmap = 1; //по умолчанию карта вулкана
-var nsec = 60; //вулкан 60 секторов (водопад - 61)
-var defSectors = def_sec1;
-
-function MapChoise(map){
+  ];
+  const def_sec2 = [{id: 0, name:"waterfall", os: 2, color: 0}, // os = 2 - флаг для используемой базы
+  {id: 1, name: "A5A", os: 1, color: 0 }, // нумерация секторов с единицы!
+  {id: 2, name: "A5D", os: 1, color: 0 },
+  {id: 3, name: "B5C", os: 1, color: 0 },
+  {id: 4, name: "C5B", os: 1, color: 0 },
+  {id: 5, name: "D5A", os: 1, color: 0 },
+  {id: 6, name: "D5D", os: 1, color: 0 },
+  {id: 7, name: "E5C", os: 1, color: 0 },
+  {id: 8, name: "F5B", os: 1, color: 0 },
+  {id: 9, name: "X1X", os: 3, color: 0 },
+  {id:10, name: "A4A", os: 1, color: 0 }, // 10
+  {id:11, name: "A3A", os: 2, color: 0 },
+  {id:12, name: "A2A", os: 2, color: 0 },
+  {id:13, name: "A5B", os: 1, color: 0 },
+  {id:14, name: "A4B", os: 1, color: 0 },
+  {id:15, name: "A3B", os: 1, color: 0 },
+  {id:16, name: "A5C", os: 1, color: 0 },
+  {id:17, name: "A4C", os: 3, color: 0 },
+  {id:18, name: "B2A", os: 2, color: 0 },
+  {id:19, name: "B3A", os: 1, color: 0 }, //19
+  {id:20, name: "B4A", os: 1, color: 0 },
+  {id:21, name: "B5A", os: 1, color: 0 },
+  {id:22, name: "B3B", os: 2, color: 0 },
+  {id:23, name: "B4B", os: 2, color: 0 },
+  {id:24, name: "B5B", os: 1, color: 0 },
+  {id:25, name: "B4C", os: 1, color: 0 },
+  {id:26, name: "B5D", os: 1, color: 0 },
+  {id:27, name: "C2A", os: 2, color: 0 },
+  {id:28, name: "C3A", os: 1, color: 0 },
+  {id:29, name: "C4A", os: 2, color: 0 },
+  {id:30, name: "C5A", os: 1, color: 0 },
+  {id:31, name: "C3B", os: 1, color: 0 },
+  {id:32, name: "C4B", os: 2, color: 0 },
+  {id:33, name: "C5C", os: 1, color: 0 },
+  {id:34, name: "C4C", os: 2, color: 0 },
+  {id:35, name: "C5D", os: 1, color: 0 },
+  {id:36, name: "D2A", os: 3, color: 0 },
+  {id:37, name: "D3A", os: 2, color: 0 },
+  {id:38, name: "D4A", os: 1, color: 0 },
+  {id:39, name: "D3B", os: 1, color: 0 },
+  {id:40, name: "D4B", os: 1, color: 0 },
+  {id:41, name: "D5B", os: 1, color: 0 },
+  {id:42, name: "D4C", os: 1, color: 0 },
+  {id:43, name: "D5C", os: 1, color: 0 },
+  {id:44, name: "E2A", os: 2, color: 0 },
+  {id:45, name: "E3A", os: 1, color: 0 },
+  {id:46, name: "E4A", os: 2, color: 0 },
+  {id:47, name: "E5A", os: 1, color: 0 },
+  {id:48, name: "E3B", os: 2, color: 0 },
+  {id:49, name: "E4B", os: 2, color: 0 },
+  {id:50, name: "E5B", os: 1, color: 0 },
+  {id:51, name: "E4C", os: 2, color: 0 },
+  {id:52, name: "E5D", os: 1, color: 0 },
+  {id:53, name: "F2A", os: 3, color: 0 },
+  {id:54, name: "F3A", os: 2, color: 0 },
+  {id:55, name: "F4A", os: 2, color: 0 },
+  {id:56, name: "F5A", os: 1, color: 0 },
+  {id:57, name: "F3B", os: 1, color: 0 },
+  {id:58, name: "F4B", os: 2, color: 0 },
+  {id:59, name: "F5C", os: 1, color: 0 },
+  {id:60, name: "F4C", os: 2, color: 0 },
+  {id:61, name: "F5D", os: 1, color: 0 },
+  ];
   nmap = map; 
   if (map == 1){
     nsec = 60; //вулкан 60 секторов
     defSectors = def_sec1;
   } else {
     nsec = 61; //водопад 61 секторов
-    defSectors = def_sec2;
+    defSectors = def_sec2;    
   }
 }
-  
 
-/******************** загрузка содержимого help.html *************************/
-//todo убрать фрейм грузить текст хелпа в общем html
-var helpHTML;
-var frameName = document.getElementById("helpbox"); //получить содержимое iframe
-frameName.addEventListener("load", ()=>{    
-  let frameCnt = frameName.contentWindow.document; 
-  helpHTML = frameCnt.querySelector("body").innerHTML;  
+var arrSector = []; //оперативное хранилище данных карты
+
+/******************** загрузка содержимого help.html через скрытый фрейм *************************/
+//todo убрать фрейм грузить хелп из json или txt ?? https://developer.mozilla.org/ru/docs/Learn/JavaScript/Asynchronous/Promises
+var helpHTML; //содержимое в формате html
+document.getElementById("helpbox").addEventListener("load", (event)=>{      
+  let content = event.target.contentWindow.document;
+  helpHTML = content.querySelector("body").innerHTML;  
 });
 
-let msg_fenster = new ModalFenster("Описание.");
-
 document.querySelector(".btn-help").addEventListener("click", ()=>{     // показать/скрыть help 
-  msg_fenster.open(helpHTML);
+  fenster.open("Help: description, about, contacts.", helpHTML);
 });
 
 
 /*********************** запуск инициализация *************************/
-window.addEventListener("load", () => {
-  LOG("Initialization started ..." , BLUE);
-  
-  dbSectorsOpen()
-    .then(loadingSceneImages)
-    .then(drawScene);
-  
-  sector_editor = new FormEditor();
-  NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
+window.addEventListener("load", async () => {
+  LOG("Initialization ..." , BLUE);
+  editor = new FormEditor();  
+  await idb.open();   
+  if (idb.empty) { //при первом запуске выбрать карту     
+    btn_new.click();    
+  } else { //при повторном запуске скачать карту из локальной базы
+    await idb.read_to_arr(); 
+    MapChoise(arrSector[0].os); //определяем вулкан или водопад
+    await loadingImages();    
+    sceneFillSectorAll();
+    drawScene();
+    LOG("READY.");
+    NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
+  }
 });
 
 
-/*********************** нажатия клавиш в документе **************************/
-document.addEventListener("keydown", (e)=>{keypressed(e)});
-function keypressed(e){
-  if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
-    e.preventDefault();
-    SaveFile();
-  }
-}
-
-curtain.addEventListener("click",()=>{
-  sector_editor.hide();
-})
-
-/************* IndexedDB (хранение данных на клиенте) *************************/
-const dbName = "foesectors";
-const dbVersion = 3; //версия базы
-var dbData; //экземпляр объекта базы
-
-function dbSectorsOpen() {
-  return new Promise(function (resolve, reject) {
-    let dbRequest = window.indexedDB.open(dbName, dbVersion);
-    
-    dbRequest.onsuccess = function (event) {
-      dbData = event.target.result; //то же что = dbRequest.result
-      let dbTransaction = dbData.transaction("sectors", "readonly"); 
-      let txnSectors = dbTransaction.objectStore("sectors"); //работаем с хранилищем "sectors"
-      txnSectors.getAll().onsuccess = (e) => {
-        arrSector = e.target.result;
-        LOG("Database opened.");
-        resolve();
-      }
-    };
-
-    dbRequest.onupgradeneeded = function (event) {  //создание базы при первом запуске ( изменении версии )
-      msg_fenster.open(helpHTML); //показать help при первом запуске
-      LOG("Database (ver. " + dbVersion + ") setup ...");
-      arrSector = JSON.parse(JSON.stringify(defSectors)); //копируем настройки по умолчанию 
-      let db = event.target.result;
-      if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors"
-        db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
-      let userStore = db.createObjectStore("sectors", {keyPath: 'id', autoIncrement: false}); //и создать
-      for (let sec = 0; sec <= 61; sec++) //для вулкана 61-й сектор пустой но размер базы тот же для простоты
-        userStore.add(arrSector[sec]); //заполняем базу
-    };
-
-    dbRequest.onerror = function () {
-      LOG("ERROR! Database failed to open. Please, contact developer." , RED);
-    };
-
-  });
-
-  //todo прикрутить загрузку начальных данных из default.json
-  /* 
-  async function loadJSON(requestURL) {
-    const request = new Request(requestURL);
-    const response = await fetch(request);
-    const jsonTXT = await response.text(); //получение "сырого" json-текста
-    return JSON.parse(jsonTXT); //преобразование текста в объект JS
-  } 
-  */
-}
-
-function dbSaveSector(sec) { //записать в базу сектор sec из arrSector[sec]
-  var txn = dbData.transaction("sectors", "readwrite");
-  let request = txn.objectStore("sectors").put(arrSector[sec]);
-  request.onsuccess = ()=>{
-    divClipBoard.style.display = "none"; //убрать картинку буфера обмена
-  };
-  request.onerror = ()=>{
-    LOG("ERROR saving: " + request.error, RED);
-  };
-}
-
-function dbSaveAllSectors(){
-  for (let i = 1; i < 62; i++) 
-    dbSaveSector(i); //запись в IndexedDB
-}
-
-
 /************************ загрузка изображений карты *************************/
-function loadingSceneImages() {
-  return new Promise(async (resolve, reject) => {
-    LOG("Loading images ..." , BLUE);
+function loadingImages() {
+  LOG("Loading images ..." , BLUE);
+  let image = new Image();
+  return new Promise((resolve) => {
     img_borders.src = "images/border"+nmap+".png";
-    img_background.src = "images/bgr"+nmap+".jpg";
-    img_background.onload = () => {
-      container.style.background = 'url("images/bgr'+nmap+'.jpg")';
-      let scn = new Image();
-      scn.src = "images/scene.png";
-      scn.onload = () => {
-        LOG("Calculation scene ..." , BLUE);
-        bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
-        bufer_ctx.drawImage(scn, 0, 0, canvas.width, canvas.height);
-        data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let adr = new Image();
-        adr.src = "images/addresses" + nmap + ".bmp";
-        adr.onload = () => {
-          LOG("Calculation addresses ..." , BLUE);
+    img_borders.onload = () => {      
+      img_background.src = "images/bgr"+nmap+".jpg";
+      img_background.onload = () => {
+        container.style.background = 'url("images/bgr'+nmap+'.jpg")';        
+        image.src = "images/scene.png";
+        image.onload = () => {
+          LOG("Calculation scene ..." , BLUE);
           bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
-          bufer_ctx.drawImage(adr, 0, 0, canvas.width, canvas.height);
-          data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-          calculationSectorsCenters();
-          sceneFillSectorAll();
-          LOG("Ready to process.");
-          resolve();
+          bufer_ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);          
+          image.src = "images/addresses" + nmap + ".bmp";
+          image.onload = async () => {
+            LOG("Calculation addresses ..." , BLUE);
+            bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
+            bufer_ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
+            await calcSectorsCenters();            
+            resolve();
+          };
         };
       };
     };
   });
 
-  // поиск центров секторов и закраска секторов в цвет гильдии
-  function calculationSectorsCenters() {
+  async function calcSectorsCenters() { // поиск центров секторов (для надписей)
     let maxX = [],  minX = [],  maxY = [],  minY = [];
     for (let s = 1; s <= nsec; s++) { 
       maxX[s] = 0;
@@ -406,9 +263,9 @@ function loadingSceneImages() {
       maxY[s] = 0;
       minY[s] = IMG_HEGHT;
     }
-    let n=data_address.data.length;
+    let n = data_address.data.length;  
     for (let i = 0; i < n; i += 4) {
-      let r = data_address.data[i]; //red компонента содержит порядковый номер сектора
+      let r = data_address.data[i]; //red компонента содержит порядковый номер сектора    
       if (data_address.data[i+1] !=0 || data_address.data[i+2] !=0) continue; //случайные пиксели (todo надо бы улучшить address.bmp)
       if (r <= nsec) { 
         let y = ~~(i / 4 / IMG_WITH);
@@ -424,7 +281,33 @@ function loadingSceneImages() {
       arrSector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
     }
   }
+}
 
+
+function sceneFillSector(adr) { //заливка сектора цветом color
+  let n=data_address.data.length;
+  for (var i = 0; i < n; i += 4) {
+    if (adr == data_address.data[i]) {
+      fillPoint(i, colors[arrSector[adr].color]);
+    }
+  }
+}
+
+function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом  
+  let n=data_address.data.length;
+  for (var i = 0; i < n; i += 4) {
+    let adr = data_address.data[i];
+    if (adr < 62) {
+      fillPoint(i, colors[arrSector[adr].color]);
+    }
+  }
+};
+
+function fillPoint(adr, {r,g,b,a}){
+  data_scene.data[adr + 0] = r; //red
+  data_scene.data[adr + 1] = g; //green
+  data_scene.data[adr + 2] = b; //blue
+  data_scene.data[adr + 3] = a; //alfa
 }
 
 
@@ -439,59 +322,36 @@ ctx.shadowBlur = 4;
 
 function drawScene() {
   //фон
-  ctx.fillStyle = "rgba(0,0,0,0)";
-  ctx.shadowColor = color_light;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //ctx.fillStyle = "rgba(0,0,0,0)";
+  //ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
   //карта секторов
   bufer_ctx.putImageData(data_scene, 0, 0);
   ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
   //границы секторов
+  ctx.shadowColor = color_light;
   ctx.drawImage(img_borders, 0, 0, canvas.width, canvas.height);
   //подписи секторов
   for (let s = 1; s <= nsec; s++) { 
-    if (arrSector[s].color == selected_color) { //выбранная гильдия
+    if (arrSector[s].color == selected_color) { //сектора выбранной гильдии
       ctx.fillStyle = color_light;
       ctx.shadowColor = "black";
-    } else { //просто штаб
+    } else { //остальные сектора
       ctx.fillStyle = "black";
       ctx.shadowColor = color_light;
     }
-    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y);
-    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y); //для "усиления" тени двойная прорисовка
-    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y); //для "усиления" тени двойная прорисовка
+    let delta = 0;
+    if (arrSector[s].os==0)  //если это штаб 
+      delta = 10;
+    //название сектора
+    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y-delta);
+    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y-delta); //для "усиления" тени двойная прорисовка
+    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y-delta); //для "усиления" тени двойная прорисовка
+    //осадки / штаб
     let osadki = (arrSector[s].os==0) ? "штаб" : "🞇".repeat(arrSector[s].os); //🞔🞕🞅🞇🞖🞚🞛
     ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);
     ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);  //для "усиления" тени двойная прорисовка
   }
-}
-
-function sceneFillSector(adr) { //заливка сектора цветом color
-  let color = colors[arrSector[adr].color];
-  let n=data_address.data.length;
-  for (var i = 0; i < n; i += 4) {
-    if (data_address.data[i] == adr) {
-      fillPoint(i, color);
-    }
-  }
-}
-
-function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом
-  LOG("Filling sectors with colors..." , BLUE);
-  let n=data_address.data.length;
-  for (var i = 0; i < n; i += 4) {
-    let adr = data_address.data[i];
-    if (adr < 62) {
-      fillPoint(i, colors[arrSector[adr].color]);
-    }
-  }
-};
-
-function fillPoint(adr, color){
-  data_scene.data[adr + 0] = color.r; //red
-  data_scene.data[adr + 1] = color.g; //green
-  data_scene.data[adr + 2] = color.b; //blue
-  data_scene.data[adr + 3] = color.a; //alfa
 }
 
 
@@ -518,7 +378,7 @@ canvas.addEventListener("click", (e) => {
     else 
       arrSector[adr].color = selected_color; //помечаем что сектор занят этой гильдией
     sceneFillSector(adr); //покрасить сектор в выбранный цвет 
-    dbSaveSector(adr);
+    idb.save_sector(adr);
   } else { //цвет не выбран
     NOTE("Сначала нужно назначить штабы (правая кнопка - редактор).","И выбрать гильдию (клик по штабу).");
   }
@@ -528,12 +388,14 @@ canvas.addEventListener("click", (e) => {
 
 
 
+
 /****************** РЕДАКТОР подписи сектора ****************************/
 class FormEditor{
   adr = null;
   
-  constructor() { 
-    this.form_editor = document.querySelector(".sector_editor");
+  constructor() {
+    this.curtain = document.querySelector(".curtain");
+    this.form = document.querySelector(".sector_editor");
     this.inp_name = document.querySelector(".input_name");
     this.nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
     this.div_inp_color = document.querySelector(".input_color");
@@ -551,9 +413,13 @@ class FormEditor{
       drawScene(); 
       this.edit();
     });
+
+    this.curtain.addEventListener("click",()=>{
+      this.hide();
+    })
     
     /* необязатльно, т.к. нажатие на ENTER всё равно вызывает событие click на первой <button> */
-    this.form_editor.addEventListener("keydown", (e) => { //запись по кнопке ENTER
+    this.form.addEventListener("keydown", (e) => { //запись по кнопке ENTER
       if (e.code === "Enter" || e.code === "NumpadEnter") {
         this.save();        
         this.hide();
@@ -562,7 +428,6 @@ class FormEditor{
         this.hide();
       }      
     });
-    
     
     this.btn_save.addEventListener("click", ()=>{ //кнопка SAVE
       this.save();      
@@ -591,20 +456,20 @@ class FormEditor{
   edit() {     
     NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
     curtain.style.display = "block";
-    this.form_editor.style.display = "flex";
+    this.form.style.display = "flex";
     //позиционирование формы
-    let dx = arrSector[this.adr].x - this.form_editor.clientWidth / 2;
+    let dx = arrSector[this.adr].x - this.form.clientWidth / 2;
     if (dx < 0) 
       dx = 2;
-    if (dx + this.form_editor.clientWidth > IMG_WITH)
-      dx = IMG_WITH - this.form_editor.clientWidth - 2;
-    let dy = arrSector[this.adr].y - this.form_editor.clientHeight / 2;
+    if (dx + this.form.clientWidth > IMG_WITH)
+      dx = IMG_WITH - this.form.clientWidth - 2;
+    let dy = arrSector[this.adr].y - this.form.clientHeight / 2;
     if (dy < 0) 
       dy = 2;
-    if (dy + this.form_editor.clientHeight > IMG_HEGHT)
-      dy = IMG_HEGHT - this.form_editor.clientHeight - 2;
-    this.form_editor.style.left = dx + "px";
-    this.form_editor.style.top = dy + "px";
+    if (dy + this.form.clientHeight > IMG_HEGHT)
+      dy = IMG_HEGHT - this.form.clientHeight - 2;
+    this.form.style.left = dx + "px";
+    this.form.style.top = dy + "px";
     //заполнение полей формы текущими данными из arrSector
     this.inp_name.value = arrSector[this.adr].name; //название сектора(гильдии)
     this.inp_name.focus();
@@ -617,7 +482,7 @@ class FormEditor{
 
   hide() { //скрыть форму 
     curtain.style.display = "none"; //разблокировать холст
-    this.form_editor.style.display = "none";  
+    this.form.style.display = "none";  
     NOTE("");  
   };
 
@@ -636,7 +501,7 @@ class FormEditor{
     arrSector[this.adr].name = nam;
     arrSector[this.adr].os = osd;
     arrSector[this.adr].color = clr;
-    dbSaveSector(this.adr); //запись в базу    
+    idb.save_sector(this.adr); //запись в базу    
     sceneFillSector(this.adr); //заливка
     drawScene();
     this.hide();
@@ -647,28 +512,31 @@ class FormEditor{
 
 
 
+
 /*************** new - очистить всю карту ******************/
 const btn_new = document.querySelector(".btn-new");
-var conf_new_fenster = new ModalFenster("Создание новой карты.", [
-  {name:"ВУЛКАН", callback: ()=>{ClearMap(1)}},
-  {name:"ВОДОПАД", callback: ()=>{ClearMap(2)}},
-]);
 btn_new.addEventListener("click", () => {
-  conf_new_fenster.open("<div style='text-align:center;'><h2>Выберите карту</h2> <br> ВНИМАНИЕ! <br> Текущие изменения не сохраняются! </div>");
+  fenster.open(
+    "Создание новой карты.",
+    "<div style='text-align:center;'><h2>Выберите карту</h2> <br> ВНИМАНИЕ! <br> Текущие изменения не сохраняются! </div>",
+    [
+      { name:"ВУЛКАН", callback: ()=>{CreateNewMap(1)} }, 
+      { name:"ВОДОПАД", callback: ()=>{CreateNewMap(2)} } 
+    ]);    
 });
 
-
-function ClearMap(map) {
-  MapChoise(map);
+async function CreateNewMap(map) {
   container.classList.add("anim-clear");
-  for (let i = 1; i <= nsec; i++) {  //перезаписать настройки по умолчанию (id, x, y - не меняем !!!)
-    arrSector[i].name = defSectors[i].name; 
-    arrSector[i].os = defSectors[i].os; 
-    arrSector[i].color = 0; 
-    arrSector[i].x = 0; 
-    arrSector[i].y = 0; 
-  }
-  loadingSceneImages().then(dbSaveAllSectors);
+  MapChoise(map);
+  arrSector = JSON.parse(JSON.stringify(defSectors)); //копируем названия по умолчанию
+  let sec_example = (map == 1 ? 29 : 1);  //для образца поставить один штаб
+  arrSector[sec_example].name = "GUILD NAME";
+  arrSector[sec_example].os = 0;
+  arrSector[sec_example].color = 1;
+
+  await idb.write_to_baze();
+  await loadingImages();
+  sceneFillSectorAll();
   
   setTimeout(() => { //перерисовать сцену в середине анимации
     selected_color=null; //снять выбор штаба
@@ -678,18 +546,21 @@ function ClearMap(map) {
     container.classList.remove("anim-clear");
     LOG("New map created.")
   }, 1000);
-
 };
+
 
 
 /*************** clear - очистить опорники ******************/
 const btn_clear = document.querySelector(".btn-clear");
-var conf_clear_fenster = new ModalFenster("Подтвердите действие:", [
-  {name:"OK", callback: ClearOsadki},
-  {name:"CANCEL", callback: ()=>{}},
-]);
 btn_clear.addEventListener("click", () => {
-  conf_clear_fenster.open("Отменить выбор опорников? <br> (штабы останутся на местах)");
+  fenster.open(
+    "Подтвердите действие:",
+    "Удалить выбор всех опорников? <br> (штабы останутся на местах)",
+    [ 
+      {name:"OK", callback: ClearOsadki},
+      {name:"CANCEL", callback: ()=>{}}
+    ]    
+  );
 });
 
 function ClearOsadki(){
@@ -699,7 +570,7 @@ function ClearOsadki(){
     if (arrSector[i].os!=0){ // не штаб
       arrSector[i].color = 0; //отметить что сектор не занят
       sceneFillSector(i, colors[0]); //убрать заливку
-      dbSaveSector(i); //отметить в IndexedDB
+      idb.save_sector(i); //отметить в IndexedDB
     }
   }
   setTimeout(() => { //перерисовать сцену в середине анимации
@@ -713,6 +584,14 @@ function ClearOsadki(){
 
 
 /************ запись данных карты в файл на локальный диск **********/
+document.addEventListener("keydown", (e)=>{keypressed(e)});
+function keypressed(e){
+  if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
+    e.preventDefault();
+    SaveFile();
+  }
+}
+
 const btn_save = document.querySelector(".btn-save");
 btn_save.addEventListener("click", ()=>{ SaveFile() } );
 
@@ -746,14 +625,14 @@ async function SaveFile() {
     const writable = await filehandler.createWritable();
     await writable.write(content);
     await writable.close();
-    LOG("Map metadata file "+filename+" is saved.");
-    NOTE("Файл данных карты " +filename +" можно переслать другому игроку", "для последующего редактирования.");
+    LOG("File "+filename+" is saved.");
+    NOTE("Файл карты " +filename +" можно переслать другому игроку", "для последующего редактирования.");
     btn_load.blur();
     div_filename.textContent = filename;
     curtain.style.display = "none";
   } catch {
-    LOG("Error saving map metadata!" , RED);
-    NOTE("Ошибка записи файла данных карты.");
+    LOG("Error saving map file!" , RED);
+    NOTE("Ошибка записи файла карты.");
     curtain.style.display = "none";
   }
   
@@ -790,32 +669,30 @@ btn_load.addEventListener("click", async () => {
       excludeAcceptAllOption: true
     };
     fileHandler = await window.showOpenFilePicker(options); //открывает окно для выбора клиентом локального файла
-  } catch { //если окно просто зарыли
+  } catch { //если окно просто закрыли
     NOTE("");
     curtain.style.display = "none";
     return;
   }
-  
+  LOG("Downloading map file ...", BLUE);
   try{ //получение файла и загрузка данных карты
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
-    arrSector = JSON.parse(contents);
-    let map = arrSector[0].os;
-    if(!map) map = 2; //todo для старых json файлов     
-    MapChoise(map);
-    loadingSceneImages()
-      .then(dbSaveAllSectors)
-      .then(()=>{
-        sceneFillSectorAll;
-        drawScene(); 
-      });
-    LOG("Map metadata downloaded.");
+    arrSector = JSON.parse(contents);    
+    await idb.write_to_baze();    
+    MapChoise(arrSector[0].os);
+    
+    await loadingImages();
+    sceneFillSectorAll();
+    drawScene();       
+
+    LOG("Map downloaded.");
     NOTE("");
-    div_filename.textContent = fname(file.name);
-    curtain.style.display = "none";
+    div_filename.textContent = fname(file.name);    
   } catch {
     NOTE("Ошибка загрузки файла данных карты!");
     LOG("Error reading map metadata!", RED);
+  } finally {
     curtain.style.display = "none";
   }
   btn_load.blur();
@@ -829,7 +706,7 @@ btn_load.addEventListener("click", async () => {
 
 
 
-/*************** копироваине карты в буфер обмена ******************/
+/*************** копироваине изображения карты в буфер обмена ******************/
 const btn_imgcopy = document.querySelector(".btn-imgcopy");
 const divClipBoard = document.querySelector(".monitor");
 const imgClipBoard = document.querySelector(".monitor img");
@@ -862,50 +739,28 @@ btn_imgcopy.addEventListener("click", () => {
 
 
 /*************** save - сохранить картинку в файл ******************/
+//import {SaveCanvasToFile} from './images.js';
 const btn_imgsave = document.querySelector(".btn-imgsave");
-btn_imgsave.addEventListener("click", ()=>{
-  btn_imgsave.blur();
+btn_imgsave.addEventListener("click", async ()=>{
+  LOG("Saving image file ...", BLUE);
+  NOTE("Запись изображения в файл на компьютере ...");
+  btn_imgsave.blur(); //убрать фокус с кнопки (свернуть выпадающее меню)
   curtain.style.display = "block";
-  selected_color=null; //снять выбор штаба
-  drawScene(); 
-  SaveImage();
+  selected_color = null; //снять выбор штаба
+  drawScene(); //перерисовать сцену
+  try{ 
+    await SaveCanvasToFile(canvas);    
+    LOG("Image map is saved.");
+    NOTE("Сохраненное изображение карты можно переслать или опубликовать.");      
+  } catch (err) {    
+    if (err.name == 'AbortError') {
+      NOTE("Файл не записан."); 
+    } else {      
+      NOTE("Ошибка записи: " + err.name + " , " + err.message);
+    }    
+  };
+  curtain.style.display = "none";
 });
-
-async function SaveImage() {
-  let filehandler;
-  const options = {
-    //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
-    suggestedName: "mapsnapshot",
-    types: [{
-      description: 'Image Files',
-      accept: {'image/jpeg': '.jpg'},
-    }],
-  };
-
-  try {
-    filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
-  } catch { //если окно просто закрыли
-    NOTE("");
-    curtain.style.display = "none";
-    return;
-  };
-
-  canvas.toBlob(async (blob) => {
-    try{
-      const writable = await filehandler.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      LOG("Image map is saved.");
-      NOTE("Сохраненное изображение карты можно переслать или опубликовать.");
-      curtain.style.display = "none";
-    }catch{
-      LOG("Error saving image map!" , RED);
-      NOTE("Ошибка записи изображения карты.");
-      curtain.style.display = "none";
-    }
-  });
-
-};
 
 
 
@@ -918,13 +773,13 @@ btn_imgbb.addEventListener("click", async () => {
 
   let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
   imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-  let formData = new FormData();
-  formData.append("image", blob, "image.png");
+  let frmdata = new FormData();
+  frmdata.append("image", blob, "image.png");
  
   const myRequest = new Request(
     "https://api.imgbb.com/1/upload?key=26f6c3a3ce8d263ae81844d87abcd8ef", {
       method: "POST",
-      body: formData
+      body: frmdata
     }
   );
 
@@ -1032,3 +887,12 @@ async function writeClipboardText(text) {
     LOG(error.message, RED);
   }
 }
+
+
+// кнопка для отладки DEBUG 
+var test = document.querySelector(".btn-test");
+//test.style.visibility = "visible";  //DEBUG закоментировать
+test.addEventListener("click", ()=>{  
+  fenster.open("DEBUG","Message", []);
+});
+
