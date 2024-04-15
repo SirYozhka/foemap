@@ -232,12 +232,12 @@ button:disabled {
 	box-shadow: -1px -1px 3px var(--light);
 	overflow: hidden;
 	display: grid;
-	place-items: center;
+	place-items: center;	
 }
 
 canvas {
 	width: 800px;
-	height: 600px;
+	height: 600px;	
 	/*mask-image: url(images/border.png);	*/
 }
 

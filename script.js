@@ -22,7 +22,8 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
-var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
+//var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
+var g_color = {light: "hsl(20,90%,90%)", dark:"hsl(20,90%,10%)"}; // цвет как в style.css
 
 canvas.addEventListener("mousemove", (e) => { cursorStyle(e); });
 
@@ -205,7 +206,7 @@ document.getElementById("helpbox").addEventListener("load", (event)=>{
 
 document.querySelector(".btn-help").addEventListener("click", ()=>{     // показать/скрыть help 
   fenster.open("Help: description, about, contacts.", helpHTML);
-});
+})
 
 
 /*********************** запуск инициализация *************************/
@@ -224,7 +225,7 @@ window.addEventListener("load", async () => {
     LOG("READY.");
     NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
   }
-});
+})
 
 
 /************************ загрузка изображений карты *************************/
@@ -286,7 +287,7 @@ function loadingImages() {
 }
 
 
-function sceneFillSector(adr) { //заливка сектора цветом color
+function sceneFillSector(adr) { //заливка сектора цветом color  
   let n=data_address.data.length;
   for (var i = 0; i < n; i += 4) {
     if (adr == data_address.data[i]) {
@@ -295,7 +296,14 @@ function sceneFillSector(adr) { //заливка сектора цветом col
   }
 }
 
+/* так логично и понятно
 function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом  
+  for (let sec = 1; sec <= nsec; sec++)
+    sceneFillSector(sec);
+}; */
+
+// так быстрее
+function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом    
   let n=data_address.data.length;
   for (var i = 0; i < n; i += 4) {
     let adr = data_address.data[i];
@@ -303,9 +311,11 @@ function sceneFillSectorAll() { //заливка ВСЕХ секторов со�
       fillPoint(i, colors[arrSector[adr].color]);
     }
   }
-};
+} 
 
-function fillPoint(adr, {r,g,b,a}){
+
+
+function fillPoint(adr, {r,g,b,a}){ //заливка одного пиксела в сцене
   data_scene.data[adr + 0] = r; //red
   data_scene.data[adr + 1] = g; //green
   data_scene.data[adr + 2] = b; //blue
@@ -318,42 +328,52 @@ ctx.textAlign = "center";
 ctx.font = "bold 14px arial";
 ctx.fontStretch = "ultra-condensed"; 
 ctx.textRendering = "geometricPrecision";
-ctx.shadowOffsetX = 0.3;
-ctx.shadowOffsetY = 0.3;
-ctx.shadowBlur = 4;
+ctx.shadowBlur = 3;
 
-function drawScene() {
+function drawScene() {    
+  ctx.fillStyle = "transparent";
+  ctx.shadowColor = "transparent";
+  //ctx.clearRect(0, 0, canvas.width, canvas.height); //не обязательно ().drawImage полностью зарисует канвас)
+  
   //фон
-  //ctx.fillStyle = "rgba(0,0,0,0)";
-  //ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
-  //карта секторов
+  
+  //карта секторов  
   bufer_ctx.putImageData(data_scene, 0, 0);
   ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
-  //границы секторов
-  ctx.shadowColor = color_light;
-  ctx.drawImage(img_borders, 0, 0, canvas.width, canvas.height);
+  
+  //границы секторов  
+  ctx.shadowColor = g_color.light;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;  
+  ctx.drawImage(img_borders, 0, 0, canvas.width, canvas.height);  
+  
   //подписи секторов
   for (let s = 1; s <= nsec; s++) { 
+    let x = arrSector[s].x;
+    let y = arrSector[s].y;        
+    if (arrSector[s].os==0)  //если это штаб то сместить к краю по вертикали
+      y -= Math.floor((IMG_HEGHT/2-y)/15);
+    let osadki = (arrSector[s].os==0) ? "штаб" : "🞇".repeat(arrSector[s].os); //🞅🞇o
+    
     if (arrSector[s].color == selected_color) { //сектора выбранной гильдии
-      ctx.fillStyle = color_light;
-      ctx.shadowColor = "black";
+      ctx.fillStyle = g_color.light;
+      ctx.shadowColor = g_color.dark;
     } else { //остальные сектора
-      ctx.fillStyle = "black";
-      ctx.shadowColor = color_light;
+      ctx.fillStyle = g_color.dark;
+      ctx.shadowColor = g_color.light;
     }
-    let delta = 0;
-    if (arrSector[s].os==0)  //если это штаб 
-      delta = 10;
-    //название сектора
-    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y-delta);
-    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y-delta); //для "усиления" тени двойная прорисовка
-    ctx.fillText(arrSector[s].name, arrSector[s].x, arrSector[s].y-delta); //для "усиления" тени двойная прорисовка
-    //осадки / штаб
-    let osadki = (arrSector[s].os==0) ? "штаб" : "🞇".repeat(arrSector[s].os); //🞔🞕🞅🞇🞖🞚🞛
-    ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);
-    ctx.fillText(osadki, arrSector[s].x, arrSector[s].y + 16);  //для "усиления" тени двойная прорисовка
+    //подписи сектора (для "усиления" тени несколько прорисовок со смещением тени)
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
+    ctx.fillText(arrSector[s].name, x, y);    
+    ctx.fillText(osadki, x, y + 14);
+    ctx.shadowOffsetX = -1;
+    ctx.shadowOffsetY = -1;
+    ctx.fillText(arrSector[s].name, x, y);
+    ctx.fillText(osadki, x, y + 14);     
   }
+  
 }
 
 
@@ -367,24 +387,28 @@ canvas.addEventListener("click", (e) => {
     return;
   }
   
-  if (arrSector[adr].os == 0) { // (.os == 0) это штаб
-    if (selected_color == arrSector[adr].color) 
+  if (arrSector[adr].os == 0) { // (.os == 0) это штаб    
+    if (selected_color == arrSector[adr].color) {
       selected_color = null;
-    else {
+      NOTE(`Выбрать штаб (кликнуть по штабу).`);
+    } else {
       selected_color = arrSector[adr].color;
-      NOTE(`Выбрать опорники для гильдии ${arrSector[adr].name} (кликнуть по сектору).`);
+      NOTE(`Выбрать опорники для гильдии ${arrSector[adr].name} (кликнуть по сектору).`);      
     }
-  } else if (selected_color) { //цвет выбран
-    if (selected_color == arrSector[adr].color) //клик по той же гильдии - отмена выделения
-      arrSector[adr].color = 0; //помечаем что сектор не занят гильдией
-    else 
-      arrSector[adr].color = selected_color; //помечаем что сектор занят этой гильдией
-    sceneFillSector(adr); //покрасить сектор в выбранный цвет 
-    idb.save_sector(adr);
-  } else { //цвет не выбран
-    NOTE("Сначала нужно назначить штабы (правая кнопка - редактор).","И выбрать гильдию (клик по штабу).");
+  } else { //это не штаб
+    if (selected_color) { //цвет выбран
+      if (selected_color == arrSector[adr].color) //клик по той же гильдии - отмена выделения
+        arrSector[adr].color = 0; //помечаем что сектор не занят гильдией
+      else 
+        arrSector[adr].color = selected_color; //помечаем что сектор занят этой гильдией
+      sceneFillSector(adr); //перекрашиваем сектор
+      idb.save_sector(adr);
+    } else { //цвет не выбран
+      NOTE("Назначить штабы - редактор (правая кнопка).","Выбор гильдии - клик по штабу.");
+      return;
+    }
   }
-
+  
   drawScene();
 });
 
@@ -461,6 +485,7 @@ function ClearOsadki(){
 
 
 /************ запись данных карты в файл на локальный диск **********/
+//todo правильнее записать в базу на сервер (с уникальным id)
 document.addEventListener("keydown", (e)=>{keypressed(e)});
 function keypressed(e){
   if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
@@ -471,8 +496,6 @@ function keypressed(e){
 
 const btn_save = document.querySelector(".btn-save");
 btn_save.addEventListener("click", ()=>{ SaveFile() } );
-
-//todo правильнее записать в базу на сервер (с уникальным id)
 async function SaveFile() {  
   curtain.style.display = "block";
   NOTE("Сохранение данных карты в файл на диске.");
@@ -492,13 +515,6 @@ async function SaveFile() {
   try {
     filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла    
     filename = filehandler.name;
-  } catch { //если окно просто зарыли
-    NOTE("");
-    curtain.style.display = "none";
-    return;
-  }
-
-  try {
     const writable = await filehandler.createWritable();
     await writable.write(content);
     await writable.close();
@@ -507,11 +523,16 @@ async function SaveFile() {
     btn_load.blur();
     div_filename.textContent = filename;
     curtain.style.display = "none";
-  } catch {
-    LOG("Error saving map file!" , RED);
-    NOTE("Ошибка записи файла карты.");
-    curtain.style.display = "none";
-  }
+  } catch (err) {     
+    if (err.name == 'AbortError') { //если окно просто закрыли
+      NOTE("Файл не записан."); 
+    } else {      
+      LOG("Error saving map file!" , RED);      
+      NOTE("Ошибка записи: " + err.name + " , " + err.message);
+    }    
+  } finally {
+    curtain.style.display = "none";    
+  }  
   
   function genDateString(){
     let addZero = (value)=>{ return (value <=9 ? '0' : '') +value; };
@@ -527,9 +548,9 @@ async function SaveFile() {
 
 
 /************ чтение данных карты из json файла **********/
+//todo правильнее загрузить из базы на сервере (с уникальным id)
 const btn_load = document.querySelector(".btn-load");
 btn_load.addEventListener("click", async () => {
-  //todo правильнее загрузить из базы на сервере (с уникальным id)
   if (!('showOpenFilePicker' in window)){
     NOTE("Невозможно открыть файл в вашем браузере."); 
     return;
@@ -546,13 +567,7 @@ btn_load.addEventListener("click", async () => {
       excludeAcceptAllOption: true
     };
     fileHandler = await window.showOpenFilePicker(options); //открывает окно для выбора клиентом локального файла
-  } catch { //если окно просто закрыли
-    NOTE("");
-    curtain.style.display = "none";
-    return;
-  }
-  LOG("Downloading map file ...", BLUE);
-  try{ //получение файла и загрузка данных карты
+    LOG("Downloading map file ...", BLUE);
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
     arrSector = JSON.parse(contents);    
@@ -564,15 +579,19 @@ btn_load.addEventListener("click", async () => {
     drawScene();       
 
     LOG("Map downloaded.");
-    NOTE("");
+    NOTE("Карта загружена.");
     div_filename.textContent = fname(file.name);    
-  } catch {
-    NOTE("Ошибка загрузки файла данных карты!");
-    LOG("Error reading map metadata!", RED);
+  } catch(err) { //если окно просто закрыли
+    if (err.name == 'AbortError') { //если окно просто закрыли
+      NOTE("Отмена. Файл не загружен."); 
+    } else {     
+      NOTE("Ошибка загрузки файла карты!");
+      LOG("Error reading map file!", RED);
+    }
   } finally {
     curtain.style.display = "none";
-  }
-  btn_load.blur();
+    btn_load.blur();
+  }    
 
   function fname(fs){ //возвращает имя файла
     let n = fs.indexOf('.');
@@ -606,7 +625,7 @@ btn_imgcopy.addEventListener("click", () => {
       }
     );
   });
-  setTimeout(() => {
+  setTimeout(() => { //позволить анимации закончиться
     canvas.classList.remove("anim-copy");
     divClipBoard.style.display = "block";
     btn_imgcopy.removeAttribute("disabled"); //разблокировать кнопку copy
@@ -648,8 +667,7 @@ btn_imgbb.addEventListener("click", async () => {
   drawScene();
   canvas.classList.add("anim-copy");
 
-  let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-  imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+  let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));  
   let frmdata = new FormData();
   frmdata.append("image", blob, "image.png");
  
@@ -668,55 +686,33 @@ btn_imgbb.addEventListener("click", async () => {
     const result = await response.json(); 
     LOG("Map image uploaded to imgbb.com server.");
     let map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
+    
     let short_link= map_link.slice(8); //короткая ссылка (без https://)
-    writeClipboardText(short_link);
     let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
-    div_filename.innerHTML = full_link;
-    NOTE("Ссылка на карту: " + full_link + " скопирована в буфер обмена.", "Ctrl+V вставить ссылку в сообщение.");
+    //div_filename.innerHTML = full_link;
     LOG("Link " + short_link + " copied into clipboard.", BLUE);  
-    setTimeout(() => {
-      canvas.classList.remove("anim-copy");
-      divClipBoard.style.display = "block";  
-      divClipBoard.setAttribute("data-text", "изображение карты на imgbb.com      (click to copy link)");
-    }, 800);
-    divClipBoard.addEventListener("click", ()=>{
+    
+    imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+    divClipBoard.style.display = "block";  
+    divClipBoard.setAttribute("data-text", "изображение карты на imgbb.com      (click to copy link)");
+    divClipBoard.click();
+
+    divClipBoard.addEventListener("click", ()=>{ //todo вынести отдельно (срабатывает при копи в буфер)
       writeClipboardText(short_link);
+      NOTE("Ссылка на карту: " + full_link + " уже в буфере обмена.", "Нажмите Ctrl+V вставить ссылку в сообщение.");
     })
   } catch (error) {
     LOG("ERROR: " + error, RED);
-    NOTE("Ошибка загрузки изображения на сайт imgbb.com");
+    NOTE("Ошибка загрузки изображения карты на сайт imgbb.com");
   }
+
+  setTimeout(() => {
+    canvas.classList.remove("anim-copy");
+  }, 800);
 });
 
 
-
-/******************************************************************
-******************* СЕРВИСНЫЕ ФУНКЦИИ *****************************
-*******************************************************************/
-
-// подбор цветовой схемы 
-const theme = {
-  hue: 20,
-  change: ()=>{    
-    theme.hue +=20;
-    if (theme.hue > 360) theme.hue = 0;
-    let clr = getHLSColor(theme.hue);   
-    color_light = clr.light;  //глобал: для текстовых надписей в канвасе
-    document.documentElement.style.setProperty("--dark", clr.dark);
-    document.documentElement.style.setProperty("--light", clr.light);    
-    drawScene();
-  }
-}
-function getHLSColor(hue) {  
-  if (!hue) hue = Math.floor(Math.random() * 360);  //без параметра - случайный цвет
-  let clrL = "hsl(" + hue + ", 90%, 90%)";
-  let clrD = "hsl(" + hue + ", 90%, 10%)";
-  return {light:clrL , dark:clrD};
-}
-document.querySelector(".btn-theme").addEventListener("click", ()=>{  theme.change() });
-
-
-// вид курсора
+/********************** вид курсора ***************/
 function cursorStyle(e) {
   let adr;
   try {
@@ -738,6 +734,36 @@ function cursorStyle(e) {
     }
   }
 }
+
+
+/****************** подбор цветовой схемы  **********/
+const theme = {
+  hue: 20,
+  change: ()=>{        
+    theme.hue +=20;
+    if (theme.hue > 360) theme.hue = 20;    
+    g_color = getHLSColor(theme.hue);  //глобал: для текстовых надписей в канвасе
+    document.documentElement.style.setProperty("--dark", g_color.dark);
+    document.documentElement.style.setProperty("--light", g_color.light);    
+    drawScene();
+  }
+}
+
+const getHLSColor = hue => {  
+  if (!hue) hue = Math.floor(Math.random() * 360);  //без параметра - случайный цвет
+  let clrL = "hsl(" + hue + ", 90%, 90%)";
+  let clrD = "hsl(" + hue + ", 90%, 10%)";
+  return {light:clrL , dark:clrD};
+}
+
+document.querySelector(".btn-theme").addEventListener("click", ()=>{  theme.change() });
+
+
+
+
+/******************************************************************
+******************* СЕРВИСНЫЕ ФУНКЦИИ *****************************
+*******************************************************************/
 
 // вывод в строку состояния
 function NOTE(msg1, msg2="") {
@@ -766,10 +792,20 @@ async function writeClipboardText(text) {
 }
 
 
+
+/*******************************************************************/
+/************* функции для отладки *********************************/
+/*******************************************************************/
+
 // кнопка для отладки DEBUG 
-var test = document.querySelector(".btn-test");
+const test = document.querySelector(".btn-test");
 //test.style.visibility = "visible";  //DEBUG закоментировать
 test.addEventListener("click", ()=>{  
-  fenster.open("DEBUG","Message", []);
+  //fenster.open("DEBUG","Message", []);
+  drawScene();
 });
 
+//вывод в логи тестового сообщения
+function DBG(msg=""){
+  LOG("DEBUG (" + Math.ceil(performance.now()) + ") " + msg, RED);
+}
