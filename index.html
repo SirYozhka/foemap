@@ -8,11 +8,11 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="index.css">
   
-  <script src="./modal.js"></script>  
-  <script src="./indexeddb.js"></script> 
-  <script src="./editor.js"></script>  
-  <script src="./images.js"></script>  
+  <script src="./modal.js" defer></script>  
+  <script src="./indexeddb.js" defer></script> 
+  <script src="./editor.js" defer></script>  
   <script src="./script.js" defer></script>
+    
 </head>
 
 <body>
@@ -33,6 +33,8 @@
             <button class="btn-new" data-text="создать новую карту">new</button>
             <button class="btn-save" data-text="записать карту в файл">save</button>
             <button class="btn-load" data-text="загрузить карту из файла">open</button>
+            <button class="btn-upload" data-text="сохранить карту на сервер jsonbin.io">upload</button>
+            <button class="btn-download" data-text="загрузить карту с сервера jsonbin.io">download</button>
             <button class="btn-clear" data-text="очистить опорники">clear</button>
           </div>
         </div>

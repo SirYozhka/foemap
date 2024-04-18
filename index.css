@@ -79,7 +79,7 @@ div.curtain{
 
 .menu{
 	position: relative;
-	width: 60px;
+	width: 70px;
 	margin: 0px;
 	font-size: 12px;
 	font-weight: 700;
@@ -155,7 +155,7 @@ button {
 	cursor: pointer;
 	height: 17px;
 	margin: 0px;
-	width: 60px;
+	width: 70px;
 	padding: 0px;
 	color: var(--dark);
 	font-size: 12px;
@@ -517,7 +517,7 @@ div.modal_controls{
 	flex-direction: row;
 }
 div.modal_controls button{
-	width: 70px;
+	width: 80px;
 	margin: 5px;
 	cursor: pointer;
 }

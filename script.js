@@ -50,6 +50,8 @@ const fenster = new ModalFenster(); //модальное окно
 const idb = new IndexedDB("foesectors", 5);  //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
 const editor = new FormEditor(); //форма редактирования сектора
 
+var map_link; //полная ссылка на загруженную карту на imgbb.com
+var jsonbin_id; //id файла карты для работы с https://jsonbin.io/   "661f8a66ad19ca34f85b5e88";  //пример: водопад-ромашка
 
 /******************** выбор карты **************************************/
 var nmap; //номер карты: 1-вулкан, 2-водопад
@@ -212,19 +214,27 @@ document.querySelector(".btn-help").addEventListener("click", ()=>{     // по�
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", async () => {
   LOG("Initialization ..." , BLUE);
-  //editor = new FormEditor();  
-  await idb.open();   
-  if (idb.empty) { //при первом запуске выбрать карту     
-    btn_new.click();    
-  } else { //при повторном запуске скачать карту из локальной базы
-    await idb.read_to_arr(); 
-    MapChoise(arrSector[0].os); //определяем вулкан или водопад
-    await loadingImages();    
-    sceneFillSectorAll();
-    drawScene();
-    LOG("READY.");
-    NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
+  await idb.open();  
+
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.has('id')) {
+    jsonbin_id = searchParams.get('id');
+    jsonDownload();    
+  } else {
+    if (idb.empty) { //при первом запуске выбрать карту     
+      btn_new.click();    
+    } else { //при повторном запуске скачать карту из локальной базы
+      await idb.read_to_arr(); 
+      MapChoise(arrSector[0].os); //определяем вулкан или водопад
+      await loadingImages();    
+      sceneFillSectorAll();
+      drawScene();    
+    }  
   }
+   
+  LOG(".".repeat(40));
+  NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
+
 })
 
 
@@ -257,35 +267,34 @@ function loadingImages() {
       };
     };
   });
-
-  async function calcSectorsCenters() { // поиск центров секторов (для надписей)
-    let maxX = [],  minX = [],  maxY = [],  minY = [];
-    for (let s = 1; s <= nsec; s++) { 
-      maxX[s] = 0;
-      minX[s] = IMG_WITH;
-      maxY[s] = 0;
-      minY[s] = IMG_HEGHT;
-    }
-    let n = data_address.data.length;  
-    for (let i = 0; i < n; i += 4) {
-      let r = data_address.data[i]; //red компонента содержит порядковый номер сектора    
-      if (data_address.data[i+1] !=0 || data_address.data[i+2] !=0) continue; //случайные пиксели (todo надо бы улучшить address.bmp)
-      if (r <= nsec) { 
-        let y = ~~(i / 4 / IMG_WITH);
-        let x = i / 4 - y * IMG_WITH;
-        if (x > maxX[r]) maxX[r] = x;
-        if (y > maxY[r]) maxY[r] = y;
-        if (x < minX[r]) minX[r] = x;
-        if (y < minY[r]) minY[r] = y;
-      }
-    }
-    for (let s = 1; s <= nsec; s++) { 
-      arrSector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
-      arrSector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
-    }
-  }
 }
 
+async function calcSectorsCenters() { // поиск центров секторов (для надписей)
+  let maxX = [],  minX = [],  maxY = [],  minY = [];
+  for (let s = 1; s <= nsec; s++) { 
+    maxX[s] = 0;
+    minX[s] = IMG_WITH;
+    maxY[s] = 0;
+    minY[s] = IMG_HEGHT;
+  }
+  let n = data_address.data.length;  
+  for (let i = 0; i < n; i += 4) {
+    let r = data_address.data[i]; //red компонента содержит порядковый номер сектора    
+    if (data_address.data[i+1] !=0 || data_address.data[i+2] !=0) continue; //случайные пиксели (todo надо бы улучшить address.bmp)
+    if (r <= nsec) { 
+      let y = ~~(i / 4 / IMG_WITH);
+      let x = i / 4 - y * IMG_WITH;
+      if (x > maxX[r]) maxX[r] = x;
+      if (y > maxY[r]) maxY[r] = y;
+      if (x < minX[r]) minX[r] = x;
+      if (y < minY[r]) minY[r] = y;
+    }
+  }
+  for (let s = 1; s <= nsec; s++) { 
+    arrSector[s].x = ~~(Math.abs(maxX[s] + minX[s]) / 2);
+    arrSector[s].y = ~~(Math.abs(maxY[s] + minY[s]) / 2);
+  }
+}
 
 function sceneFillSector(adr) { //заливка сектора цветом color  
   let n=data_address.data.length;
@@ -296,14 +305,9 @@ function sceneFillSector(adr) { //заливка сектора цветом col
   }
 }
 
-/* так логично и понятно
-function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом  
-  for (let sec = 1; sec <= nsec; sec++)
-    sceneFillSector(sec);
-}; */
-
-// так быстрее
 function sceneFillSectorAll() { //заливка ВСЕХ секторов соответствующим цветом    
+  //for (let sec = 1; sec <= nsec; sec++) sceneFillSector(sec); //так логично и понятно
+  //но так быстрее
   let n=data_address.data.length;
   for (var i = 0; i < n; i += 4) {
     let adr = data_address.data[i];
@@ -312,8 +316,6 @@ function sceneFillSectorAll() { //заливка ВСЕХ секторов со�
     }
   }
 } 
-
-
 
 function fillPoint(adr, {r,g,b,a}){ //заливка одного пиксела в сцене
   data_scene.data[adr + 0] = r; //red
@@ -427,7 +429,7 @@ btn_new.addEventListener("click", () => {
 });
 
 async function CreateNewMap(map) {
-  container.classList.add("anim-clear");
+  //container.classList.add("anim-clear");
   MapChoise(map);
   arrSector = JSON.parse(JSON.stringify(defSectors)); //копируем названия по умолчанию
   let sec_example = (map == 1 ? 29 : 1);  //для образца поставить один штаб
@@ -444,7 +446,7 @@ async function CreateNewMap(map) {
     drawScene();
   }, 500);  
   setTimeout(() => { //дать возможность закончить анимацию
-    container.classList.remove("anim-clear");
+    //container.classList.remove("anim-clear");
     LOG("New map created.")
   }, 1000);
 };
@@ -496,6 +498,7 @@ function keypressed(e){
 
 const btn_save = document.querySelector(".btn-save");
 btn_save.addEventListener("click", ()=>{ SaveFile() } );
+
 async function SaveFile() {  
   curtain.style.display = "block";
   NOTE("Сохранение данных карты в файл на диске.");
@@ -534,22 +537,13 @@ async function SaveFile() {
     curtain.style.display = "none";    
   }  
   
-  function genDateString(){
-    let addZero = (value)=>{ return (value <=9 ? '0' : '') +value; };
-    let date = new Date(Date.now());
-    let y = date.getFullYear();
-    let m = addZero(date.getMonth()+1);
-    let d = addZero(date.getDay());
-    return "PBG"+y+m+d;
-  }
-
 };
 
 
 
-/************ чтение данных карты из json файла **********/
-//todo правильнее загрузить из базы на сервере (с уникальным id)
+/************ чтение данных карты из json файла с компьютера **********/
 const btn_load = document.querySelector(".btn-load");
+
 btn_load.addEventListener("click", async () => {
   if (!('showOpenFilePicker' in window)){
     NOTE("Невозможно открыть файл в вашем браузере."); 
@@ -566,8 +560,8 @@ btn_load.addEventListener("click", async () => {
       types: [{accept: {'text/plain': '.map' }}, ],
       excludeAcceptAllOption: true
     };
-    fileHandler = await window.showOpenFilePicker(options); //открывает окно для выбора клиентом локального файла
-    LOG("Downloading map file ...", BLUE);
+    fileHandler = await window.showOpenFilePicker(options); //окно для выбора клиентом локального файла
+    LOG("Downloading map ...", BLUE);
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
     arrSector = JSON.parse(contents);    
@@ -606,6 +600,7 @@ btn_load.addEventListener("click", async () => {
 const btn_imgcopy = document.querySelector(".btn-imgcopy");
 const divClipBoard = document.querySelector(".monitor");
 const imgClipBoard = document.querySelector(".monitor img");
+
 btn_imgcopy.addEventListener("click", () => {
   selected_color=null; //снять выбор штаба
   drawScene(); 
@@ -615,6 +610,7 @@ btn_imgcopy.addEventListener("click", () => {
     let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
     navigator.clipboard.write(data).then(
       () => {
+        map_link = NaN;
         imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
         divClipBoard.setAttribute("data-text", "изображение карты в буфере обмена");
         NOTE("Карта скопирована в буфер обмена.", "Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ");
@@ -637,6 +633,7 @@ btn_imgcopy.addEventListener("click", () => {
 /*************** save - сохранить картинку в файл ******************/
 //import {SaveCanvasToFile} from './images.js';
 const btn_imgsave = document.querySelector(".btn-imgsave");
+
 btn_imgsave.addEventListener("click", async ()=>{
   LOG("Saving image file ...", BLUE);
   NOTE("Запись изображения в файл на компьютере ...");
@@ -645,7 +642,7 @@ btn_imgsave.addEventListener("click", async ()=>{
   selected_color = null; //снять выбор штаба
   drawScene(); //перерисовать сцену
   try{ 
-    await SaveCanvasToFile(canvas);    
+    await SaveCanvasToFile();    
     LOG("Image map is saved.");
     NOTE("Сохраненное изображение карты можно переслать или опубликовать.");      
   } catch (err) {    
@@ -659,9 +656,39 @@ btn_imgsave.addEventListener("click", async ()=>{
 });
 
 
+function SaveCanvasToFile() {
+  return new Promise(async (resolve, reject) => {
+    let filehandler;
+    const options = {
+      //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
+      suggestedName: "mapsnapshot",
+      types: [
+        {
+          description: "Image Files",
+          accept: { "image/jpeg": ".jpg" },
+        },
+      ],
+    };
+
+    try {
+      filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
+      canvas.toBlob(async (blob) => {
+        const writable = await filehandler.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        resolve();
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+
 
 /*************** upload - загрузка на сервер imgbb.com ******************/
 const btn_imgbb = document.querySelector(".btn-imgbb"); 
+
 btn_imgbb.addEventListener("click", async () => {
   selected_color = null; //снять выделение выбора штаба
   drawScene();
@@ -681,41 +708,153 @@ btn_imgbb.addEventListener("click", async () => {
   try {
     const response = await fetch(myRequest);
     if (!response.ok) {
-      throw new Error("Error network IMGBB.COM connection!");
+      throw new Error("problem network IMGBB.COM connection!");
     }
     const result = await response.json(); 
-    LOG("Map image uploaded to imgbb.com server.");
-    let map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
-    
-    let short_link= map_link.slice(8); //короткая ссылка (без https://)
-    let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
-    //div_filename.innerHTML = full_link;
-    LOG("Link " + short_link + " copied into clipboard.", BLUE);  
-    
+    map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
+    LOG("Imagemap uploaded to imgbb.com server.");    
+        
     imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-    divClipBoard.style.display = "block";  
     divClipBoard.setAttribute("data-text", "изображение карты на imgbb.com      (click to copy link)");
     divClipBoard.click();
-
-    divClipBoard.addEventListener("click", ()=>{ //todo вынести отдельно (срабатывает при копи в буфер)
-      writeClipboardText(short_link);
-      NOTE("Ссылка на карту: " + full_link + " уже в буфере обмена.", "Нажмите Ctrl+V вставить ссылку в сообщение.");
-    })
+    
   } catch (error) {
     LOG("ERROR: " + error, RED);
     NOTE("Ошибка загрузки изображения карты на сайт imgbb.com");
   }
-
+  
   setTimeout(() => {
+    divClipBoard.style.display = "block";  
     canvas.classList.remove("anim-copy");
   }, 800);
-});
+})
+
+divClipBoard.addEventListener("click", ()=>{
+  if (!map_link) return; //если копировали в буфер обмена но ничего не делать (map_link = NaN)
+  let short_link= map_link.slice(8); //короткая ссылка (без https://)
+  let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
+  writeClipboardText(short_link);
+  LOG("Link " + short_link + " copied to clipboard.");  
+  NOTE("Ссылка на карту: " + full_link + " уже в буфере обмена.", "Нажмите Ctrl+V вставить ссылку в сообщение.");
+})
+
+ 
+
+/************* отправка карты на  https://jsonbin.io/ ************************/
+const btn_json_upload = document.querySelector(".btn-upload");
+btn_json_upload.addEventListener("click", ()=>{ jsonUpload() });
+
+function jsonUpload() { //upload to  https://jsonbin.io/
+  NOTE("Загрузка карты на сервер jsonbin.io ...");
+  LOG("Uploading map to jsonbin.io ...",BLUE)
+  curtain.style.display = "block";
+  
+  return new Promise((resolve, reject)=>{
+    const content = JSON.stringify(arrSector, null, "\t");
+    let reqest = new XMLHttpRequest();    
+    
+    if (!jsonbin_id){ //создание нового json
+      reqest.open("POST", "https://api.jsonbin.io/v3/b", true);
+      //reqest.setRequestHeader("X-Bin-Name", genDateString()); //не обязательно
+    } else { //если задан id то презапись того же самого
+      reqest.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
+    }
+    reqest.setRequestHeader("Content-Type", "application/json");
+    reqest.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
+    reqest.send(content);
+   
+    reqest.onreadystatechange = () => {
+      if (reqest.readyState == XMLHttpRequest.DONE) {
+        let responce = JSON.parse(reqest.responseText);
+        jsonbin_id = responce.metadata.id;
+        div_filename.textContent = jsonbin_id;
+        curtain.style.display = "none";
+        LOG("Map uploaded to jsonbin.io");            
+        NOTE("Карта загружена на сервер jsonbin.io", "ID карты: " + jsonbin_id);
+        resolve();
+      }
+    }
+    
+    reqest.onerror = (error) => {
+      LOG("ERROR: " + error, RED);
+      NOTE("Ошибка загрузки карты на сайт jsonbin.io"); 
+      reject();
+    }  
+  
+  })
+  
+}
+
+/************** получение карты с  https://jsonbin.io/ ************************/
+const btn_json_download = document.querySelector(".btn-download");
+btn_json_download.addEventListener("click", ()=>{
+  fenster.open(
+    "Загрузка карты c сервера jsonbin.io",
+    "<div style='text-align:center;'> ID: <input type='text' class='input_id_jasonbin' name='id' autocomplete='on'/> </div> ",
+    [
+      { name:"LOAD", callback: ()=>{
+        jsonbin_id = document.querySelector(".input_id_jasonbin").value;
+        jsonDownload();
+      } } 
+    ]);    
+})
+
+async function jsonDownload(){
+  NOTE("Получение карты c сервера jsonbin.io ...");
+  LOG("Downloading map from jsonbin.io ...",BLUE)
+  curtain.style.display = "block";
+  
+  try {
+    arrSector = await jsonbinLoad();    
+  } catch(error) {
+    LOG("ERROR: " + error, RED);
+    NOTE("Ошибка загрузки карты c сайта jsonbin.io"); 
+    return;
+  } finally {
+    curtain.style.display = "none";
+  }
+  
+  LOG("Map downloaded from JSONBIN.IO.");            
+  NOTE("Карта получена c сервера jsonbin.io", "ID карты: " + jsonbin_id); 
+  
+  div_filename.textContent = jsonbin_id;
+  MapChoise(arrSector[0].os); //определяем вулкан или водопад
+  await idb.write_to_baze();
+  await loadingImages();
+  sceneFillSectorAll();
+  drawScene();
+
+  function jsonbinLoad() { //download from  https://jsonbin.io/  
+    return new Promise((resolve, reject)=>{
+      let reqest = new XMLHttpRequest();    
+      reqest.open("GET", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
+      reqest.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
+      reqest.send();    
+         
+      reqest.onreadystatechange = () => {
+        if (reqest.readyState == XMLHttpRequest.DONE) {
+          let responce = JSON.parse(reqest.responseText);
+          if (responce.message) {                    
+            reject(responce.message);
+          } else {                    
+            resolve(responce.record);
+          }
+        }      
+      }   
+    
+    })
+    
+  }
+}
 
 
-/********************** вид курсора ***************/
+
+
+
+/******************************* вид курсора ***************************/
 function cursorStyle(e) {
   let adr;
-  try {
+  try { //чтобы не проверять offset в границах data_address
     let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
     adr = data_address.data[offset]; //получить red component = number of address
   } catch {
@@ -765,9 +904,19 @@ document.querySelector(".btn-theme").addEventListener("click", ()=>{  theme.chan
 ******************* СЕРВИСНЫЕ ФУНКЦИИ *****************************
 *******************************************************************/
 
+//генератор строки с датой YYYYMMDD
+function genDateString(){
+  let addZero = (value)=>{ return (value <=9 ? '0' : '') +value; };
+  let date = new Date(Date.now());
+  let y = date.getFullYear();
+  let m = addZero(date.getMonth()+1);
+  let d = addZero(date.getDay());
+  return "PBG"+y+m+d;
+}
+
 // вывод в строку состояния
 function NOTE(msg1, msg2="") {
-  document.querySelector(".label-box").innerHTML = msg1+"<br>"+msg2;
+  document.querySelector(".label-box").innerHTML = msg1 + "<br>" + msg2;
 }
 
 //вывод логов на экран (цвет сообщений по умолчанию - жёлтый)
@@ -799,13 +948,19 @@ async function writeClipboardText(text) {
 
 // кнопка для отладки DEBUG 
 const test = document.querySelector(".btn-test");
-//test.style.visibility = "visible";  //DEBUG закоментировать
-test.addEventListener("click", ()=>{  
-  //fenster.open("DEBUG","Message", []);
+test.style.visibility = "visible";  //DEBUG закоментировать
+test.addEventListener("click", async ()=>{  
+  DBG("Test start");  
+  //fenster.open("DEBUG","Проверка");
+  //sceneFillSectorAll();
   drawScene();
+  DBG("Test finish");    
 });
 
 //вывод в логи тестового сообщения
 function DBG(msg=""){
   LOG("DEBUG (" + Math.ceil(performance.now()) + ") " + msg, RED);
 }
+
+
+
