@@ -13,28 +13,26 @@ class IndexedDB {
     return new Promise((resolve, reject) => {
       let dbRequest = window.indexedDB.open(this.name, this.version);
 
-      dbRequest.onupgradeneeded = (event) => {
-        //создание базы при первом запуске ( изменении версии )
-        LOG("Setup database version " + this.version + " ...", BLUE);
+      dbRequest.onupgradeneeded = (event) => { //создание базы при первом запуске ( изменении версии )
+        LOG("Database version " + this.version + " setup ...", BLUE);
         let db = event.target.result;
-        if (db.objectStoreNames.contains("sectors"))
-          //если есть хранилище "sectors"
-          db.deleteObjectStore("sectors"); //удалить хранилище "sectors"
+        if (db.objectStoreNames.contains("sectors")) //если есть хранилище "sectors"
+          db.deleteObjectStore("sectors"); //проще удалить хранилище "sectors" (и создать заново)
         db.createObjectStore("sectors", {
           keyPath: "id",
           autoIncrement: false,
-        });
-        this.empty = true;
+        });        
         newbaze = true;
       };
 
       dbRequest.onsuccess = async (event) => {
         this.baze = event.target.result; //this.baze = dbRequest.result //то же самое
-        if (newbaze)
-          //если пустая (первый запуск программы или новая версия)
+        if (newbaze){ //если создание (первый запуск программы или новая версия)
           await this.create_new(); //заполнить нулями
-        else await idb.check_empty(); //проверить если база заполнена нулями
-        LOG("IDB initialized.");
+          this.empty = true;
+        } else 
+          await idb.check_empty(); //проверить если база заполнена нулями
+        LOG("Database opened successfully.");
         resolve();
       };
 

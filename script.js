@@ -5,8 +5,8 @@ const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
 
 //цвета для заметок NOTE(string, COLOR);
-const YELLOW = "rgb(250,255,200)"; //готово (цвет по умолчанию)
-const BLUE = "rgb(200,200,255)"; // процесс
+const YELLOW = "rgb(255,255,200)"; //готово (цвет по умолчанию)
+const BLUE = "rgb(200,255,255)"; // процесс
 const RED = "rgb(255,150,150)"; // ошибки
 
 const container = document.querySelector(".container"); //контейнер сцены
@@ -22,7 +22,6 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
-//var color_light = "hsl(20,90%,90%)"; //светлый цвет как --light в style.css
 var g_color = {light: "hsl(20,90%,90%)", dark:"hsl(20,90%,10%)"}; // цвет как в style.css
 
 canvas.addEventListener("mousemove", (e) => { cursorStyle(e); });
@@ -211,6 +210,7 @@ document.querySelector(".btn-help").addEventListener("click", ()=>{     // по�
 })
 
 
+
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", async () => {
   LOG("Initialization ..." , BLUE);
@@ -234,8 +234,8 @@ window.addEventListener("load", async () => {
    
   LOG(".".repeat(40));
   NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
-
 })
+
 
 
 /************************ загрузка изображений карты *************************/
@@ -635,55 +635,55 @@ btn_imgcopy.addEventListener("click", () => {
 const btn_imgsave = document.querySelector(".btn-imgsave");
 
 btn_imgsave.addEventListener("click", async ()=>{
-  LOG("Saving image file ...", BLUE);
-  NOTE("Запись изображения в файл на компьютере ...");
+  LOG("Saving image map file ...", BLUE);
+  NOTE("Запись изображения карты в файл на компьютере ...");
   btn_imgsave.blur(); //убрать фокус с кнопки (свернуть выпадающее меню)
   curtain.style.display = "block";
   selected_color = null; //снять выбор штаба
   drawScene(); //перерисовать сцену
   try{ 
-    await SaveCanvasToFile();    
+    let name = await SaveCanvasToFile();    
     LOG("Image map is saved.");
-    NOTE("Сохраненное изображение карты можно переслать или опубликовать.");      
+    NOTE("Файл изображения карты " + name + " можно переслать или опубликовать.");      
   } catch (err) {    
     if (err.name == 'AbortError') {
-      NOTE("Файл не записан."); 
+      NOTE("Отмена. Файл не записан."); 
     } else {      
       NOTE("Ошибка записи: " + err.name + " , " + err.message);
     }    
-  };
-  curtain.style.display = "none";
+  } finally {
+    curtain.style.display = "none";
+  }
+
+  function SaveCanvasToFile() {
+    return new Promise(async (resolve, reject) => {
+      let filehandler;
+      const options = {
+        suggestedName: "mapsnapshot",
+        types: [
+          {
+            description: "Image Files",
+            accept: { "image/jpeg": ".jpg" },
+          },
+          //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
+        ],
+      };
+  
+      try {
+        filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
+        canvas.toBlob(async (blob) => {
+          const writable = await filehandler.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          resolve(filehandler.name);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+  
 });
-
-
-function SaveCanvasToFile() {
-  return new Promise(async (resolve, reject) => {
-    let filehandler;
-    const options = {
-      //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
-      suggestedName: "mapsnapshot",
-      types: [
-        {
-          description: "Image Files",
-          accept: { "image/jpeg": ".jpg" },
-        },
-      ],
-    };
-
-    try {
-      filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
-      canvas.toBlob(async (blob) => {
-        const writable = await filehandler.createWritable();
-        await writable.write(blob);
-        await writable.close();
-        resolve();
-      });
-    } catch (error) {
-      reject(error);
-    }
-  });
-}
-
 
 
 /*************** upload - загрузка на сервер imgbb.com ******************/
@@ -755,7 +755,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
     
     if (!jsonbin_id){ //создание нового json
       reqest.open("POST", "https://api.jsonbin.io/v3/b", true);
-      //reqest.setRequestHeader("X-Bin-Name", genDateString()); //не обязательно
+      //reqest.setRequestHeader("X-Bin-Name", genDateString()); //имя задавать нет смысла
     } else { //если задан id то презапись того же самого
       reqest.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
     }
@@ -766,11 +766,14 @@ function jsonUpload() { //upload to  https://jsonbin.io/
     reqest.onreadystatechange = () => {
       if (reqest.readyState == XMLHttpRequest.DONE) {
         let responce = JSON.parse(reqest.responseText);
-        jsonbin_id = responce.metadata.id;
+        if (!jsonbin_id) jsonbin_id = responce.metadata.id;        
         div_filename.textContent = jsonbin_id;
         curtain.style.display = "none";
-        LOG("Map uploaded to jsonbin.io");            
-        NOTE("Карта загружена на сервер jsonbin.io", "ID карты: " + jsonbin_id);
+        let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
+        let linkHTML = "<a target='_blank' href='" + link + "'> " + link +" </a>";
+        NOTE("Карта загружена на сервер jsonbin.io , ID карты: " + jsonbin_id, linkHTML);
+        LOG("Map uploaded to jsonbin.io");
+        setLocation("?id="+jsonbin_id);
         resolve();
       }
     }
@@ -814,9 +817,11 @@ async function jsonDownload(){
     curtain.style.display = "none";
   }
   
-  LOG("Map downloaded from JSONBIN.IO.");            
-  NOTE("Карта получена c сервера jsonbin.io", "ID карты: " + jsonbin_id); 
+  LOG("Map downloaded from jsonbin.io");            
+  NOTE("Карта загружена c сервера jsonbin.io"); 
   
+  setLocation("?id="+jsonbin_id);
+
   div_filename.textContent = jsonbin_id;
   MapChoise(arrSector[0].os); //определяем вулкан или водопад
   await idb.write_to_baze();
@@ -840,14 +845,16 @@ async function jsonDownload(){
             resolve(responce.record);
           }
         }      
-      }   
+      } 
+      
+      reqest.onerror = () =>{
+        throw new Error("bad request"); //todo поймать исключение, что-то не так
+      }
     
     })
     
   }
 }
-
-
 
 
 
@@ -941,6 +948,9 @@ async function writeClipboardText(text) {
 }
 
 
+function setLocation(url){
+  history.replaceState(null, null, url);
+}
 
 /*******************************************************************/
 /************* функции для отладки *********************************/
@@ -953,13 +963,14 @@ test.addEventListener("click", async ()=>{
   DBG("Test start");  
   //fenster.open("DEBUG","Проверка");
   //sceneFillSectorAll();
-  drawScene();
+  //drawScene();
+  setLocation("?id=168545145");
   DBG("Test finish");    
 });
 
 //вывод в логи тестового сообщения
 function DBG(msg=""){
-  LOG("DEBUG (" + Math.ceil(performance.now()) + ") " + msg, RED);
+  LOG("DEBUG (" + Math.ceil(performance.now()) + ") " + msg, "rgb(200,255,200)");
 }
 
 
