@@ -22,8 +22,6 @@ const bufer_ctx = bufer_canvas.getContext("2d", { willReadFrequently: true });
 bufer_canvas.height = IMG_HEGHT; //вертикальное разрешение
 bufer_canvas.width = IMG_WITH; //зависит от параметров экрана
 
-var g_color = {light: "hsl(20,90%,90%)", dark:"hsl(20,90%,10%)"}; // цвет как в style.css
-
 canvas.addEventListener("mousemove", (e) => { cursorStyle(e); });
 
 var data_address; //данные номеров секторов из adresses.bmp (r-компонента - номер сектора)
@@ -51,6 +49,10 @@ const editor = new FormEditor(); //форма редактирования се�
 
 var map_link; //полная ссылка на загруженную карту на imgbb.com
 var jsonbin_id; //id файла карты для работы с https://jsonbin.io/   "661f8a66ad19ca34f85b5e88";  //пример: водопад-ромашка
+
+var g_color; // цветовая палитра
+
+
 
 /******************** выбор карты **************************************/
 var nmap; //номер карты: 1-вулкан, 2-водопад
@@ -217,9 +219,11 @@ window.addEventListener("load", async () => {
   await idb.open();  
 
   const searchParams = new URLSearchParams(window.location.search);
+  theme.set();
+  
   if (searchParams.has('id')) {
     jsonbin_id = searchParams.get('id');
-    jsonDownload();    
+    await jsonDownload();    
   } else {
     if (idb.empty) { //при первом запуске выбрать карту     
       btn_new.click();    
@@ -228,7 +232,6 @@ window.addEventListener("load", async () => {
       MapChoise(arrSector[0].os); //определяем вулкан или водопад
       await loadingImages();    
       sceneFillSectorAll();
-      initTheme();
       drawScene();    
     }  
   }
@@ -891,40 +894,28 @@ function cursorStyle(e) {
 
 
 /******************** установка цветовой схемы  *******************/
-const theme = {
-  hue: 0,
-  change: ()=>{        
-    theme.hue +=20;
-    if (theme.hue > 360) theme.hue = 20; 
-    theme.set();
-    window.localStorage.setItem("foe_theme", theme.hue);    
-  },
-}
-
-theme.set = ()=>{    
-  g_color = getHLSColor(theme.hue);  //глобал: для текстовых надписей в канвасе
-  document.documentElement.style.setProperty("--dark", g_color.dark);
-  document.documentElement.style.setProperty("--light", g_color.light);    
-}
-
-function initTheme(){
-  theme.hue = Number(window.localStorage.getItem("foe_theme"));
-  if (!theme.hue) theme.hue = 20;
-  theme.set();   
-}
-
-const getHLSColor = hue => {  
-  if (!hue) hue = Math.floor(Math.random() * 360);  //без параметра - случайный цвет
-  let light = "hsl(" + hue + ", 90%, 90%)";
-  let dark = "hsl(" + hue + ", 90%, 10%)";
-  return {light, dark};
-}
-
 document.querySelector(".btn-theme").addEventListener("click", ()=>{  
   theme.change();
   drawScene();
 });
 
+const theme = {
+  hue: Number(window.localStorage.getItem("pbgmap_theme")) || 20,
+  change: ()=>{        
+    theme.hue +=20;
+    if (theme.hue > 360) theme.hue = 20; 
+    theme.set();
+    window.localStorage.setItem("pbgmap_theme", theme.hue);    
+  },
+  set: ()=>{            
+    g_color = {
+      light: "hsl(" + theme.hue + ", 90%, 90%)",
+      dark: "hsl(" + theme.hue + ", 90%, 10%)"
+    };
+    document.documentElement.style.setProperty("--dark", g_color.dark);
+    document.documentElement.style.setProperty("--light", g_color.light);    
+  }
+}
 
 
 
@@ -968,7 +959,7 @@ async function writeClipboardText(text) {
   }
 }
 
-//добавить переменные в строку запроса url
+//установить переменные в строку запроса url
 function setLocation(url){
   history.replaceState(null, null, url);
 }

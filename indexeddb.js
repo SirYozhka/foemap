@@ -88,8 +88,7 @@ class IndexedDB {
     });
   }
 
-  write_to_baze() {
-    //заполняем базу из массива arrSector
+  write_to_baze() { //заполняем базу из массива arrSector
     return new Promise((resolve) => {
       let txn = this.baze.transaction("sectors", "readwrite");
       let store = txn.objectStore("sectors");
@@ -99,7 +98,7 @@ class IndexedDB {
         request = store.put(arrSector[sec]); //заполняем базу
       }
       request.onsuccess = () => {
-        LOG("IDB writed.");
+        LOG("Database writed.");
         resolve();
       };
       request.onerror = () => {
