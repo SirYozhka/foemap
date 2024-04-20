@@ -228,6 +228,7 @@ window.addEventListener("load", async () => {
       MapChoise(arrSector[0].os); //определяем вулкан или водопад
       await loadingImages();    
       sceneFillSectorAll();
+      initTheme();
       drawScene();    
     }  
   }
@@ -429,7 +430,7 @@ btn_new.addEventListener("click", () => {
 });
 
 async function CreateNewMap(map) {
-  //container.classList.add("anim-clear");
+  container.classList.add("anim-new");
   MapChoise(map);
   arrSector = JSON.parse(JSON.stringify(defSectors)); //копируем названия по умолчанию
   let sec_example = (map == 1 ? 29 : 1);  //для образца поставить один штаб
@@ -440,13 +441,17 @@ async function CreateNewMap(map) {
   await idb.write_to_baze();
   await loadingImages();
   sceneFillSectorAll();
+
+  jsonbin_id = NaN;
+  div_filename.textContent = "";  
+  setLocation("?new");
   
   setTimeout(() => { //перерисовать сцену в середине анимации
     selected_color=null; //снять выбор штаба
     drawScene();
-  }, 500);  
+  }, 450);  
   setTimeout(() => { //дать возможность закончить анимацию
-    //container.classList.remove("anim-clear");
+    container.classList.remove("anim-new");
     LOG("New map created.")
   }, 1000);
 };
@@ -572,9 +577,11 @@ btn_load.addEventListener("click", async () => {
     sceneFillSectorAll();
     drawScene();       
 
+    jsonbin_id = NaN;
+    div_filename.textContent = "";    
+
     LOG("Map downloaded.");
     NOTE("Карта загружена.");
-    div_filename.textContent = fname(file.name);    
   } catch(err) { //если окно просто закрыли
     if (err.name == 'AbortError') { //если окно просто закрыли
       NOTE("Отмена. Файл не загружен."); 
@@ -755,7 +762,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
     
     if (!jsonbin_id){ //создание нового json
       reqest.open("POST", "https://api.jsonbin.io/v3/b", true);
-      //reqest.setRequestHeader("X-Bin-Name", genDateString()); //имя задавать нет смысла
+      reqest.setRequestHeader("X-Bin-Name", genDateString()); //в принципе имя задавать нет смысла
     } else { //если задан id то презапись того же самого
       reqest.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
     }
@@ -785,8 +792,9 @@ function jsonUpload() { //upload to  https://jsonbin.io/
     }  
   
   })
-  
 }
+
+
 
 /************** получение карты с  https://jsonbin.io/ ************************/
 const btn_json_download = document.querySelector(".btn-download");
@@ -882,27 +890,40 @@ function cursorStyle(e) {
 }
 
 
-/****************** подбор цветовой схемы  **********/
+/******************** установка цветовой схемы  *******************/
 const theme = {
-  hue: 20,
+  hue: 0,
   change: ()=>{        
     theme.hue +=20;
-    if (theme.hue > 360) theme.hue = 20;    
-    g_color = getHLSColor(theme.hue);  //глобал: для текстовых надписей в канвасе
-    document.documentElement.style.setProperty("--dark", g_color.dark);
-    document.documentElement.style.setProperty("--light", g_color.light);    
-    drawScene();
-  }
+    if (theme.hue > 360) theme.hue = 20; 
+    theme.set();
+    window.localStorage.setItem("foe_theme", theme.hue);    
+  },
+}
+
+theme.set = ()=>{    
+  g_color = getHLSColor(theme.hue);  //глобал: для текстовых надписей в канвасе
+  document.documentElement.style.setProperty("--dark", g_color.dark);
+  document.documentElement.style.setProperty("--light", g_color.light);    
+}
+
+function initTheme(){
+  theme.hue = Number(window.localStorage.getItem("foe_theme"));
+  if (!theme.hue) theme.hue = 20;
+  theme.set();   
 }
 
 const getHLSColor = hue => {  
   if (!hue) hue = Math.floor(Math.random() * 360);  //без параметра - случайный цвет
-  let clrL = "hsl(" + hue + ", 90%, 90%)";
-  let clrD = "hsl(" + hue + ", 90%, 10%)";
-  return {light:clrL , dark:clrD};
+  let light = "hsl(" + hue + ", 90%, 90%)";
+  let dark = "hsl(" + hue + ", 90%, 10%)";
+  return {light, dark};
 }
 
-document.querySelector(".btn-theme").addEventListener("click", ()=>{  theme.change() });
+document.querySelector(".btn-theme").addEventListener("click", ()=>{  
+  theme.change();
+  drawScene();
+});
 
 
 
@@ -918,7 +939,7 @@ function genDateString(){
   let y = date.getFullYear();
   let m = addZero(date.getMonth()+1);
   let d = addZero(date.getDay());
-  return "PBG"+y+m+d;
+  return "pbg-"+y+m+d;
 }
 
 // вывод в строку состояния
@@ -930,7 +951,7 @@ function NOTE(msg1, msg2="") {
 function LOG(message, color=YELLOW) {
   let p_msg = document.createElement("p");
   document.querySelector("#log-box").appendChild(p_msg);
-  setTimeout(()=>{ //чтобы сработала анимация затенения
+  setTimeout(()=>{ //чтобы предварительно сработала анимация затенения в css
     p_msg.textContent = message;
     p_msg.style.color = color;
     p_msg.style.opacity = "0.3";
@@ -947,10 +968,12 @@ async function writeClipboardText(text) {
   }
 }
 
-
+//добавить переменные в строку запроса url
 function setLocation(url){
   history.replaceState(null, null, url);
 }
+
+
 
 /*******************************************************************/
 /************* функции для отладки *********************************/
@@ -963,8 +986,8 @@ test.addEventListener("click", async ()=>{
   DBG("Test start");  
   //fenster.open("DEBUG","Проверка");
   //sceneFillSectorAll();
-  //drawScene();
-  setLocation("?id=168545145");
+  drawScene();
+  //setLocation("?id=168545145");
   DBG("Test finish");    
 });
 

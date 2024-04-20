@@ -1,10 +1,6 @@
-:root {
-	/*
-	--dark: rgb(40, 6, 6); 
-	--light: rgb(250, 250, 200);
-	*/
-	--dark: hsl(20,90%,10%);
-	--light: hsl(20,90%,90%);
+:root {	
+	--dark: hsl(0, 0%, 0%);
+	--light: hsl(0, 0%, 98%);
 
 	--grad-bgr: linear-gradient(20deg, var(--light), var(--dark));
 	--grad-lightdark: linear-gradient(90deg, var(--light), var(--dark));

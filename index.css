@@ -258,6 +258,23 @@ canvas {
 	}
 }
 
+.anim-new {	
+	animation-name: frm_new;
+	animation-duration: 1000ms;
+	animation-timing-function: ease-in;
+	animation-iteration-count: 1;
+}
+
+@keyframes frm_new {
+	50%   {    
+		transform: scale(0.1);
+	}
+	to   {    
+		transform: scale(1);
+	}
+}
+
+
 /*************** монитор буфера обмена ***********************/
 .monitor {
 	display: none;
