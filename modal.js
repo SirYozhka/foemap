@@ -10,24 +10,22 @@ class ModalFenster {
   constructor() {
     for (let i = 0; i < this.m_buttons.length; i++) {
       this.m_callbacks.push(()=>{}); //к каждой кнопке цепляем пустой колбэк
-      this.m_buttons[i].addEventListener("click", () => {
-        this.m_callbacks[i]();
+      this.m_buttons[i].addEventListener("click", () => { //todo делегировать один листенер (modal_controls) на все кнопки 
         this.close();
+        this.m_callbacks[i]();
       });
     }
     this.m_window.addEventListener("keydown", (e) => {
       if (e.code === "Enter" || e.code === "NumpadEnter") {
-        if (!this.m_ctrl)
-          //если нет блока кнопок то можно закрыть на ENTER
+        if (!this.m_ctrl) //если нет блока кнопок - закрыть на ENTER
           this.close();
       }
-      e.code === "Escape" && this.close(); //трюк с применением && вместо if
+      e.code === "Escape" && this.close(); //трюк с применением && вместо if (только для примера)
     });
     document.querySelector(".modal_close").addEventListener("click", () => {
       this.close();
     });
-    this.m_curtain.addEventListener("click", () => {
-      //клик по штоке - закрыть окно
+    this.m_curtain.addEventListener("click", () => { //клик по штоке - закрыть окно
       this.close();
     });
   }
@@ -35,8 +33,8 @@ class ModalFenster {
   open(title, body, buttons) {
     this.m_curtain.style.display = "block"; //блок-шторка на весь экран
     document.querySelector(".modal_title").textContent = title;
-    document.querySelector(".modal_body").innerHTML = body;
-    if (buttons) {
+    document.querySelector(".modal_body").innerHTML = body; //innerHTML позволяет включить в тело окна активное содержимое
+    if (buttons) { //если передан массив кнопок
       this.m_ctrl = true; //блок кнопок включен (если его нет то можно закрыть ENTERом)
       this.m_controls.style.visibility = "visible";
       for (let i = 0; i < buttons.length; i++) {
@@ -44,7 +42,7 @@ class ModalFenster {
         this.m_buttons[i].textContent = buttons[i].name;
         this.m_callbacks[i] = buttons[i].callback;
       }
-      for (let i = buttons.length; i < this.m_buttons.length; i++) {
+      for (let i = buttons.length; i < this.m_buttons.length; i++) { //на всяк случай пройти до конца и убрать лишние кнопки
         this.m_buttons[i].style.display = "none";
       }
     } else {

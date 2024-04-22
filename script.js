@@ -447,7 +447,7 @@ async function CreateNewMap(map) {
 
   jsonbin_id = NaN;
   div_filename.textContent = "";  
-  setLocation("?new");
+  setLocation("");
   
   setTimeout(() => { //перерисовать сцену в середине анимации
     selected_color=null; //снять выбор штаба
@@ -960,9 +960,15 @@ async function writeClipboardText(text) {
 }
 
 //установить переменные в строку запроса url
-function setLocation(url){
-  history.replaceState(null, null, url);
+function setLocation(url){  
+  let currentUrl = window.location.origin;
+  try {    
+    window.history.replaceState({id: url}, "", currentUrl+'/'+url);
+  } catch (e) {
+    LOG("Error: state is illegal, ", e);
+  }
 }
+
 
 
 
