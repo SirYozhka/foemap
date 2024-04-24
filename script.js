@@ -49,8 +49,9 @@ const editor = new FormEditor(); //форма редактирования се�
 
 var map_link; //полная ссылка на загруженную карту на imgbb.com
 var jsonbin_id; //id файла карты для работы с https://jsonbin.io/   "661f8a66ad19ca34f85b5e88";  //пример: водопад-ромашка
+var LANG;    //Object - языковый пакет
 
-var g_color; // цветовая палитра
+var g_color; //Object цветовая палитра
 
 
 
@@ -207,7 +208,7 @@ document.getElementById("helpbox").addEventListener("load", (event)=>{
   helpHTML = content.querySelector("body").innerHTML;  
 });
 
-document.querySelector(".btn-help").addEventListener("click", ()=>{     // показать/скрыть help 
+document.querySelector(".btn_help").addEventListener("click", ()=>{     // показать/скрыть help 
   fenster.open("Help: description, about, contacts.", helpHTML);
 })
 
@@ -218,9 +219,10 @@ window.addEventListener("load", async () => {
   LOG("Initialization ..." , BLUE);
   await idb.open();  
 
-  const searchParams = new URLSearchParams(window.location.search);
   theme.set();
+  await lang.set();  
   
+  const searchParams = new URLSearchParams(window.location.search); //параметры строки запроса
   if (searchParams.has('id')) {
     jsonbin_id = searchParams.get('id');
     await jsonDownload();    
@@ -237,7 +239,7 @@ window.addEventListener("load", async () => {
   }
    
   LOG(".".repeat(40));
-  NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору).","Редактор (правая кнопка).");
+  NOTE(LANG.note.common_message);
 })
 
 
@@ -389,17 +391,17 @@ canvas.addEventListener("click", (e) => {
   let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
   let adr = data_address.data[offset]; //red component = number of address
   if (adr > nsec) {  //клик не по сектору 
-    NOTE("Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору)."," Редактор сектора (правая кнопка)" );
+    NOTE(LANG.note.common_message);
     return;
   }
   
   if (arrSector[adr].os == 0) { // (.os == 0) это штаб    
     if (selected_color == arrSector[adr].color) {
-      selected_color = null;
-      NOTE(`Выбрать штаб (кликнуть по штабу).`);
+      selected_color = null; 
+      NOTE(LANG.note.common_message);
     } else {
       selected_color = arrSector[adr].color;
-      NOTE(`Выбрать опорники для гильдии ${arrSector[adr].name} (кликнуть по сектору).`);      
+      NOTE(LANG.note.choose_support_for + arrSector[adr].name);
     }
   } else { //это не штаб
     if (selected_color) { //цвет выбран
@@ -410,7 +412,7 @@ canvas.addEventListener("click", (e) => {
       sceneFillSector(adr); //перекрашиваем сектор
       idb.save_sector(adr);
     } else { //цвет не выбран
-      NOTE("Назначить штабы - редактор (правая кнопка).","Выбор гильдии - клик по штабу.");
+      NOTE(LANG.note.common_message);      
       return;
     }
   }
@@ -421,7 +423,7 @@ canvas.addEventListener("click", (e) => {
 
 
 /*************** new - очистить всю карту ******************/
-const btn_new = document.querySelector(".btn-new");
+const btn_new = document.querySelector(".btn_new");
 btn_new.addEventListener("click", () => {
   fenster.open(
     "Создание новой карты.",
@@ -462,7 +464,7 @@ async function CreateNewMap(map) {
 
 
 /*************** clear - очистить опорники ******************/
-const btn_clear = document.querySelector(".btn-clear");
+const btn_clear = document.querySelector(".btn_clear");
 btn_clear.addEventListener("click", () => {
   fenster.open(
     "Подтвердите действие:",
@@ -504,7 +506,7 @@ function keypressed(e){
   }
 }
 
-const btn_save = document.querySelector(".btn-save");
+const btn_save = document.querySelector(".btn_save");
 btn_save.addEventListener("click", ()=>{ SaveFile() } );
 
 async function SaveFile() {  
@@ -550,7 +552,7 @@ async function SaveFile() {
 
 
 /************ чтение данных карты из json файла с компьютера **********/
-const btn_load = document.querySelector(".btn-load");
+const btn_load = document.querySelector(".btn_load");
 
 btn_load.addEventListener("click", async () => {
   if (!('showOpenFilePicker' in window)){
@@ -607,7 +609,7 @@ btn_load.addEventListener("click", async () => {
 
 
 /*************** копироваине изображения карты в буфер обмена ******************/
-const btn_imgcopy = document.querySelector(".btn-imgcopy");
+const btn_imgcopy = document.querySelector(".btn_imgcopy");
 const divClipBoard = document.querySelector(".monitor");
 const imgClipBoard = document.querySelector(".monitor img");
 
@@ -642,7 +644,7 @@ btn_imgcopy.addEventListener("click", () => {
 
 /*************** save - сохранить картинку в файл ******************/
 //import {SaveCanvasToFile} from './images.js';
-const btn_imgsave = document.querySelector(".btn-imgsave");
+const btn_imgsave = document.querySelector(".btn_imgsave");
 
 btn_imgsave.addEventListener("click", async ()=>{
   LOG("Saving image map file ...", BLUE);
@@ -697,7 +699,7 @@ btn_imgsave.addEventListener("click", async ()=>{
 
 
 /*************** upload - загрузка на сервер imgbb.com ******************/
-const btn_imgbb = document.querySelector(".btn-imgbb"); 
+const btn_imgbb = document.querySelector(".btn_imgbb"); 
 
 btn_imgbb.addEventListener("click", async () => {
   selected_color = null; //снять выделение выбора штаба
@@ -751,7 +753,7 @@ divClipBoard.addEventListener("click", ()=>{
  
 
 /************* отправка карты на  https://jsonbin.io/ ************************/
-const btn_json_upload = document.querySelector(".btn-upload");
+const btn_json_upload = document.querySelector(".btn_upload");
 btn_json_upload.addEventListener("click", ()=>{ jsonUpload() });
 
 function jsonUpload() { //upload to  https://jsonbin.io/
@@ -761,21 +763,21 @@ function jsonUpload() { //upload to  https://jsonbin.io/
   
   return new Promise((resolve, reject)=>{
     const content = JSON.stringify(arrSector, null, "\t");
-    let reqest = new XMLHttpRequest();    
+    let request = new XMLHttpRequest();    
     
     if (!jsonbin_id){ //создание нового json
-      reqest.open("POST", "https://api.jsonbin.io/v3/b", true);
-      reqest.setRequestHeader("X-Bin-Name", genDateString()); //в принципе имя задавать нет смысла
+      request.open("POST", "https://api.jsonbin.io/v3/b", true);
+      request.setRequestHeader("X-Bin-Name", genDateString()); //в принципе имя задавать нет смысла
     } else { //если задан id то презапись того же самого
-      reqest.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
+      request.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
     }
-    reqest.setRequestHeader("Content-Type", "application/json");
-    reqest.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
-    reqest.send(content);
+    request.setRequestHeader("Content-Type", "application/json");
+    request.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
+    request.send(content);
    
-    reqest.onreadystatechange = () => {
-      if (reqest.readyState == XMLHttpRequest.DONE) {
-        let responce = JSON.parse(reqest.responseText);
+    request.onreadystatechange = () => {
+      if (request.readyState == XMLHttpRequest.DONE) {
+        let responce = JSON.parse(request.responseText);
         if (!jsonbin_id) jsonbin_id = responce.metadata.id;        
         div_filename.textContent = jsonbin_id;
         curtain.style.display = "none";
@@ -788,7 +790,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
       }
     }
     
-    reqest.onerror = (error) => {
+    request.onerror = (error) => {
       LOG("ERROR: " + error, RED);
       NOTE("Ошибка загрузки карты на сайт jsonbin.io"); 
       reject();
@@ -800,7 +802,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
 
 
 /************** получение карты с  https://jsonbin.io/ ************************/
-const btn_json_download = document.querySelector(".btn-download");
+const btn_json_download = document.querySelector(".btn_download");
 btn_json_download.addEventListener("click", ()=>{
   fenster.open(
     "Загрузка карты c сервера jsonbin.io",
@@ -842,26 +844,22 @@ async function jsonDownload(){
 
   function jsonbinLoad() { //download from  https://jsonbin.io/  
     return new Promise((resolve, reject)=>{
-      let reqest = new XMLHttpRequest();    
-      reqest.open("GET", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
-      reqest.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
-      reqest.send();    
+      let request = new XMLHttpRequest();    
+      request.open("GET", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
+      request.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
+      request.send();    
          
-      reqest.onreadystatechange = () => {
-        if (reqest.readyState == XMLHttpRequest.DONE) {
-          let responce = JSON.parse(reqest.responseText);
-          if (responce.message) {                    
+      request.onreadystatechange = () => {
+        if (request.readyState == XMLHttpRequest.DONE) {
+          let responce = JSON.parse(request.responseText);
+          if (responce.message) { //параметр message присутствует если есть ошибка
             reject(responce.message);
           } else {                    
             resolve(responce.record);
           }
         }      
       } 
-      
-      reqest.onerror = () =>{
-        throw new Error("bad request"); //todo поймать исключение, что-то не так
-      }
-    
+   
     })
     
   }
@@ -893,8 +891,39 @@ function cursorStyle(e) {
 }
 
 
+
+/****************** выбор языка **************************/
+const btn_language = document.querySelector(".btn_language");
+btn_language.addEventListener("click", ()=>{lang.change()});
+
+const lang = {  
+  name: ["en","ru"],
+  n: Number(window.localStorage.getItem("pbgmap_lang")) || 0,
+  change: async ()=>{        
+    lang.n++;
+    if(lang.n >= lang.name.length) lang.n = 0;    
+    window.localStorage.setItem("pbgmap_lang", lang.n);   
+    lang.set();
+  },
+  set: async ()=>{            
+    btn_language.textContent = lang.name[lang.n];
+    LANG = await loadJson("lang/" + lang.name[lang.n] + ".json");  
+    setLanguageElements();    
+  }
+}
+
+function setLanguageElements(){
+  document.querySelectorAll('button[class^="btn_"]').forEach((btn)=>{;   //https://www.w3.org/TR/selectors-3/#selectors
+    let s = btn.className;
+    if (LANG.btn_tips[s])      
+      btn.setAttribute("data-text", LANG.btn_tips[s]);
+  });
+  NOTE(""); //проще очистить строку подсказок
+}
+
+
 /******************** установка цветовой схемы  *******************/
-document.querySelector(".btn-theme").addEventListener("click", ()=>{  
+document.querySelector(".btn_theme").addEventListener("click", ()=>{  
   theme.change();
   drawScene();
 });
@@ -917,6 +946,18 @@ const theme = {
   }
 }
 
+//загрузка json файла - возвращает Object
+async function loadJson(url){
+  let response = await fetch(url);
+  if (response.ok) { // если HTTP-статус в диапазоне 200-299  
+    let json = await response.json();
+    return json;
+  } else {  
+    LOG("ERROR file reading: " + response.status);    
+    NOTE(LANG.note.error_file_read + url);    
+    return {};
+  }
+}
 
 
 /******************************************************************
@@ -959,37 +1000,30 @@ async function writeClipboardText(text) {
   }
 }
 
-//установить переменные в строку запроса url
-function setLocation(url){  
+//добавить параметр id в строку запроса htpp
+function setLocation(state){  
   let currentUrl = window.location.origin;
   try {    
-    window.history.replaceState({id: url}, "", currentUrl+'/'+url);
-  } catch (e) {
-    LOG("Error: state is illegal, ", e);
+    window.history.replaceState({id: state}, null, currentUrl + '/' +state);
+  } catch (error) {
+    LOG("Error: state is illegal, ", error);
   }
 }
 
-
-
-
-/*******************************************************************/
-/************* функции для отладки *********************************/
-/*******************************************************************/
-
 // кнопка для отладки DEBUG 
-const test = document.querySelector(".btn-test");
-test.style.visibility = "visible";  //DEBUG закоментировать
+const test = document.querySelector(".btn_test");
+//test.style.visibility = "visible";  //todo закоментировать
 test.addEventListener("click", async ()=>{  
   DBG("Test start");  
-  //fenster.open("DEBUG","Проверка");
-  //sceneFillSectorAll();
-  drawScene();
-  //setLocation("?id=168545145");
-  DBG("Test finish");    
+  fenster.open("DEBUG","Проверка", [ { name:"OK", callback: ()=>{  
+    //тест после подтверждения
+    DBG("Test finish");    
+  }}]);
 });
 
 //вывод в логи тестового сообщения
 function DBG(msg=""){
+  //todo вычислять время между запусками
   LOG("DEBUG (" + Math.ceil(performance.now()) + ") " + msg, "rgb(200,255,200)");
 }
 

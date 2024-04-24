@@ -9,8 +9,8 @@ class FormEditor{
       this.nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
       this.div_inp_color = document.querySelector(".input_color");
       this.nodes_color = document.querySelectorAll(".input_color input[type='radio']");
-      this.btn_save = document.querySelector(".btn-edit-save");
-      this.btn_canc = document.querySelector(".btn-edit-cancel");
+      this.btn_save = document.querySelector(".btn_edit_save");
+      this.btn_canc = document.querySelector(".btn_edit_cancel");
       
       canvas.addEventListener("contextmenu", (event) => { //клик правой кнопкой - редактор надписи
         event.preventDefault();

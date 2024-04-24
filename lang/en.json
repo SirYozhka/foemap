@@ -1,0 +1,21 @@
+{
+    "btn_tips": {
+        "btn_new": "create new map",
+        "btn_upload": "upload map on server jsonbin.io",
+        "btn_download": "download map from server jsonbin.io",
+        "btn_clear": "clear all support sectors",
+        "btn_save": "save map to file",
+        "btn_load": "load map from file",
+        "btn_imgcopy": "copy image into clipboard",
+        "btn_imgsave": "save image to file",
+        "btn_imgbb": "upload image to server imgbb.com",        
+        "btn_help": "help, about",
+        "btn_theme": "change color theme",
+        "btn_language": "change language"
+    },
+    "note":{
+        "error_file_read": "Error file reading ",
+        "common_message": "Select the Guild (click headquarters). Set support sector (click any sector). Editor (press right mouse button).",
+        "choose_support_for": "Click any sector to set support for Guild: "
+    }
+}
