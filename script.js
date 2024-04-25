@@ -426,11 +426,11 @@ canvas.addEventListener("click", (e) => {
 const btn_new = document.querySelector(".btn_new");
 btn_new.addEventListener("click", () => {
   fenster.open(
-    "Создание новой карты.",
-    "<div style='text-align:center;'><h2>Выберите карту</h2> <br> ВНИМАНИЕ! <br> Текущие изменения не сохраняются! </div>",
+    LANG.fenster.create_map_title,
+    LANG.fenster.create_map_message,
     [
-      { name:"ВУЛКАН", callback: ()=>{CreateNewMap(1)} }, 
-      { name:"ВОДОПАД", callback: ()=>{CreateNewMap(2)} } 
+      { name:LANG.fenster.vulkan, callback: ()=>{CreateNewMap(1)} }, 
+      { name:LANG.fenster.waterfall, callback: ()=>{CreateNewMap(2)} } 
     ]);    
 });
 
@@ -467,8 +467,8 @@ async function CreateNewMap(map) {
 const btn_clear = document.querySelector(".btn_clear");
 btn_clear.addEventListener("click", () => {
   fenster.open(
-    "Подтвердите действие:",
-    "Удалить выбор опорников? <br> (штабы останутся на местах)",
+    LANG.fenster.confirm,
+    LANG.fenster.clear_support,
     [ 
       {name:"OK", callback: ClearOsadki},
       {name:"CANCEL", callback: ()=>{}}
@@ -496,8 +496,8 @@ function ClearOsadki(){
 }
 
 
+
 /************ запись данных карты в файл на локальный диск **********/
-//todo правильнее записать в базу на сервер (с уникальным id)
 document.addEventListener("keydown", (e)=>{keypressed(e)});
 function keypressed(e){
   if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
@@ -511,10 +511,10 @@ btn_save.addEventListener("click", ()=>{ SaveFile() } );
 
 async function SaveFile() {  
   curtain.style.display = "block";
-  NOTE("Сохранение данных карты в файл на диске.");
+  NOTE(LANG.note.save_map_to_file);
   const content = JSON.stringify(arrSector, null, "\t");
   let filename = genDateString();
-  let filehandler;
+  let fileHandler;
 
   const options = {
     //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
@@ -526,22 +526,21 @@ async function SaveFile() {
   };
 
   try {
-    filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла    
-    filename = filehandler.name;
-    const writable = await filehandler.createWritable();
+    fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла    
+    filename = fileHandler.name;
+    const writable = await fileHandler.createWritable();
     await writable.write(content);
     await writable.close();
-    LOG("File "+filename+" is saved.");
-    NOTE("Файл карты " +filename +" можно переслать другому игроку", "для последующего редактирования.");
-    btn_load.blur();
-    div_filename.textContent = filename;
+    LOG("File "+filename+" saved.");
+    NOTE('"' + filename + '" ' + LANG.note.can_send_another_player);
+    btn_load.blur();    
     curtain.style.display = "none";
   } catch (err) {     
     if (err.name == 'AbortError') { //если окно просто закрыли
-      NOTE("Файл не записан."); 
+      NOTE("..."); 
     } else {      
       LOG("Error saving map file!" , RED);      
-      NOTE("Ошибка записи: " + err.name + " , " + err.message);
+      NOTE(LANG.note.error_file_save + err.name + " , " + err.message);
     }    
   } finally {
     curtain.style.display = "none";    
@@ -556,13 +555,14 @@ const btn_load = document.querySelector(".btn_load");
 
 btn_load.addEventListener("click", async () => {
   if (!('showOpenFilePicker' in window)){
-    NOTE("Невозможно открыть файл в вашем браузере."); 
+    NOTE(LANG.note.deprecated_operation); 
     return;
     //todo альтернативный ввод выбора файла для загрузки
   }
   
   curtain.style.display = "block"; //шторка
-  NOTE("Выбор файла данных карты ...");
+  NOTE(LANG.note.select_file);
+  let filename;
   let fileHandler;
   try{
     const options = {
@@ -571,6 +571,7 @@ btn_load.addEventListener("click", async () => {
       excludeAcceptAllOption: true
     };
     fileHandler = await window.showOpenFilePicker(options); //окно для выбора клиентом локального файла
+    filename = fileHandler.name;
     LOG("Downloading map ...", BLUE);
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
@@ -585,24 +586,19 @@ btn_load.addEventListener("click", async () => {
     jsonbin_id = NaN;
     div_filename.textContent = "";    
 
-    LOG("Map downloaded.");
-    NOTE("Карта загружена.");
+    LOG("Map loaded.");
+    NOTE(LANG.note.map_loaded);
   } catch(err) { //если окно просто закрыли
     if (err.name == 'AbortError') { //если окно просто закрыли
-      NOTE("Отмена. Файл не загружен."); 
+      NOTE("..."); 
     } else {     
-      NOTE("Ошибка загрузки файла карты!");
       LOG("Error reading map file!", RED);
+      NOTE(LANG.note.error_file_read +  + "("+ err.name + " , " + err.message + ")");
     }
   } finally {
     curtain.style.display = "none";
     btn_load.blur();
   }    
-
-  function fname(fs){ //возвращает имя файла
-    let n = fs.indexOf('.');
-    return fs.slice(0,n);
-  }
  
 });
 
@@ -624,12 +620,13 @@ btn_imgcopy.addEventListener("click", () => {
       () => {
         map_link = NaN;
         imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-        divClipBoard.setAttribute("data-text", "изображение карты в буфере обмена");
-        NOTE("Карта скопирована в буфер обмена.", "Нажмите Ctr+V, чтобы вставить изображение карты (например в telegram). ");
-        LOG("Imagemap copied into clipboard.");
+        divClipBoard.setAttribute("data-text", "clipboard image");
+        NOTE(LANG.note.map_copied_to_clipboard);
+        LOG("Map image copied into clipboard.");
       },
       (err) => {
-        LOG("Error imagemap copy: " + err , RED);
+        LOG("Error copy map image: " + err , RED);
+        NOTE(LANG.note.deprecated_operation + " Error: " + err);
       }
     );
   });
@@ -643,25 +640,24 @@ btn_imgcopy.addEventListener("click", () => {
 
 
 /*************** save - сохранить картинку в файл ******************/
-//import {SaveCanvasToFile} from './images.js';
 const btn_imgsave = document.querySelector(".btn_imgsave");
 
 btn_imgsave.addEventListener("click", async ()=>{
-  LOG("Saving image map file ...", BLUE);
-  NOTE("Запись изображения карты в файл на компьютере ...");
+  LOG("Saving image to file ...", BLUE);
+  NOTE(LANG.note.save_img_to_file);
   btn_imgsave.blur(); //убрать фокус с кнопки (свернуть выпадающее меню)
   curtain.style.display = "block";
   selected_color = null; //снять выбор штаба
   drawScene(); //перерисовать сцену
   try{ 
-    let name = await SaveCanvasToFile();    
-    LOG("Image map is saved.");
-    NOTE("Файл изображения карты " + name + " можно переслать или опубликовать.");      
+    let filename = await SaveCanvasToFile();    
+    LOG("Image is saved.");
+    NOTE(LANG.note.img_saved_to_file + `"${filename}"`);      
   } catch (err) {    
     if (err.name == 'AbortError') {
-      NOTE("Отмена. Файл не записан."); 
+      NOTE("..."); 
     } else {      
-      NOTE("Ошибка записи: " + err.name + " , " + err.message);
+      NOTE(LANG.note.error_file_save + err.name + " , " + err.message);
     }    
   } finally {
     curtain.style.display = "none";
@@ -669,7 +665,7 @@ btn_imgsave.addEventListener("click", async ()=>{
 
   function SaveCanvasToFile() {
     return new Promise(async (resolve, reject) => {
-      let filehandler;
+      let fileHandler;
       const options = {
         suggestedName: "mapsnapshot",
         types: [
@@ -682,12 +678,12 @@ btn_imgsave.addEventListener("click", async ()=>{
       };
   
       try {
-        filehandler = await window.showSaveFilePicker(options); //получение дескриптора файла
+        fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла
         canvas.toBlob(async (blob) => {
-          const writable = await filehandler.createWritable();
+          const writable = await fileHandler.createWritable();
           await writable.write(blob);
           await writable.close();
-          resolve(filehandler.name);
+          resolve(fileHandler.name);
         });
       } catch (error) {
         reject(error);
@@ -727,12 +723,12 @@ btn_imgbb.addEventListener("click", async () => {
     LOG("Imagemap uploaded to imgbb.com server.");    
         
     imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-    divClipBoard.setAttribute("data-text", "изображение карты на imgbb.com      (click to copy link)");
+    divClipBoard.setAttribute("data-text", "image downloaded on imgbb.com      (click to copy link)");
     divClipBoard.click();
     
   } catch (error) {
     LOG("ERROR: " + error, RED);
-    NOTE("Ошибка загрузки изображения карты на сайт imgbb.com");
+    NOTE(error_img_download_to_imgbb);
   }
   
   setTimeout(() => {
@@ -747,7 +743,7 @@ divClipBoard.addEventListener("click", ()=>{
   let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
   writeClipboardText(short_link);
   LOG("Link " + short_link + " copied to clipboard.");  
-  NOTE("Ссылка на карту: " + full_link + " уже в буфере обмена.", "Нажмите Ctrl+V вставить ссылку в сообщение.");
+  NOTE('"' + full_link +'" ' + LANG.note.link_copied_to_clibboard);
 })
 
  
@@ -757,8 +753,8 @@ const btn_json_upload = document.querySelector(".btn_upload");
 btn_json_upload.addEventListener("click", ()=>{ jsonUpload() });
 
 function jsonUpload() { //upload to  https://jsonbin.io/
-  NOTE("Загрузка карты на сервер jsonbin.io ...");
   LOG("Uploading map to jsonbin.io ...",BLUE)
+  NOTE(LANG.note.save_to_imgbb);
   curtain.style.display = "block";
   
   return new Promise((resolve, reject)=>{
@@ -783,7 +779,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
         curtain.style.display = "none";
         let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
         let linkHTML = "<a target='_blank' href='" + link + "'> " + link +" </a>";
-        NOTE("Карта загружена на сервер jsonbin.io , ID карты: " + jsonbin_id, linkHTML);
+        NOTE(LANG.note.map_uploaded_to_jsonbin + jsonbin_id, linkHTML);
         LOG("Map uploaded to jsonbin.io");
         setLocation("?id="+jsonbin_id);
         resolve();
@@ -792,7 +788,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
     
     request.onerror = (error) => {
       LOG("ERROR: " + error, RED);
-      NOTE("Ошибка загрузки карты на сайт jsonbin.io"); 
+      NOTE(LANG.note.error_uploading_map_to + "jsonbin.io"); 
       reject();
     }  
   
@@ -805,7 +801,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
 const btn_json_download = document.querySelector(".btn_download");
 btn_json_download.addEventListener("click", ()=>{
   fenster.open(
-    "Загрузка карты c сервера jsonbin.io",
+    LANG.fenster.download_from_jsonbin + "jsonbin.io",
     "<div style='text-align:center;'> ID: <input type='text' class='input_id_jasonbin' name='id' autocomplete='on'/> </div> ",
     [
       { name:"LOAD", callback: ()=>{
@@ -816,22 +812,22 @@ btn_json_download.addEventListener("click", ()=>{
 })
 
 async function jsonDownload(){
-  NOTE("Получение карты c сервера jsonbin.io ...");
   LOG("Downloading map from jsonbin.io ...",BLUE)
+  NOTE(LANG.fenster.download_from_jsonbin + "jsonbin.io ...");
   curtain.style.display = "block";
   
   try {
     arrSector = await jsonbinLoad();    
   } catch(error) {
     LOG("ERROR: " + error, RED);
-    NOTE("Ошибка загрузки карты c сайта jsonbin.io"); 
+    NOTE(LANG.note.error_downloading_map_from + "jsonbin.io"); 
     return;
   } finally {
     curtain.style.display = "none";
   }
   
   LOG("Map downloaded from jsonbin.io");            
-  NOTE("Карта загружена c сервера jsonbin.io"); 
+  NOTE(LANG.note.map_loaded); 
   
   setLocation("?id="+jsonbin_id);
 
@@ -918,7 +914,7 @@ function setLanguageElements(){
     if (LANG.btn_tips[s])      
       btn.setAttribute("data-text", LANG.btn_tips[s]);
   });
-  NOTE(""); //проще очистить строку подсказок
+  NOTE("..."); //проще очистить строку подсказок
 }
 
 
@@ -946,18 +942,6 @@ const theme = {
   }
 }
 
-//загрузка json файла - возвращает Object
-async function loadJson(url){
-  let response = await fetch(url);
-  if (response.ok) { // если HTTP-статус в диапазоне 200-299  
-    let json = await response.json();
-    return json;
-  } else {  
-    LOG("ERROR file reading: " + response.status);    
-    NOTE(LANG.note.error_file_read + url);    
-    return {};
-  }
-}
 
 
 /******************************************************************
@@ -975,8 +959,8 @@ function genDateString(){
 }
 
 // вывод в строку состояния
-function NOTE(msg1, msg2="") {
-  document.querySelector(".label-box").innerHTML = msg1 + "<br>" + msg2;
+function NOTE(msg) {  
+  document.querySelector(".label-box").innerHTML = msg;  
 }
 
 //вывод логов на экран (цвет сообщений по умолчанию - жёлтый)
@@ -1010,12 +994,25 @@ function setLocation(state){
   }
 }
 
+//загрузка json файла - возвращает Object
+async function loadJson(url){
+  let response = await fetch(url);
+  if (response.ok) { // если HTTP-статус в диапазоне 200-299  
+    let json = await response.json();
+    return json;
+  } else {  
+    LOG("ERROR file reading: " + response.status);    
+    NOTE(LANG.note.error_file_read + url);    
+    return {};
+  }
+}
+
 // кнопка для отладки DEBUG 
 const test = document.querySelector(".btn_test");
 //test.style.visibility = "visible";  //todo закоментировать
 test.addEventListener("click", async ()=>{  
   DBG("Test start");  
-  fenster.open("DEBUG","Проверка", [ { name:"OK", callback: ()=>{  
+  fenster.open("DEBUG","Click OK to start test", [ { name:"OK", callback: ()=>{  
     //тест после подтверждения
     DBG("Test finish");    
   }}]);
