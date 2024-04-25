@@ -35,7 +35,7 @@
     },
     "fenster":{
         "create_map_title": "Creating a new map.",
-        "create_map_message": "<div style='text-align:center;'><h2>Select a map</h2> <br> WARNING! <br> All changes will not be saved! </div>",
+        "create_map_message": "<div style='text-align:center;'><h2>Select NEW map</h2> <br> WARNING! All changes you entered will be lost. </div>",
         "vulkan": "VOLCANO",
         "waterfall": "WATERFALL",
 

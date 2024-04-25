@@ -219,8 +219,8 @@ window.addEventListener("load", async () => {
   LOG("Initialization ..." , BLUE);
   await idb.open();  
 
-  theme.set();
-  await lang.set();  
+  ColorTheme.set();
+  await Language.set();  
   
   const searchParams = new URLSearchParams(window.location.search); //параметры строки запроса
   if (searchParams.has('id')) {
@@ -892,18 +892,18 @@ function cursorStyle(e) {
 const btn_language = document.querySelector(".btn_language");
 btn_language.addEventListener("click", ()=>{lang.change()});
 
-const lang = {  
+const Language = {  
   name: ["en","ru"],
   n: Number(window.localStorage.getItem("pbgmap_lang")) || 0,
   change: async ()=>{        
-    lang.n++;
-    if(lang.n >= lang.name.length) lang.n = 0;    
-    window.localStorage.setItem("pbgmap_lang", lang.n);   
-    lang.set();
+    Language.n++;
+    if(Language.n >= Language.name.length) Language.n = 0;    
+    window.localStorage.setItem("pbgmap_lang", Language.n);   
+    Language.set();
   },
   set: async ()=>{            
-    btn_language.textContent = lang.name[lang.n];
-    LANG = await loadJson("lang/" + lang.name[lang.n] + ".json");  
+    btn_language.textContent = Language.name[Language.n];
+    LANG = await loadJson("lang/" + Language.name[Language.n] + ".json");  
     setLanguageElements();    
   }
 }
@@ -914,28 +914,28 @@ function setLanguageElements(){
     if (LANG.btn_tips[s])      
       btn.setAttribute("data-text", LANG.btn_tips[s]);
   });
-  NOTE("..."); //проще очистить строку подсказок
+  NOTE("..."); //просто очистить строку подсказок
 }
 
 
 /******************** установка цветовой схемы  *******************/
 document.querySelector(".btn_theme").addEventListener("click", ()=>{  
-  theme.change();
+  ColorTheme.change();
   drawScene();
 });
 
-const theme = {
+const ColorTheme = {
   hue: Number(window.localStorage.getItem("pbgmap_theme")) || 20,
   change: ()=>{        
-    theme.hue +=20;
-    if (theme.hue > 360) theme.hue = 20; 
-    theme.set();
-    window.localStorage.setItem("pbgmap_theme", theme.hue);    
+    ColorTheme.hue +=20;
+    if (ColorTheme.hue > 360) ColorTheme.hue = 20; 
+    ColorTheme.set();
+    window.localStorage.setItem("pbgmap_theme", ColorTheme.hue);    
   },
   set: ()=>{            
     g_color = {
-      light: "hsl(" + theme.hue + ", 90%, 90%)",
-      dark: "hsl(" + theme.hue + ", 90%, 10%)"
+      light: "hsl(" + ColorTheme.hue + ", 90%, 90%)",
+      dark: "hsl(" + ColorTheme.hue + ", 90%, 10%)"
     };
     document.documentElement.style.setProperty("--dark", g_color.dark);
     document.documentElement.style.setProperty("--light", g_color.light);    
