@@ -3,7 +3,7 @@
         "btn_new": "create new map",
         "btn_upload": "upload map on server jsonbin.io",
         "btn_download": "download map from server jsonbin.io",
-        "btn_clear": "clear all support sectors",
+        "btn_clear": "clear all “support” sectors",
         "btn_save": "save map to file",
         "btn_load": "load map from file",
         "btn_imgcopy": "copy image into clipboard",
@@ -14,8 +14,8 @@
         "btn_language": "change language"
     },
     "note":{
-        "common_message": "Select the Guild (click headquarters). Set support sector (click any sector). Editor (press right mouse button). ",
-        "choose_support_for": "Click any sector to set support for Guild: ",
+        "common_message": "Select the Guild (click headquarters). Set “support” sector (click any sector). Editor (press right mouse button). ",
+        "choose_support_for": "Click any sector to set “support” for Guild: ",
         "save_map_to_file": "Save map to file. ",
         "error_file_read": "Error reading file: ",
         "error_file_save": "Error saving file: ",
@@ -40,7 +40,7 @@
         "waterfall": "WATERFALL",
 
         "confirm": "Confirm action.",
-        "clear_support": "Remove selection of support sectors? <br> (all headquarters will remain)",
+        "clear_support": "Remove selection of “support” sectors? <br> (all headquarters will remain)",
 
         "download_from_jsonbin": "Downloading map from "
 

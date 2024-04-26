@@ -50,6 +50,7 @@ const editor = new FormEditor(); //форма редактирования се�
 var map_link; //полная ссылка на загруженную карту на imgbb.com
 var jsonbin_id; //id файла карты для работы с https://jsonbin.io/   "661f8a66ad19ca34f85b5e88";  //пример: водопад-ромашка
 var LANG;    //Object - языковый пакет
+var helpHTML; //содержимое в формате html
 
 var g_color; //Object цветовая палитра
 
@@ -198,19 +199,6 @@ function MapChoise(map){
 }
 
 var arrSector = []; //оперативное хранилище данных карты
-
-
-/******************** загрузка содержимого help.html (из скрытого фрейма) *************************/
-//todo убрать фрейм / грузить хелп из json или txt ?? https://developer.mozilla.org/ru/docs/Learn/JavaScript/Asynchronous/Promises
-var helpHTML; //содержимое в формате html
-document.getElementById("helpbox").addEventListener("load", (event)=>{      
-  let content = event.target.contentWindow.document;
-  helpHTML = content.querySelector("body").innerHTML;  
-});
-
-document.querySelector(".btn_help").addEventListener("click", ()=>{     // показать/скрыть help 
-  fenster.open("Help: description, about, contacts.", helpHTML);
-})
 
 
 
@@ -890,7 +878,7 @@ function cursorStyle(e) {
 
 /****************** выбор языка **************************/
 const btn_language = document.querySelector(".btn_language");
-btn_language.addEventListener("click", ()=>{lang.change()});
+btn_language.addEventListener("click", ()=>{Language.change()});
 
 const Language = {  
   name: ["en","ru"],
@@ -904,17 +892,18 @@ const Language = {
   set: async ()=>{            
     btn_language.textContent = Language.name[Language.n];
     LANG = await loadJson("lang/" + Language.name[Language.n] + ".json");  
-    setLanguageElements();    
-  }
-}
 
-function setLanguageElements(){
-  document.querySelectorAll('button[class^="btn_"]').forEach((btn)=>{;   //https://www.w3.org/TR/selectors-3/#selectors
-    let s = btn.className;
-    if (LANG.btn_tips[s])      
-      btn.setAttribute("data-text", LANG.btn_tips[s]);
-  });
-  NOTE("..."); //просто очистить строку подсказок
+    { //обновление собощений и хэлпа
+      document.querySelectorAll('button[class^="btn_"]').forEach((btn)=>{;   //https://www.w3.org/TR/selectors-3/#selectors
+      let s = btn.className;
+      if (LANG.btn_tips[s])      
+        btn.setAttribute("data-text", LANG.btn_tips[s]);
+      });
+      div_helpbox.src = "help_"+ Language.name[Language.n] +".html";    
+      NOTE("..."); //просто очистить строку подсказок
+    }
+    
+  }
 }
 
 
@@ -942,6 +931,19 @@ const ColorTheme = {
   }
 }
 
+
+
+/**************** загрузка содержимого help.html (из скрытого фрейма) ********************/
+//todo убрать фрейм / грузить хелп из json или как txt ??
+const div_helpbox = document.getElementById("helpbox");
+div_helpbox.addEventListener("load", (event)=>{      
+  let content = event.target.contentWindow.document;
+  helpHTML = content.querySelector("body").innerHTML;    
+} );
+
+document.querySelector(".btn_help").addEventListener("click", ()=>{     // показать/скрыть help 
+  fenster.open("Help: description, about, contact.", helpHTML);
+})
 
 
 /******************************************************************
