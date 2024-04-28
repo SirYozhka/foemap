@@ -934,7 +934,6 @@ const ColorTheme = {
 
 
 /**************** загрузка содержимого help.html (из скрытого фрейма) ********************/
-//todo убрать фрейм / грузить хелп из json или как txt ??
 const div_helpbox = document.getElementById("helpbox");
 div_helpbox.addEventListener("load", (event)=>{      
   let content = event.target.contentWindow.document;
@@ -961,8 +960,8 @@ function genDateString(){
 }
 
 // вывод в строку состояния
-function NOTE(msg) {  
-  document.querySelector(".label-box").innerHTML = msg;  
+function NOTE(message) {  //область вывода двае строки (для разделения вставить <br>)
+  document.querySelector(".label-box").innerHTML = message;  
 }
 
 //вывод логов на экран (цвет сообщений по умолчанию - жёлтый)

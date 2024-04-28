@@ -1,9 +1,9 @@
 {
     "btn_tips": {
         "btn_new": "create new map",
-        "btn_upload": "upload map on server jsonbin.io",
-        "btn_download": "download map from server jsonbin.io",
-        "btn_clear": "clear all “support” sectors",
+        "btn_upload": "save map on server jsonbin.io",
+        "btn_download": "open map from server jsonbin.io",
+        "btn_clear": "clear all “support” provinces",
         "btn_save": "save map to file",
         "btn_load": "load map from file",
         "btn_imgcopy": "copy image into clipboard",
@@ -14,8 +14,8 @@
         "btn_language": "change language"
     },
     "note":{
-        "common_message": "Select the Guild (click headquarters). Set “support” sector (click any sector). Editor (press right mouse button). ",
-        "choose_support_for": "Click any sector to set “support” for Guild: ",
+        "common_message": "Select the Guild. Mark “support” provinces. <br> Editor (right mouse button). ",
+        "choose_support_for": "Click any province to set “support” for Guild: ",
         "save_map_to_file": "Save map to file. ",
         "error_file_read": "Error reading file: ",
         "error_file_save": "Error saving file: ",
@@ -29,8 +29,8 @@
         "save_img_to_file": "Save image to file ... ",
         "map_loaded": "Map loaded.",
         "deprecated_operation": "This operation cannot be done in your browser. ",
-        "map_copied_to_clipboard": "Map image copied into clipboard. Press Ctr+V to insert image into messenger.",
-        "link_copied_to_clibboard": " link to mat copied to clipboard. Press Ctr+V to insert ling into message.",
+        "map_copied_to_clipboard": "Map image copied into clipboard. <br>Press Ctr+V to insert image into messenger.",
+        "link_copied_to_clibboard": " link to mat copied to clipboard. <br>Press Ctr+V to insert ling into message.",
         "map_uploaded_to_jsonbin": "Map uploaded to jsonbin.io , Map ID: "
     },
     "fenster":{
@@ -40,7 +40,7 @@
         "waterfall": "WATERFALL",
 
         "confirm": "Confirm action.",
-        "clear_support": "Remove selection of “support” sectors? <br> (all headquarters will remain)",
+        "clear_support": "Remove marking of “support” provinces? <br> (all headquarters will remain)",
 
         "download_from_jsonbin": "Downloading map from "
 
