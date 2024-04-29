@@ -1,5 +1,4 @@
 "use strict";
-//import { ModalFenster } from "./modal";
 
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
@@ -47,13 +46,12 @@ const fenster = new ModalFenster(); //модальное окно
 const idb = new IndexedDB("foesectors", 5);  //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
 const editor = new FormEditor(); //форма редактирования сектора
 
-var map_link; //полная ссылка на загруженную карту на imgbb.com
-var jsonbin_id; //id файла карты для работы с https://jsonbin.io/   "661f8a66ad19ca34f85b5e88";  //пример: водопад-ромашка
+var map_link; //полная ссылка на загруженную карту на https://imgbb.com
+var jsonbin_id; //id файла карты для работы с https://jsonbin.io   "661f8a66ad19ca34f85b5e88";  
 var LANG;    //Object - языковый пакет
-var helpHTML; //содержимое в формате html
+var helpHTML; //содержимое help в формате html
 
-var g_color; //Object цветовая палитра
-
+var g_color; //цветовая палитра
 
 
 /******************** выбор карты **************************************/
@@ -329,7 +327,6 @@ ctx.shadowBlur = 3;
 function drawScene() {    
   ctx.fillStyle = "transparent";
   ctx.shadowColor = "transparent";
-  //ctx.clearRect(0, 0, canvas.width, canvas.height); //не обязательно ().drawImage полностью зарисует канвас)
   
   //фон
   ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
@@ -893,13 +890,13 @@ const Language = {
     btn_language.textContent = Language.name[Language.n];
     LANG = await loadJson("lang/" + Language.name[Language.n] + ".json");  
 
-    { //обновление собощений и хэлпа
+    { //обновление сообщений и хэлпа
       document.querySelectorAll('button[class^="btn_"]').forEach((btn)=>{;   //https://www.w3.org/TR/selectors-3/#selectors
       let s = btn.className;
       if (LANG.btn_tips[s])      
         btn.setAttribute("data-text", LANG.btn_tips[s]);
       });
-      div_helpbox.src = "help_"+ Language.name[Language.n] +".html";    
+      div_helpbox.src = "help_"+ Language.name[Language.n] +".html";         
       NOTE("..."); //просто очистить строку подсказок
     }
     
@@ -933,16 +930,17 @@ const ColorTheme = {
 
 
 
-/**************** загрузка содержимого help.html (из скрытого фрейма) ********************/
+/**************** подгрузка содержимого help.html (из скрытого фрейма) ********************/
 const div_helpbox = document.getElementById("helpbox");
 div_helpbox.addEventListener("load", (event)=>{      
   let content = event.target.contentWindow.document;
-  helpHTML = content.querySelector("body").innerHTML;    
+  helpHTML = content.querySelector("body").innerHTML;          
 } );
 
 document.querySelector(".btn_help").addEventListener("click", ()=>{     // показать/скрыть help 
-  fenster.open("Help: description, about, contact.", helpHTML);
+  fenster.open(LANG.fenster.help_message, helpHTML);
 })
+
 
 
 /******************************************************************
@@ -1007,6 +1005,7 @@ async function loadJson(url){
     return {};
   }
 }
+
 
 // кнопка для отладки DEBUG 
 const test = document.querySelector(".btn_test");

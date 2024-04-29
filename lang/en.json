@@ -42,7 +42,9 @@
         "confirm": "Confirm action.",
         "clear_support": "Remove marking of “support” provinces? <br> (all headquarters will remain)",
 
-        "download_from_jsonbin": "Downloading map from "
+        "download_from_jsonbin": "Downloading map from ",
+
+        "help_message": "Description, contact."
 
     }
 }
