@@ -4,28 +4,72 @@ html {
 	line-height: 1.2;
 }
 
+:root{
+	--container-height: max(calc(100vh - 65px), 600px);
+}
+
 body{
-	height: 100vh;
-	width: 100vh;
-	min-width: 810px;
-	margin: 0 auto;
-}
-
-header{
-	width: 100%;
-	height: 2px;
-}
-
-main {
-	position: relative;
-	width: 100%;
-	margin: 2px;
+	height: max(calc(var(--container-height) + 59px), calc(100vh - 5px));
+	width: calc(var(--container-height) * 8 / 6);
+	margin: 2px auto;
+	display: grid;
+	place-items: center;	
 	background: var(--grad-bgr);
 	border: var(--border-dark);
 	border-radius: 2px;
 }
 
-/************ шторка на весь main для блокировки нажатий рабочей зоны ********************/
+main {
+	position: relative;
+	display: flex;
+	flex-direction: column;	
+	height: 100%;
+	width: 98%;	
+	padding: 0px;	
+}
+
+/********************** блок управления (кнопки) **********************/
+.button_controls {
+	display: flex;
+	flex-direction: row;
+	justify-content:space-between;
+	align-items: center;
+	position: relative;
+	height: 30px;
+	width: 100%;
+	margin: 0px auto;	
+}
+
+/************************ контейнер для канваса и т.д. ******************/
+.container {
+	position: relative;
+	margin: 2px auto;
+	padding: 0px;
+	width: 100%;
+	aspect-ratio: 8/6 ;	
+	outline: 1px solid var(--dark);
+	border-radius: 1px;
+	box-shadow: -1px -1px 3px var(--light);
+	overflow: hidden;
+	display: grid;
+	place-items: center;	
+}
+
+canvas {
+	width: 100%;
+	height: 100%;	
+}
+
+/************************** блок вывода подсказок **********************************/
+.label-box {
+	width: 100%;
+	height: 30px; 
+	padding-left: 2px;	
+	color: var(--dark);	
+}
+
+
+/************ шторка на весь body для блокировки нажатий рабочей зоны ********************/
 div.curtain{	
 	z-index: 2;		
 	position: absolute;
@@ -49,17 +93,6 @@ div.curtain{
 	
 }
 
-/********************** блок управления (кнопки) **********************/
-.button_controls {
-	display: flex;
-	flex-direction: row;
-	justify-content:space-between;
-	align-items: center;
-	position: relative;
-	height: 25px;
-	width: 800px;
-	margin: 0px auto;
-}
 
 /******************** file name *************************/
 .file-name{
@@ -220,26 +253,6 @@ button:disabled {
 	cursor: not-allowed;
 }
 
-/*********************** сцена *********************************/
-.container {
-	position: relative;
-	margin: 2px auto;
-	padding: 0px;
-	width: 800px;
-	height: 600px;	
-	outline: 1px solid var(--dark);
-	border-radius: 1px;
-	box-shadow: -1px -1px 3px var(--light);
-	overflow: hidden;
-	display: grid;
-	place-items: center;	
-}
-
-canvas {
-	width: 800px;
-	height: 600px;	
-	/*mask-image: url(images/border.png);	*/
-}
 
 /************************** анимации *****************************/
 .anim-clear {	
@@ -541,13 +554,6 @@ div.modal_controls button{
 
 
 
-/************************** блок вывода подсказок **********************************/
-.label-box {
-	width: 100%;
-	height: 30px; 
-	padding-left: 5px;	
-	color: var(--dark);
-}
 
 /********************* лог ********************************/
 #log-box {

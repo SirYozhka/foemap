@@ -240,6 +240,7 @@ function loadingImages() {
       img_background.src = "images/bgr"+nmap+".jpg";
       img_background.onload = () => {
         container.style.background = 'url("images/bgr'+nmap+'.jpg")';        
+        container.style.backgroundSize = "cover";
         image.src = "images/scene.png";
         image.onload = () => {
           LOG("Calculation scene ..." , BLUE);
@@ -518,7 +519,7 @@ async function SaveFile() {
     await writable.close();
     LOG("File "+filename+" saved.");
     NOTE('"' + filename + '" ' + LANG.note.can_send_another_player);
-    btn_load.blur();    
+    //btn_load.blur();    
     curtain.style.display = "none";
   } catch (err) {     
     if (err.name == 'AbortError') { //если окно просто закрыли
@@ -594,18 +595,20 @@ const btn_imgcopy = document.querySelector(".btn_imgcopy");
 const divClipBoard = document.querySelector(".monitor");
 const imgClipBoard = document.querySelector(".monitor img");
 
-btn_imgcopy.addEventListener("click", () => {
+btn_imgcopy.addEventListener("click", () => {  
+  btn_imgcopy.parentElement.style.display = "none"; //убрать выпавшее меню  
   selected_color=null; //снять выбор штаба
   drawScene(); 
   canvas.classList.add("anim-copy");  
-  btn_imgcopy.setAttribute("disabled", null); //временно заблокировать кнопку copy
   canvas.toBlob((blob) => {
     let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
     navigator.clipboard.write(data).then(
       () => {
         map_link = NaN;
         imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-        divClipBoard.setAttribute("data-text", "clipboard image");
+        imgClipBoard.onload = ()=>{
+          divClipBoard.setAttribute("data-text", "clipboard image");
+        }
         NOTE(LANG.note.map_copied_to_clipboard);
         LOG("Map image copied into clipboard.");
       },
@@ -616,9 +619,9 @@ btn_imgcopy.addEventListener("click", () => {
     );
   });
   setTimeout(() => { //позволить анимации закончиться
-    canvas.classList.remove("anim-copy");
     divClipBoard.style.display = "block";
-    btn_imgcopy.removeAttribute("disabled"); //разблокировать кнопку copy
+    canvas.classList.remove("anim-copy");        
+    btn_imgcopy.parentElement.style.display = "flex"; //восстановить выпадающее меню
   }, 800);
 });
 
@@ -629,8 +632,7 @@ const btn_imgsave = document.querySelector(".btn_imgsave");
 
 btn_imgsave.addEventListener("click", async ()=>{
   LOG("Saving image to file ...", BLUE);
-  NOTE(LANG.note.save_img_to_file);
-  btn_imgsave.blur(); //убрать фокус с кнопки (свернуть выпадающее меню)
+  NOTE(LANG.note.save_img_to_file);  
   curtain.style.display = "block";
   selected_color = null; //снять выбор штаба
   drawScene(); //перерисовать сцену
@@ -686,6 +688,7 @@ btn_imgbb.addEventListener("click", async () => {
   selected_color = null; //снять выделение выбора штаба
   drawScene();
   canvas.classList.add("anim-copy");
+  btn_imgcopy.parentElement.style.display = "none"; //убрать выпавшее меню  
 
   let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));  
   let frmdata = new FormData();
@@ -719,6 +722,7 @@ btn_imgbb.addEventListener("click", async () => {
   setTimeout(() => {
     divClipBoard.style.display = "block";  
     canvas.classList.remove("anim-copy");
+    btn_imgcopy.parentElement.style.display = "flex"; //восстановить выпавшее меню  
   }, 800);
 })
 
@@ -919,15 +923,16 @@ const ColorTheme = {
     window.localStorage.setItem("pbgmap_theme", ColorTheme.hue);    
   },
   set: ()=>{            
-    g_color = {
-      light: "hsl(" + ColorTheme.hue + ", 90%, 90%)",
-      dark: "hsl(" + ColorTheme.hue + ", 90%, 10%)"
-    };
+    g_color = hslset(ColorTheme.hue);
     document.documentElement.style.setProperty("--dark", g_color.dark);
     document.documentElement.style.setProperty("--light", g_color.light);    
   }
 }
 
+const hslset = (hue) => ({
+  light: "hsl(" + hue + ", 90%, 90%)",
+  dark: "hsl(" + hue + ", 90%, 10%)"
+})
 
 
 /**************** подгрузка содержимого help.html (из скрытого фрейма) ********************/

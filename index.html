@@ -17,14 +17,11 @@
 </head>
 
 <body>
-  <header>     
-    <iframe id="helpbox" style="display: none;"></iframe> <!-- hidden frame for downloading help_[lang].html --> 
-  </header>
+  <div class="curtain" style="display: none;">
+    <!-- затенённая штора на весь body с блокировкой нажатий при редактировании и других операциях -->
+  </div>
   
   <main>
-    <div class="curtain" style="display: none;">
-      <!-- затенённая штора на весь main с блокировкой нажатий при редактировании и других операциях -->
-    </div>
 
     <div class="button_controls">
       <div class="menu_line">
@@ -37,7 +34,7 @@
             <button class="btn_clear">clear</button>
           </div>
         </div>
-        <div class="menu" style="display: none;">
+        <div class="menu" style="display: block;">
           <div class="menu_button">file</div>
           <div class="menu_content">
             <button class="btn_save">save</button>
@@ -134,5 +131,6 @@
 
   
 </body>
+<iframe id="helpbox" style="display: none;"></iframe> <!-- hidden frame for downloading help_[lang].html --> 
 
 </html>
