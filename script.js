@@ -44,7 +44,7 @@ const img_background = new Image(); //фоновое изображение во
 const img_borders = new Image(); //границы секторов
 const fenster = new ModalFenster(); //модальное окно
 const idb = new IndexedDB("foesectors", 5);  //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
-const editor = new FormEditor(); //форма редактирования сектора
+var editor; // = new FormEditor(); //форма редактирования сектора
 
 var map_link; //полная ссылка на загруженную карту на https://imgbb.com
 var jsonbin_id; //id файла карты для работы с https://jsonbin.io   "661f8a66ad19ca34f85b5e88";  
@@ -203,30 +203,57 @@ var arrSector = []; //оперативное хранилище данных к�
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", async () => {
   LOG("Initialization ..." , BLUE);
+  dimension.set();
+
+  editor = new FormEditor(); //форма редактирования сектора
   await idb.open();  
 
   ColorTheme.set();
   await Language.set();  
   
   const searchParams = new URLSearchParams(window.location.search); //параметры строки запроса
-  if (searchParams.has('id')) {
-    jsonbin_id = searchParams.get('id');
-    await jsonDownload();    
-  } else {
-    if (idb.empty) { //при первом запуске выбрать карту     
-      btn_new.click();    
-    } else { //при повторном запуске скачать карту из локальной базы
-      await idb.read_to_arr(); 
-      MapChoise(arrSector[0].os); //определяем вулкан или водопад
-      await loadingImages();    
-      sceneFillSectorAll();
-      drawScene();    
-    }  
+  try {
+    if (searchParams.has('id')) {
+      jsonbin_id = searchParams.get('id');
+      await jsonDownload();    
+    } else {
+      if (idb.empty) { //при первом запуске выбрать карту     
+        btn_new.click();    
+      } else { //при повторном запуске скачать карту из локальной базы
+        await idb.read_to_arr(); 
+        MapChoise(arrSector[0].os); //определяем вулкан или водопад
+        await loadingImages();    
+        sceneFillSectorAll();
+        drawScene();    
+      }  
+    }
+    LOG("READY");
+    NOTE(LANG.note.common_message);
+  } catch {    
+    NOTE("");
   }
    
-  LOG(".".repeat(40));
-  NOTE(LANG.note.common_message);
 })
+
+
+window.addEventListener("resize", () => {
+  dimension.set();
+});
+
+/********************** коэффициент масштаба *****************************/
+const dimension = {
+  x: null,
+  y: null,
+  set: ()=>{
+    dimension.x = container.clientWidth / IMG_WITH;
+    dimension.y = container.clientHeight / IMG_HEGHT;     
+  },
+  offset: (e)=>{
+    let Y = ~~(e.offsetY/dimension.y);
+    let X = ~~(e.offsetX/dimension.x);        
+    return (Y * IMG_WITH + X) * 4;    
+  }
+}
 
 
 
@@ -318,6 +345,131 @@ function fillPoint(adr, {r,g,b,a}){ //заливка одного пиксела
 }
 
 
+
+/****************** РЕДАКТОР подписи сектора ****************************/
+class FormEditor{
+  adr = null;
+  
+  constructor() {
+    this.curtain = document.querySelector(".curtain");
+    this.form = document.querySelector(".sector_editor");
+    this.inp_name = document.querySelector(".input_name");
+    this.nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
+    this.div_inp_color = document.querySelector(".input_color");
+    this.nodes_color = document.querySelectorAll(".input_color input[type='radio']");
+    this.btn_save = document.querySelector(".btn_edit_save");
+    this.btn_canc = document.querySelector(".btn_edit_cancel");
+    
+    canvas.addEventListener("contextmenu", (event) => { //клик правой кнопкой - редактор надписи
+      event.preventDefault();
+      event.stopPropagation();
+      //let offset=(event.offsetY * IMG_WITH + event.offsetX) * 4;
+      let offset = dimension.offset(event);
+      this.adr = data_address.data[offset]; // number of address (red component)
+      if (this.adr < 1 || this.adr > nsec) return; //клик не на секторе
+      selected_color=null; //снять выбор штаба
+      drawScene(); 
+      this.edit();
+    });
+
+    this.curtain.addEventListener("click",()=>{
+      this.hide();
+    })
+    
+    /* необязатльно, т.к. нажатие на ENTER всё равно вызывает событие click на первой <button> */
+    this.form.addEventListener("keydown", (e) => { //запись по кнопке ENTER
+      if (e.code === "Enter" || e.code === "NumpadEnter") {
+        this.save();        
+        this.hide();
+      }      
+      if (e.code === "Escape") {          
+        this.hide();
+      }      
+    });
+    
+    this.btn_save.addEventListener("click", ()=>{ //кнопка SAVE
+      this.save();      
+    });
+
+    this.btn_canc.addEventListener("click", ()=>{ //кнопка CANCEL
+      this.hide();        
+    });
+
+    for (const item of this.nodes_osadki) { //для всех кнопок (штаб/осадки)
+      item.addEventListener("change", (e)=>{ 
+        let osd = [... this.nodes_osadki].findIndex(e=>e.checked);
+        this.div_inp_color.style.display = (osd ? "none" : "flex"); // = 0 показать панель выбора цвета
+        if (osd){ //если ставим осадку то сбросить имя сектора на "по умолчанию" и отключить цвет
+          this.inp_name.value = defSectors[this.adr].name;
+          this.nodes_color[0].checked = true; //поставить галочку (нет цвета - невидимый radio)
+        } else { //если ставим "штаб" - сразу редактировать его имя
+          this.inp_name.focus();
+          this.inp_name.select();
+        }
+      })
+    };
+
+  } //end constructor
+
+  edit() {     
+    NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
+    curtain.style.display = "block";
+    this.form.style.display = "flex";
+    //позиционирование формы
+    let dx = arrSector[this.adr].x - this.form.clientWidth / 2;
+    if (dx < 0) 
+      dx = 2;
+    if (dx + this.form.clientWidth > IMG_WITH)
+      dx = IMG_WITH - this.form.clientWidth - 2;
+    let dy = arrSector[this.adr].y - this.form.clientHeight / 2;
+    if (dy < 0) 
+      dy = 2;
+    if (dy + this.form.clientHeight > IMG_HEGHT)
+      dy = IMG_HEGHT - this.form.clientHeight - 2;
+    this.form.style.left = dx + "px";
+    this.form.style.top = dy + "px";
+    //заполнение полей формы текущими данными из arrSector
+    this.inp_name.value = arrSector[this.adr].name; //название сектора(гильдии)
+    this.inp_name.focus();
+    let osd=arrSector[this.adr].os;  //кол-во осад в секторе (если osd == 0 тогда там штаб)
+    this.nodes_osadki[osd].checked = true; //поставить галочку
+    this.div_inp_color.style.display = (osd ? "none" : "flex"); // показать/скрыть панель выбора цвета
+    let clr = arrSector[this.adr].color; //цвет сектора
+    this.nodes_color[clr].checked = true; //поставить галочку (если нет цвета будет невидимый radio)
+  };
+
+  hide() { //скрыть форму 
+    curtain.style.display = "none"; //разблокировать холст
+    this.form.style.display = "none";  
+    NOTE("");  
+  };
+
+  save(){ //проверка данных на корректность и запись
+    let nam = this.inp_name.value; //название 
+    let osd = [... this.nodes_osadki].findIndex(e=>e.checked); //0 штаб или 123 кол-во осад
+    let clr = [... this.nodes_color].findIndex(e=>e.checked); //цвет
+    if (!nam) { //пустое имя
+      NOTE("Пустое название недопустимо.");
+      return;
+    }
+    if (osd == 0 && clr == 0) { // штаб без цвета      
+      NOTE("Выберите цвет штаба.");
+      return;
+    }
+    arrSector[this.adr].name = nam;
+    arrSector[this.adr].os = osd;
+    arrSector[this.adr].color = clr;
+    idb.save_sector(this.adr); //запись в базу    
+    sceneFillSector(this.adr); //заливка
+    drawScene();
+    this.hide();
+    NOTE("Данные записаны, карта обновлена.");
+  }
+
+} //end class FormEditor
+
+
+
 /************************ отрисовка сцены *********************************/
 ctx.textAlign = "center";
 ctx.font = "bold 14px arial";
@@ -374,7 +526,8 @@ function drawScene() {
 
 /***************** клик по сектору - выбор гильдии / заливка *********************************/
 canvas.addEventListener("click", (e) => {  
-  let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
+  //let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
+  let offset = dimension.offset(e);
   let adr = data_address.data[offset]; //red component = number of address
   if (adr > nsec) {  //клик не по сектору 
     NOTE(LANG.note.common_message);
@@ -689,6 +842,8 @@ btn_imgbb.addEventListener("click", async () => {
   drawScene();
   canvas.classList.add("anim-copy");
   btn_imgcopy.parentElement.style.display = "none"; //убрать выпавшее меню  
+  LOG("Uploading image to server imgbb.com ... ", BLUE);
+  NOTE(LANG.note.save_to_imgbb);
 
   let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));  
   let frmdata = new FormData();
@@ -703,31 +858,29 @@ btn_imgbb.addEventListener("click", async () => {
 
   try {
     const response = await fetch(myRequest);
-    if (!response.ok) {
-      throw new Error("problem network IMGBB.COM connection!");
+    if (!response.ok) {      
+      throw new Error("problem with imgbb.com response");
     }
     const result = await response.json(); 
     map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
-    LOG("Imagemap uploaded to imgbb.com server.");    
-        
+    LOG("Imagemap uploaded to imgbb.com server.");
     imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
     divClipBoard.setAttribute("data-text", "image downloaded on imgbb.com      (click to copy link)");
+    setTimeout(() => { divClipBoard.style.display = "block";}, 800); 
     divClipBoard.click();
-    
   } catch (error) {
-    LOG("ERROR: " + error, RED);
-    NOTE(error_img_download_to_imgbb);
+    LOG("ERROR: " + error.message, RED);
+    NOTE(LANG.note.error_img_download_to_imgbb, "red");
   }
   
-  setTimeout(() => {
-    divClipBoard.style.display = "block";  
+  setTimeout(() => {      
     canvas.classList.remove("anim-copy");
     btn_imgcopy.parentElement.style.display = "flex"; //восстановить выпавшее меню  
   }, 800);
 })
 
 divClipBoard.addEventListener("click", ()=>{
-  if (!map_link) return; //если копировали в буфер обмена но ничего не делать (map_link = NaN)
+  if (!map_link) return; //если копировали в буфер обмена, то ничего не делать (map_link = NaN)
   let short_link= map_link.slice(8); //короткая ссылка (без https://)
   let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
   writeClipboardText(short_link);
@@ -743,7 +896,7 @@ btn_json_upload.addEventListener("click", ()=>{ jsonUpload() });
 
 function jsonUpload() { //upload to  https://jsonbin.io/
   LOG("Uploading map to jsonbin.io ...",BLUE)
-  NOTE(LANG.note.save_to_imgbb);
+  NOTE(LANG.note.save_to_jsonbin);
   curtain.style.display = "block";
   
   return new Promise((resolve, reject)=>{
@@ -777,7 +930,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
     
     request.onerror = (error) => {
       LOG("ERROR: " + error, RED);
-      NOTE(LANG.note.error_uploading_map_to + "jsonbin.io"); 
+      NOTE(LANG.note.error_uploading_map_to + "jsonbin.io", "red"); 
       reject();
     }  
   
@@ -804,50 +957,38 @@ async function jsonDownload(){
   LOG("Downloading map from jsonbin.io ...",BLUE)
   NOTE(LANG.fenster.download_from_jsonbin + "jsonbin.io ...");
   curtain.style.display = "block";
-  
-  try {
-    arrSector = await jsonbinLoad();    
-  } catch(error) {
-    LOG("ERROR: " + error, RED);
-    NOTE(LANG.note.error_downloading_map_from + "jsonbin.io"); 
-    return;
-  } finally {
-    curtain.style.display = "none";
-  }
-  
-  LOG("Map downloaded from jsonbin.io");            
-  NOTE(LANG.note.map_loaded); 
-  
-  setLocation("?id="+jsonbin_id);
 
-  div_filename.textContent = jsonbin_id;
-  MapChoise(arrSector[0].os); //определяем вулкан или водопад
-  await idb.write_to_baze();
-  await loadingImages();
-  sceneFillSectorAll();
-  drawScene();
-
-  function jsonbinLoad() { //download from  https://jsonbin.io/  
-    return new Promise((resolve, reject)=>{
-      let request = new XMLHttpRequest();    
-      request.open("GET", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
-      request.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
-      request.send();    
-         
-      request.onreadystatechange = () => {
-        if (request.readyState == XMLHttpRequest.DONE) {
-          let responce = JSON.parse(request.responseText);
-          if (responce.message) { //параметр message присутствует если есть ошибка
-            reject(responce.message);
-          } else {                    
-            resolve(responce.record);
-          }
-        }      
-      } 
-   
-    })
-    
-  }
+  let request = new XMLHttpRequest();    
+  request.open("GET", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
+  request.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
+  request.send();   
+  
+  request.onreadystatechange = async () => {
+    if (request.readyState == XMLHttpRequest.DONE) {
+      try {
+        arrSector = JSON.parse(request.responseText).record;        
+        LOG("Map downloaded from jsonbin.io");
+        NOTE(LANG.note.map_loaded);         
+        setLocation("?id="+jsonbin_id);      
+        div_filename.textContent = jsonbin_id;
+        
+        await idb.write_to_baze();      
+        
+        MapChoise(arrSector[0].os); //определяем вулкан или водопад
+        await loadingImages();
+        sceneFillSectorAll();
+        drawScene();
+      
+      } catch(error) {
+        LOG("ERROR: " + error, RED);
+        NOTE(LANG.note.error_downloading_map_from + "jsonbin.io", "red");     
+        throw new Error("failed to load json");    
+      } finally {
+        curtain.style.display = "none";
+      }
+    }                    
+  } 
+  
 }
 
 
@@ -856,7 +997,9 @@ async function jsonDownload(){
 function cursorStyle(e) {
   let adr;
   try { //чтобы не проверять offset в границах data_address
-    let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; //todo - если другие размеры container нужен коэффициент
+    //let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; 
+    let offset = dimension.offset(e);
+    //todo - если другие размеры container нужен коэффициент
     adr = data_address.data[offset]; //получить red component = number of address
   } catch {
     return;
@@ -875,7 +1018,9 @@ function cursorStyle(e) {
   }
 }
 
-
+function xyXY(e){
+  e.offsetY
+}
 
 /****************** выбор языка **************************/
 const btn_language = document.querySelector(".btn_language");
@@ -884,23 +1029,23 @@ btn_language.addEventListener("click", ()=>{Language.change()});
 const Language = {  
   name: ["en","ru"],
   n: Number(window.localStorage.getItem("pbgmap_lang")) || 0,
-  change: async ()=>{        
-    Language.n++;
-    if(Language.n >= Language.name.length) Language.n = 0;    
-    window.localStorage.setItem("pbgmap_lang", Language.n);   
-    Language.set();
+  async change(){        
+    this.n++;
+    if(this.n >= this.name.length) this.n = 0;    
+    window.localStorage.setItem("pbgmap_lang", this.n);   
+    this.set();
   },
-  set: async ()=>{            
-    btn_language.textContent = Language.name[Language.n];
-    LANG = await loadJson("lang/" + Language.name[Language.n] + ".json");  
+  async set(){            
+    btn_language.textContent = this.name[Language.n];
+    LANG = await loadJson("lang/" + this.name[this.n] + ".json");  
 
     { //обновление сообщений и хэлпа
       document.querySelectorAll('button[class^="btn_"]').forEach((btn)=>{;   //https://www.w3.org/TR/selectors-3/#selectors
-      let s = btn.className;
-      if (LANG.btn_tips[s])      
-        btn.setAttribute("data-text", LANG.btn_tips[s]);
+        let s = btn.className;
+        if (LANG.btn_tips[s])      
+          btn.setAttribute("data-text", LANG.btn_tips[s]);
       });
-      div_helpbox.src = "help_"+ Language.name[Language.n] +".html";         
+      div_helpbox.src = "help_"+ this.name[this.n] +".html";         
       NOTE("..."); //просто очистить строку подсказок
     }
     
@@ -916,20 +1061,20 @@ document.querySelector(".btn_theme").addEventListener("click", ()=>{
 
 const ColorTheme = {
   hue: Number(window.localStorage.getItem("pbgmap_theme")) || 20,
-  change: ()=>{        
-    ColorTheme.hue +=20;
-    if (ColorTheme.hue > 360) ColorTheme.hue = 20; 
-    ColorTheme.set();
-    window.localStorage.setItem("pbgmap_theme", ColorTheme.hue);    
+  change(){        
+    this.hue +=20;
+    if (this.hue > 360) this.hue = 20; 
+    this.set();
+    window.localStorage.setItem("pbgmap_theme", this.hue);    
   },
-  set: ()=>{            
-    g_color = hslset(ColorTheme.hue);
+  set(){         
+    g_color = hslset(this.hue);
     document.documentElement.style.setProperty("--dark", g_color.dark);
     document.documentElement.style.setProperty("--light", g_color.light);    
   }
-}
+};
 
-const hslset = (hue) => ({
+const hslset = (hue) => ({  
   light: "hsl(" + hue + ", 90%, 90%)",
   dark: "hsl(" + hue + ", 90%, 10%)"
 })
@@ -963,8 +1108,10 @@ function genDateString(){
 }
 
 // вывод в строку состояния
-function NOTE(message) {  //область вывода двае строки (для разделения вставить <br>)
-  document.querySelector(".label-box").innerHTML = message;  
+const note_box = document.querySelector(".label-box");
+function NOTE(message, clr="var(--dark)") {  //область вывода двае строки (для разделения вставить <br>)
+  note_box.innerHTML = message;  
+  note_box.style.color = clr;
 }
 
 //вывод логов на экран (цвет сообщений по умолчанию - жёлтый)
