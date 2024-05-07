@@ -281,7 +281,7 @@ button:disabled {
 /************************** анимации *****************************/
 .anim-clear {	
 	animation-name: frm_clear;
-	animation-duration: 1s;
+	animation-duration: 1000ms;
 	animation-timing-function: cubic-bezier(0,.5,.5,1); /*faster than ease*/
 	animation-iteration-count: 1;
 }
@@ -311,6 +311,13 @@ button:disabled {
 	}
 }
 
+.anim-copy {
+	transition-duration: 1000ms;
+	transition-timing-function: linear;
+	transform: scale(0.1);
+	transform-origin: 99.2% 0.8%;
+}
+
 
 /*************** монитор буфера обмена ***********************/
 .monitor {
@@ -336,14 +343,6 @@ button:disabled {
 	height: 100%;
 }
 
-
-/*сдвиг+уменьшение в правый верхний угол*/
-.anim-copy {
-	transition-duration: 800ms;
-	transition-timing-function: linear;
-	transform: scale(0.1);
-	transform-origin: 99.2% 0.8%;
-}
 
 /**************************** editor **********************************/
 .sector_editor {	

@@ -107,13 +107,9 @@ class IndexedDB {
     });
   }
 
-  save_sector(sec) {
-    //записать(изменить) запись сектора sec из arrSector[sec]
+  save_sector(sec) { //записать(изменить) запись сектора sec из arrSector[sec]
     var txn = this.baze.transaction("sectors", "readwrite");
-    let request = txn.objectStore("sectors").put(arrSector[sec]);
-    request.onsuccess = () => {
-      divClipBoard.style.display = "none"; //убрать картинку буфера обмена
-    };
+    let request = txn.objectStore("sectors").put(arrSector[sec]);    
     request.onerror = () => {
       LOG("ERROR saving: " + request.error, RED);
     };

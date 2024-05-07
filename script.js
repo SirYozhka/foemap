@@ -257,6 +257,20 @@ const dimension = {
 }
 
 
+/****************** быстрые клавиши *********************************/
+document.addEventListener("keydown", (e)=>{keypressed(e)});
+function keypressed(e){  
+  if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
+    e.preventDefault();
+    btn_save.click();
+  }
+  if (e.code == 'KeyO' && e.ctrlKey) { // Ctrl+S - считать карту из файла
+    e.preventDefault();
+    btn_load.click();
+  }
+}
+
+
 
 /************************ загрузка изображений карты *************************/
 function loadingImages() {
@@ -465,6 +479,7 @@ class FormEditor{
     drawScene();
     this.hide();
     NOTE("Данные записаны, карта обновлена.");
+    div_clipboard.style.display = "none";  
   }
 
 } //end class FormEditor
@@ -525,7 +540,7 @@ function drawScene() {
 
 
 
-/***************** клик по сектору - выбор гильдии / заливка *********************************/
+/***************** клики по сектору *********************************/
 canvas.addEventListener("click", (e) => {  
   //let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
   let offset = dimension.offset(e);
@@ -550,7 +565,7 @@ canvas.addEventListener("click", (e) => {
       else 
         arrSector[adr].color = selected_color; //помечаем что сектор занят этой гильдией
       sceneFillSector(adr); //перекрашиваем сектор
-      idb.save_sector(adr);
+      idb.save_sector(adr);      
     } else { //цвет не выбран
       NOTE(LANG.note.common_message);      
       return;
@@ -588,18 +603,18 @@ async function CreateNewMap(map) {
   sceneFillSectorAll();
 
   jsonbin_id = null;
-  div_filename.textContent = "";  
   setLocation("");
+  div_filename.textContent = "";  
   
-  setTimeout(() => { //перерисовать сцену в середине анимации
+  setTimeout(() => { //перерисовать сцену в середине анимации (общая длительность 1000ms)
     selected_color=null; //снять выбор штаба
     drawScene();
-  }, 450);
+  }, 500);
 
-  container.addEventListener('animationend', () => { //по окончании анимации 
+  container.onanimationend = () => { //по окончании анимации 
     container.classList.remove("anim-new");
     LOG("New map created.")
-  });
+  };
 
   
 };
@@ -619,9 +634,8 @@ btn_clear.addEventListener("click", () => {
   );
 });
 
-function ClearOsadki(){
-  container.classList.add("anim-clear");
-  selected_color=null; //снять выбор штаба
+async function ClearOsadki(){
+  container.classList.add("anim-clear");  
   for (let i = 1; i <= nsec; i++) {
     if (arrSector[i].os!=0){ // не штаб
       arrSector[i].color = 0; //отметить что сектор не занят
@@ -629,53 +643,45 @@ function ClearOsadki(){
       idb.save_sector(i); //отметить в IndexedDB
     }
   }
-
+  
   setTimeout(() => { //перерисовать сцену в середине анимации
+    selected_color=null; //снять выбор штаба
     drawScene();
-  }, 450);
+  }, 500);
 
-  container.addEventListener('animationend', () => {
+  container.onanimationend = () => { //todo постоянно создаётся новый листенер
     container.classList.remove("anim-clear");
     LOG("Map cleared.")
-  });
+  };
 
 }
 
 
 
 /************ запись данных карты в файл на локальный диск **********/
-document.addEventListener("keydown", (e)=>{keypressed(e)});
-function keypressed(e){
-  if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
-    e.preventDefault();
-    SaveFile();
-  }
-}
-
 const btn_save = document.querySelector(".btn_save");
 btn_save.addEventListener("click", ()=>{ SaveFile() } );
 
 async function SaveFile() {  
   curtain.style.display = "block";
-  NOTE(LANG.note.save_map_to_file);
-  const content = JSON.stringify(arrSector, null, "\t");
+  NOTE(LANG.note.save_map_to_file);  
+  
   let filename = genDateString();
-  let fileHandler;
-
-  const options = {
-    //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
-    suggestedName: filename,
-    types: [{
-      description: 'Text Files',
-      accept: {'text/plain': '.map'},
-    }],
-  };
-
+  let fileHandler;  
   try {
+    const options = {
+      //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
+      suggestedName: filename,
+      types: [{
+        description: 'Text Files',
+        accept: {'text/plain': '.map'},
+      }],
+    };
     fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла  
     spinner.style.display = "block";
     filename = fileHandler.name;
     const writable = await fileHandler.createWritable();
+    const content = JSON.stringify(arrSector, null, "\t");
     await writable.write(content);
     await writable.close();
     LOG("File "+filename+" saved.");
@@ -684,7 +690,7 @@ async function SaveFile() {
     if (err.name == 'AbortError') { //если окно просто закрыли
       NOTE("..."); 
     } else {      
-      LOG("Error saving map file!" , RED);      
+      LOG("Error file saving!" , RED);      
       NOTE(LANG.note.error_file_save + err.name + " , " + err.message);
     }    
   } finally {
@@ -702,36 +708,34 @@ const btn_load = document.querySelector(".btn_load");
 btn_load.addEventListener("click", async () => {
   if (!('showOpenFilePicker' in window)){
     NOTE(LANG.note.deprecated_operation); 
-    return;
     //todo нужен альтернативный ввод выбора файла для загрузки
+    return;
   }
   
   curtain.style.display = "block"; //шторка
   NOTE(LANG.note.select_file);
-  let filename;
-  let fileHandler;
   try{
     const options = {
       multiple: false,
       types: [{accept: {'text/plain': '.map' }}, ],
       excludeAcceptAllOption: true
     };
-    fileHandler = await window.showOpenFilePicker(options); //окно для выбора клиентом локального файла
-    filename = fileHandler.name;
+    let fileHandler = await window.showOpenFilePicker(options); //окно для выбора клиентом локального файла
     spinner.style.display = "block";
     LOG("Downloading map ...", BLUE);
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
+    
     arrSector = JSON.parse(contents);   
-
-    await idb.write_to_baze();    
     MapChoise(arrSector[0].os);    
+    await idb.write_to_baze();    
     await loadingImages();
     sceneFillSectorAll();
     drawScene();       
 
     jsonbin_id = NaN;
-    div_filename.textContent = "";    
+    div_filename.textContent = "";
+    setLocation("");
 
     LOG("Map loaded.");
     NOTE(LANG.note.map_loaded);
@@ -754,8 +758,8 @@ btn_load.addEventListener("click", async () => {
 
 /*************** копироваине изображения карты в буфер обмена ******************/
 const btn_imgcopy = document.querySelector(".btn_imgcopy");
-const divClipBoard = document.querySelector(".monitor");
-const imgClipBoard = document.querySelector(".monitor img");
+const div_clipboard = document.querySelector(".monitor");
+const img_clipboard = document.querySelector(".monitor img");
 
 btn_imgcopy.addEventListener("click", () => {  
   btn_imgcopy.parentElement.style.display = "none"; //убрать выпавшее меню  
@@ -767,12 +771,12 @@ btn_imgcopy.addEventListener("click", () => {
     navigator.clipboard.write(data).then(
       () => {
         map_link = NaN;
-        imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-        imgClipBoard.onload = ()=>{
-          divClipBoard.setAttribute("data-text", "clipboard image");
+        img_clipboard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+        img_clipboard.onload = ()=>{
+          div_clipboard.setAttribute("data-text", "clipboard image");
         }
         NOTE(LANG.note.map_copied_to_clipboard);
-        LOG("Map image copied into clipboard.");
+        LOG("Image copied into clipboard.");
       },
       (err) => {
         LOG("Copying failed: " + err , RED);
@@ -780,11 +784,12 @@ btn_imgcopy.addEventListener("click", () => {
       }
     );
   });
-  setTimeout(() => { //позволить анимации закончиться
-    divClipBoard.style.display = "block";
+  
+  setTimeout(() => { //позволить трансформации закончиться
+    div_clipboard.style.display = "block";
     canvas.classList.remove("anim-copy");        
     btn_imgcopy.parentElement.style.display = "flex"; //восстановить выпадающее меню
-  }, 800);
+  }, 2000);
 });
 
 
@@ -876,10 +881,11 @@ btn_imgbb.addEventListener("click", async () => {
     const result = await response.json(); 
     map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
     LOG("Imagemap uploaded to imgbb.com server.");
-    imgClipBoard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-    divClipBoard.setAttribute("data-text", "image downloaded on imgbb.com      (click to copy link)");
-    setTimeout(() => { divClipBoard.style.display = "block";}, 800); 
-    divClipBoard.click();
+    img_clipboard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+    div_clipboard.setAttribute("data-text", "image downloaded on imgbb.com      (click to copy link)");
+    setTimeout(() => {
+      div_clipboard.style.display = "block";}, 800); 
+    div_clipboard.click(); //скопировать в буфер обмена
   } catch (error) {
     LOG("ERROR: " + error.message, RED);
     NOTE(LANG.note.error_img_download_to_imgbb, "red");
@@ -891,7 +897,7 @@ btn_imgbb.addEventListener("click", async () => {
   }, 800);
 })
 
-divClipBoard.addEventListener("click", ()=>{
+div_clipboard.addEventListener("click", ()=>{
   if (!map_link) return; //если копировали в буфер обмена, то ничего не делать (map_link = NaN)
   let short_link= map_link.slice(8); //короткая ссылка (без https://)
   let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
