@@ -5,7 +5,7 @@ class ModalFenster {
   m_controls = document.querySelector(".modal_controls"); //блок кнопок
   m_buttons = document.querySelectorAll(".modal_button"); //кнопки
   m_callbacks = []; //при инициализации создать пустые колбэки 
-  m_ctrl = false;
+  m_ctrl = false;  
 
   constructor() {
     for (let i = 0; i < this.m_buttons.length; i++) {
@@ -31,7 +31,7 @@ class ModalFenster {
   }
 
   open(title, body, buttons) {
-    this.m_curtain.style.display = "block"; //блок-шторка на весь экран
+    this.m_curtain.style.display = "block"; //блок-шторка на весь экран    
     document.querySelector(".modal_title").textContent = title;
     document.querySelector(".modal_body").innerHTML = body; //innerHTML позволяет включить в тело окна активное содержимое
     if (buttons) { //если передан массив кнопок
@@ -55,6 +55,9 @@ class ModalFenster {
   }
 
   close() {
+    if (this.m_window.style.display == "none") 
+      return; //костыль - если окно не открыто не обрабатывать клик (иначе закрывается шторка)
+    this.m_open = false;    
     this.m_curtain.style.display = "none";
     this.m_window.style.display = "none";
     NOTE("");

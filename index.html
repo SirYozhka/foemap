@@ -16,6 +16,7 @@
 </head>
 
 <body>
+  
   <div class="curtain" style="display: none;">
     <!-- затенённая штора на весь body с блокировкой нажатий при редактировании и других операциях -->
   </div>
@@ -65,6 +66,11 @@
     </div>
     
     <div class="container">
+
+      <div class="spinner" style="display: none;">
+        <!-- spinner загрузок/отправок -->         
+      </div>
+
       <!-- отображение сцены -->
       <canvas>
       </canvas>
@@ -89,7 +95,7 @@
           <input type="radio" name="clr" value="7" /> <!--зеленый-->
           <input type="radio" name="clr" value="8" /> <!--красный-->
         </div>
-        <div class="input_end">
+        <div>
           <button class="btn_edit_save" >SAVE</button>
           <button class="btn_edit_cancel" >CANCEL</button>
         </div>

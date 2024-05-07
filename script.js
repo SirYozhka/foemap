@@ -10,6 +10,7 @@ const RED = "rgb(255,150,150)"; // ошибки
 
 const container = document.querySelector(".container"); //контейнер сцены
 const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
+const spinner = document.querySelector(".spinner"); //индикатор загрузки
 const div_filename = document.querySelector(".file-name");
 
 const canvas = document.querySelector("canvas"); // "экранный" канвас
@@ -350,8 +351,7 @@ function fillPoint(adr, {r,g,b,a}){ //заливка одного пиксела
 class FormEditor{
   adr = null;
   
-  constructor() {
-    this.curtain = document.querySelector(".curtain");
+  constructor() {            
     this.form = document.querySelector(".sector_editor");
     this.inp_name = document.querySelector(".input_name");
     this.nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
@@ -362,8 +362,7 @@ class FormEditor{
     
     canvas.addEventListener("contextmenu", (event) => { //клик правой кнопкой - редактор надписи
       event.preventDefault();
-      event.stopPropagation();
-      //let offset=(event.offsetY * IMG_WITH + event.offsetX) * 4;
+      event.stopPropagation();      
       let offset = dimension.offset(event);
       this.adr = data_address.data[offset]; // number of address (red component)
       if (this.adr < 1 || this.adr > nsec) return; //клик не на секторе
@@ -372,7 +371,7 @@ class FormEditor{
       this.edit();
     });
 
-    this.curtain.addEventListener("click",()=>{
+    curtain.addEventListener("click",()=>{      
       this.hide();
     })
     
@@ -411,7 +410,7 @@ class FormEditor{
 
   } //end constructor
 
-  edit() {     
+  edit() {         
     NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
     curtain.style.display = "block";
     this.form.style.display = "flex";
@@ -439,9 +438,11 @@ class FormEditor{
   };
 
   hide() { //скрыть форму 
+    if (this.form.style.display == "none") 
+      return; //костыль - если окно не открыто не обрабатывать клик (иначе закрывается шторка)        
     curtain.style.display = "none"; //разблокировать холст
     this.form.style.display = "none";  
-    NOTE("");  
+    NOTE(""); 
   };
 
   save(){ //проверка данных на корректность и запись
@@ -586,18 +587,21 @@ async function CreateNewMap(map) {
   await loadingImages();
   sceneFillSectorAll();
 
-  jsonbin_id = NaN;
+  jsonbin_id = null;
   div_filename.textContent = "";  
   setLocation("");
   
   setTimeout(() => { //перерисовать сцену в середине анимации
     selected_color=null; //снять выбор штаба
     drawScene();
-  }, 450);  
-  setTimeout(() => { //дать возможность закончить анимацию
+  }, 450);
+
+  container.addEventListener('animationend', () => { //по окончании анимации 
     container.classList.remove("anim-new");
     LOG("New map created.")
-  }, 1000);
+  });
+
+  
 };
 
 
@@ -625,13 +629,16 @@ function ClearOsadki(){
       idb.save_sector(i); //отметить в IndexedDB
     }
   }
+
   setTimeout(() => { //перерисовать сцену в середине анимации
     drawScene();
-  }, 500);
-  setTimeout(() => { //дать возможность закончить анимацию
+  }, 450);
+
+  container.addEventListener('animationend', () => {
     container.classList.remove("anim-clear");
     LOG("Map cleared.")
-  }, 1000);
+  });
+
 }
 
 
@@ -665,15 +672,14 @@ async function SaveFile() {
   };
 
   try {
-    fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла    
+    fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла  
+    spinner.style.display = "block";
     filename = fileHandler.name;
     const writable = await fileHandler.createWritable();
     await writable.write(content);
     await writable.close();
     LOG("File "+filename+" saved.");
-    NOTE('"' + filename + '" ' + LANG.note.can_send_another_player);
-    //btn_load.blur();    
-    curtain.style.display = "none";
+    NOTE('"' + filename + '" ' + LANG.note.can_send_another_player);    
   } catch (err) {     
     if (err.name == 'AbortError') { //если окно просто закрыли
       NOTE("..."); 
@@ -682,7 +688,8 @@ async function SaveFile() {
       NOTE(LANG.note.error_file_save + err.name + " , " + err.message);
     }    
   } finally {
-    curtain.style.display = "none";    
+    curtain.style.display = "none";   
+    spinner.style.display = "none";     
   }  
   
 };
@@ -696,7 +703,7 @@ btn_load.addEventListener("click", async () => {
   if (!('showOpenFilePicker' in window)){
     NOTE(LANG.note.deprecated_operation); 
     return;
-    //todo альтернативный ввод выбора файла для загрузки
+    //todo нужен альтернативный ввод выбора файла для загрузки
   }
   
   curtain.style.display = "block"; //шторка
@@ -711,13 +718,14 @@ btn_load.addEventListener("click", async () => {
     };
     fileHandler = await window.showOpenFilePicker(options); //окно для выбора клиентом локального файла
     filename = fileHandler.name;
+    spinner.style.display = "block";
     LOG("Downloading map ...", BLUE);
     let file = await fileHandler[0].getFile();
     let contents = await file.text();
-    arrSector = JSON.parse(contents);    
+    arrSector = JSON.parse(contents);   
+
     await idb.write_to_baze();    
-    MapChoise(arrSector[0].os);
-    
+    MapChoise(arrSector[0].os);    
     await loadingImages();
     sceneFillSectorAll();
     drawScene();       
@@ -736,6 +744,7 @@ btn_load.addEventListener("click", async () => {
     }
   } finally {
     curtain.style.display = "none";
+    spinner.style.display = "none";
     btn_load.blur();
   }    
  
@@ -766,7 +775,7 @@ btn_imgcopy.addEventListener("click", () => {
         LOG("Map image copied into clipboard.");
       },
       (err) => {
-        LOG("Error copy map image: " + err , RED);
+        LOG("Copying failed: " + err , RED);
         NOTE(LANG.note.deprecated_operation + " Error: " + err);
       }
     );
@@ -790,8 +799,8 @@ btn_imgsave.addEventListener("click", async ()=>{
   selected_color = null; //снять выбор штаба
   drawScene(); //перерисовать сцену
   try{ 
-    let filename = await SaveCanvasToFile();    
-    LOG("Image is saved.");
+    let filename = await SaveCanvasToFile();        
+    LOG("Image saved.");
     NOTE(LANG.note.img_saved_to_file + `"${filename}"`);      
   } catch (err) {    
     if (err.name == 'AbortError') {
@@ -801,6 +810,7 @@ btn_imgsave.addEventListener("click", async ()=>{
     }    
   } finally {
     curtain.style.display = "none";
+    spinner.style.display = "none";
   }
 
   function SaveCanvasToFile() {
@@ -819,6 +829,7 @@ btn_imgsave.addEventListener("click", async ()=>{
   
       try {
         fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла
+        spinner.style.display = "block";
         canvas.toBlob(async (blob) => {
           const writable = await fileHandler.createWritable();
           await writable.write(blob);
@@ -832,6 +843,7 @@ btn_imgsave.addEventListener("click", async ()=>{
   }
   
 });
+
 
 
 /*************** upload - загрузка на сервер imgbb.com ******************/
@@ -898,6 +910,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
   LOG("Uploading map to jsonbin.io ...",BLUE)
   NOTE(LANG.note.save_to_jsonbin);
   curtain.style.display = "block";
+  spinner.style.display = "block";
   
   return new Promise((resolve, reject)=>{
     const content = JSON.stringify(arrSector, null, "\t");
@@ -918,12 +931,13 @@ function jsonUpload() { //upload to  https://jsonbin.io/
         let responce = JSON.parse(request.responseText);
         if (!jsonbin_id) jsonbin_id = responce.metadata.id;        
         div_filename.textContent = jsonbin_id;
-        curtain.style.display = "none";
         let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
         let linkHTML = "<a target='_blank' href='" + link + "'> " + link +" </a>";
+        setLocation("?id="+jsonbin_id);
         NOTE(LANG.note.map_uploaded_to_jsonbin + jsonbin_id, linkHTML);
         LOG("Map uploaded to jsonbin.io");
-        setLocation("?id="+jsonbin_id);
+        curtain.style.display = "none";
+        spinner.style.display = "none";
         resolve();
       }
     }
@@ -957,6 +971,7 @@ async function jsonDownload(){
   LOG("Downloading map from jsonbin.io ...",BLUE)
   NOTE(LANG.fenster.download_from_jsonbin + "jsonbin.io ...");
   curtain.style.display = "block";
+  spinner.style.display = "block";
 
   let request = new XMLHttpRequest();    
   request.open("GET", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
@@ -985,6 +1000,7 @@ async function jsonDownload(){
         throw new Error("failed to load json");    
       } finally {
         curtain.style.display = "none";
+        spinner.style.display = "none";
       }
     }                    
   } 
@@ -996,10 +1012,8 @@ async function jsonDownload(){
 /******************************* вид курсора ***************************/
 function cursorStyle(e) {
   let adr;
-  try { //чтобы не проверять offset в границах data_address
-    //let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4; 
-    let offset = dimension.offset(e);
-    //todo - если другие размеры container нужен коэффициент
+  try { //чтобы не проверять offset в границах data_address    
+    let offset = dimension.offset(e);    
     adr = data_address.data[offset]; //получить red component = number of address
   } catch {
     return;
@@ -1018,9 +1032,7 @@ function cursorStyle(e) {
   }
 }
 
-function xyXY(e){
-  e.offsetY
-}
+
 
 /****************** выбор языка **************************/
 const btn_language = document.querySelector(".btn_language");
@@ -1037,8 +1049,7 @@ const Language = {
   },
   async set(){            
     btn_language.textContent = this.name[Language.n];
-    LANG = await loadJson("lang/" + this.name[this.n] + ".json");  
-
+    LANG = await loadJson("lang/" + this.name[this.n] + ".json");
     { //обновление сообщений и хэлпа
       document.querySelectorAll('button[class^="btn_"]').forEach((btn)=>{;   //https://www.w3.org/TR/selectors-3/#selectors
         let s = btn.className;
@@ -1047,8 +1058,7 @@ const Language = {
       });
       div_helpbox.src = "help_"+ this.name[this.n] +".html";         
       NOTE("..."); //просто очистить строку подсказок
-    }
-    
+    }    
   }
 }
 
