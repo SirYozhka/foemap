@@ -225,7 +225,7 @@ window.addEventListener("load", async () => {
         MapChoise(arrSector[0].os); //определяем вулкан или водопад
         await loadingImages();    
         sceneFillSectorAll();
-        drawScene();    
+        sceneDraw();    
       }  
     }
     LOG("READY");
@@ -383,7 +383,7 @@ class FormEditor{
       this.adr = data_address.data[offset]; // number of address (red component)
       if (this.adr < 1 || this.adr > nsec) return; //клик не на секторе
       selected_color=null; //снять выбор штаба
-      drawScene(); 
+      sceneDraw(); 
       this.edit();
     });
 
@@ -391,9 +391,9 @@ class FormEditor{
       this.hide();
     })
     
-    /* необязатльно, т.к. нажатие на ENTER всё равно вызывает событие click на первой <button> */
-    this.form.addEventListener("keydown", (e) => { //запись по кнопке ENTER
-      if (e.code === "Enter" || e.code === "NumpadEnter") {
+    this.form.addEventListener("keydown", (e) => { 
+    if (e.code === "Enter" || e.code === "NumpadEnter") { //запись по кнопке ENTER
+      /* необязатльно, т.к. нажатие на ENTER всё равно вызывает событие click на первой <button> */
         this.save();        
         this.hide();
       }      
@@ -427,7 +427,7 @@ class FormEditor{
   } //end constructor
 
   edit() {         
-    NOTE("Редактирование данных сектора: " + defSectors[this.adr].name, "Сохранить - ENTER, выход - ESC.");
+    NOTE(LANG.note.edit_sector + defSectors[this.adr].name + LANG.note.save_esc);
     curtain.style.display = "block";
     this.form.style.display = "flex";
     //позиционирование формы
@@ -466,11 +466,11 @@ class FormEditor{
     let osd = [... this.nodes_osadki].findIndex(e=>e.checked); //0 штаб или 123 кол-во осад
     let clr = [... this.nodes_color].findIndex(e=>e.checked); //цвет
     if (!nam) { //пустое имя
-      NOTE("Пустое название недопустимо.");
+      NOTE(LANG.note.validate_title, "red");
       return;
     }
     if (osd == 0 && clr == 0) { // штаб без цвета      
-      NOTE("Выберите цвет штаба.");
+      NOTE(LANG.note.select_color, "red");
       return;
     }
     arrSector[this.adr].name = nam;
@@ -478,10 +478,10 @@ class FormEditor{
     arrSector[this.adr].color = clr;
     idb.save_sector(this.adr); //запись в базу    
     sceneFillSector(this.adr); //заливка
-    drawScene();
+    sceneDraw();
     this.hide();
-    NOTE("Данные записаны, карта обновлена.");
-    div_clipboard.style.display = "none";
+    LOG("Data province saved.");
+    NOTE("...");    
   }
 
 } //end class FormEditor
@@ -495,7 +495,7 @@ ctx.fontStretch = "ultra-condensed";
 ctx.textRendering = "geometricPrecision";
 ctx.shadowBlur = 3;
 
-function drawScene() {    
+function sceneDraw() {    
   ctx.fillStyle = "transparent";
   ctx.shadowColor = "transparent";
   
@@ -574,7 +574,7 @@ canvas.addEventListener("click", (e) => {
     }
   }
   
-  drawScene();
+  sceneDraw();
 });
 
 
@@ -610,7 +610,7 @@ async function CreateNewMap(map) {
   
   setTimeout(() => { //перерисовать сцену в середине анимации (общая длительность 1000ms)
     selected_color=null; //снять выбор штаба
-    drawScene();
+    sceneDraw();
   }, 500);
 
   container.onanimationend = () => { //по окончании анимации 
@@ -648,7 +648,7 @@ function ClearOsadki(){
   
   setTimeout(() => { //перерисовать сцену в середине анимации
     selected_color=null; //снять выбор штаба
-    drawScene();
+    sceneDraw();
   }, 500);
 
   container.onanimationend = () => { //todo постоянно создаётся новый листенер
@@ -731,7 +731,7 @@ async function FileLoad() {
     await idb.write_to_baze();    
     await loadingImages();
     sceneFillSectorAll();
-    drawScene();       
+    sceneDraw();       
 
     jsonbin_id = NaN;
     div_filename.textContent = "";
@@ -762,7 +762,7 @@ const div_clipboard = document.querySelector(".clipboard");
 btn_imgcopy.addEventListener("click", () => {  
   btn_imgcopy.parentElement.style.display = "none"; //убрать выпавшее меню  
   selected_color=null; //снять выбор штаба
-  drawScene(); 
+  sceneDraw(); 
   canvas.classList.add("transit_clipboard");  
   canvas.toBlob((blob) => {
     let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
@@ -793,7 +793,7 @@ document.querySelector(".btn_imgsave").addEventListener("click", async ()=>{
   NOTE(LANG.note.save_img_to_file);  
   curtain.style.display = "block";
   selected_color = null; //снять выбор штаба
-  drawScene(); //перерисовать сцену
+  sceneDraw(); //перерисовать сцену
   try{ 
     let filename = await SaveCanvasToFile();        
     LOG("Image saved.");
@@ -845,7 +845,7 @@ const div_monitor_imgbb = document.querySelector(".monitor_imgbb");
 
 async function ImgUpload(e){  
   selected_color = null; //снять выделение выбора штаба
-  drawScene();
+  sceneDraw();
   canvas.classList.add("transit_monitor_imgbb");
   e.target.parentElement.style.display = "none"; //убрать выпавшее меню  
   LOG("Uploading image to server imgbb.com ... ", BLUE);
@@ -981,7 +981,7 @@ function jsonDownload(){
         MapChoise(arrSector[0].os); //определяем вулкан или водопад
         await loadingImages();
         sceneFillSectorAll();
-        drawScene();
+        sceneDraw();
       
       } catch(error) {
         LOG("ERROR: " + error, RED);
@@ -1055,7 +1055,7 @@ const Language = {
 /******************** установка цветовой схемы  *******************/
 document.querySelector(".btn_theme").addEventListener("click", ()=>{  
   ColorTheme.change();
-  drawScene();
+  sceneDraw();
 });
 
 const ColorTheme = {
@@ -1108,7 +1108,7 @@ function genDateString(){
 
 // вывод в строку состояния
 const note_box = document.querySelector(".label-box");
-function NOTE(message, clr="var(--dark)") {  //область вывода двае строки (для разделения вставить <br>)
+function NOTE(message, clr="var(--dark)") {  //область вывода (для второй строки вставить <br>)
   note_box.innerHTML = message;  
   note_box.style.color = clr;
 }

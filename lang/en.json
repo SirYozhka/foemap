@@ -32,7 +32,11 @@
         "deprecated_operation": "This operation cannot be done in your browser. ",
         "map_copied_to_clipboard": "Map image copied into clipboard. <br> Press Ctr+V to insert image into messenger.",
         "link_copied_to_clibboard": " link to mat copied to clipboard. <br> Press Ctr+V to insert ling into message.",
-        "map_uploaded_to_jsonbin": "Map uploaded to jsonbin.io , Map ID: "
+        "map_uploaded_to_jsonbin": "Map uploaded to jsonbin.io , Map ID: ",
+        "edit_sector": "Edit sector: ",
+        "save_esc": "<br>Save - ENTER, exit - ESC.",
+        "validate_title": "An empty title is not allowed.",
+        "select_color": "Select the color of the headquarters."
     },
     "fenster":{
         "create_map_title": "Creating a new map.",

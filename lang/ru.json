@@ -32,7 +32,11 @@
         "deprecated_operation": "Это невозможно выполнить в вашем браузере.",
         "map_copied_to_clipboard": "Карта скопирована в буфер обмена. <br> Нажмите Ctr+V, чтобы вставить изображение карты в сообщение. ",
         "link_copied_to_clibboard": " ссылка на карту скопирована в буфер обмена. <br> Нажмите Ctr+V, чтобы вставить ссылку в сообщение.",
-        "map_uploaded_to_jsonbin": "Карта загружена на сервер jsonbin.io , ID карты: "
+        "map_uploaded_to_jsonbin": "Карта загружена на сервер jsonbin.io , ID карты: ",
+        "edit_sector": "Редактирование данных сектора: ",
+        "save_esc": "<br>Сохранить - ENTER, выход - ESC.",
+        "validate_title": "Пустое название недопустимо.",
+        "select_color": "Выберите цвет штаба."
     },
     "fenster":{
         "create_map_title": "Создание новой карты.",
