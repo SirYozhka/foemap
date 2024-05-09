@@ -11,6 +11,9 @@
 	--shadow-dark: 0px 0px 4px 2px var(--dark);
 	--shadow-light: 0px 0px 2px 1px var(--light);
 	--shadow-light-strong: 0px 0px 4px 2px var(--light);
+
+	--shadow-dark:  0px 0px 2px 1px var(--dark);
+	--shadow-dark-strong: 0px 0px 4px 2px var(--dark);
 }
 
 * {

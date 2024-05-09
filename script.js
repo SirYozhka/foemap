@@ -245,13 +245,13 @@ window.addEventListener("resize", () => {
 const dimension = {
   x: null,
   y: null,
-  set: ()=>{
-    dimension.x = container.clientWidth / IMG_WITH;
-    dimension.y = container.clientHeight / IMG_HEGHT;     
+  set(){
+    this.x = container.clientWidth / IMG_WITH;
+    this.y = container.clientHeight / IMG_HEGHT;     
   },
-  offset: (e)=>{
-    let Y = ~~(e.offsetY/dimension.y);
-    let X = ~~(e.offsetX/dimension.x);        
+  offset(e){
+    let Y = ~~(e.offsetY/this.y);
+    let X = ~~(e.offsetX/this.x);
     return (Y * IMG_WITH + X) * 4;    
   }
 }
@@ -262,11 +262,11 @@ document.addEventListener("keydown", (e)=>{keypressed(e)});
 function keypressed(e){  
   if (e.code == 'KeyS' && e.ctrlKey) { // Ctrl+S - записать карту в файл
     e.preventDefault();
-    btn_save.click();
+    FileSave();
   }
   if (e.code == 'KeyO' && e.ctrlKey) { // Ctrl+S - считать карту из файла
     e.preventDefault();
-    btn_load.click();
+    FileLoad();
   }
 }
 
@@ -286,7 +286,7 @@ function loadingImages() {
         image.src = "images/scene.png";
         image.onload = () => {
           LOG("Calculation scene ..." , BLUE);
-          bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
+          bufer_ctx.clearRect(0, 0, canvas.width, canvas.height); 
           bufer_ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
           data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);          
           image.src = "images/addresses" + nmap + ".bmp";
@@ -295,7 +295,9 @@ function loadingImages() {
             bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
             bufer_ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
             data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
-            await calcSectorsCenters();            
+            await calcSectorsCenters();   
+            div_clipboard.style.display = "none"
+            div_monitor_imgbb.style.display = "none";         
             resolve();
           };
         };
@@ -479,7 +481,7 @@ class FormEditor{
     drawScene();
     this.hide();
     NOTE("Данные записаны, карта обновлена.");
-    div_clipboard.style.display = "none";  
+    div_clipboard.style.display = "none";
   }
 
 } //end class FormEditor
@@ -634,7 +636,7 @@ btn_clear.addEventListener("click", () => {
   );
 });
 
-async function ClearOsadki(){
+function ClearOsadki(){
   container.classList.add("anim-clear");  
   for (let i = 1; i <= nsec; i++) {
     if (arrSector[i].os!=0){ // не штаб
@@ -659,10 +661,9 @@ async function ClearOsadki(){
 
 
 /************ запись данных карты в файл на локальный диск **********/
-const btn_save = document.querySelector(".btn_save");
-btn_save.addEventListener("click", ()=>{ SaveFile() } );
+document.querySelector(".btn_save").addEventListener("click", ()=>{ FileSave() } );
 
-async function SaveFile() {  
+async function FileSave() {  
   curtain.style.display = "block";
   NOTE(LANG.note.save_map_to_file);  
   
@@ -703,9 +704,8 @@ async function SaveFile() {
 
 
 /************ чтение данных карты из json файла с компьютера **********/
-const btn_load = document.querySelector(".btn_load");
-
-btn_load.addEventListener("click", async () => {
+document.querySelector(".btn_load").addEventListener("click", ()=>{ FileLoad() } );
+async function FileLoad() {
   if (!('showOpenFilePicker' in window)){
     NOTE(LANG.note.deprecated_operation); 
     //todo нужен альтернативный ввод выбора файла для загрузки
@@ -748,33 +748,27 @@ btn_load.addEventListener("click", async () => {
     }
   } finally {
     curtain.style.display = "none";
-    spinner.style.display = "none";
-    btn_load.blur();
+    spinner.style.display = "none";        
   }    
  
-});
+}
 
 
 
 /*************** копироваине изображения карты в буфер обмена ******************/
 const btn_imgcopy = document.querySelector(".btn_imgcopy");
-const div_clipboard = document.querySelector(".monitor");
-const img_clipboard = document.querySelector(".monitor img");
+const div_clipboard = document.querySelector(".clipboard");
 
 btn_imgcopy.addEventListener("click", () => {  
   btn_imgcopy.parentElement.style.display = "none"; //убрать выпавшее меню  
   selected_color=null; //снять выбор штаба
   drawScene(); 
-  canvas.classList.add("anim-copy");  
+  canvas.classList.add("transit_clipboard");  
   canvas.toBlob((blob) => {
     let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
     navigator.clipboard.write(data).then(
-      () => {
-        map_link = NaN;
-        img_clipboard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-        img_clipboard.onload = ()=>{
-          div_clipboard.setAttribute("data-text", "clipboard image");
-        }
+      () => {        
+        document.querySelector(".clipboard img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
         NOTE(LANG.note.map_copied_to_clipboard);
         LOG("Image copied into clipboard.");
       },
@@ -787,17 +781,14 @@ btn_imgcopy.addEventListener("click", () => {
   
   setTimeout(() => { //позволить трансформации закончиться
     div_clipboard.style.display = "block";
-    canvas.classList.remove("anim-copy");        
+    canvas.classList.remove("transit_clipboard");        
     btn_imgcopy.parentElement.style.display = "flex"; //восстановить выпадающее меню
-  }, 2000);
+  }, 1000);
 });
 
 
-
 /*************** save - сохранить картинку в файл ******************/
-const btn_imgsave = document.querySelector(".btn_imgsave");
-
-btn_imgsave.addEventListener("click", async ()=>{
+document.querySelector(".btn_imgsave").addEventListener("click", async ()=>{
   LOG("Saving image to file ...", BLUE);
   NOTE(LANG.note.save_img_to_file);  
   curtain.style.display = "block";
@@ -819,21 +810,19 @@ btn_imgsave.addEventListener("click", async ()=>{
   }
 
   function SaveCanvasToFile() {
-    return new Promise(async (resolve, reject) => {
-      let fileHandler;
-      const options = {
-        suggestedName: "mapsnapshot",
-        types: [
-          {
-            description: "Image Files",
-            accept: { "image/jpeg": ".jpg" },
-          },
+    return new Promise(async (resolve, reject) => {      
+      try {          
+        const options = {
           //startIn: 'desktop',  //указание папки на компе (desktop - рабочий стол)
-        ],
-      };
-  
-      try {
-        fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла
+          suggestedName: "mapsnapshot",
+          types: [
+            {
+              description: "Image Files",
+              accept: { "image/jpeg": ".jpg" },
+            },
+          ]
+        };        
+        let fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла        
         spinner.style.display = "block";
         canvas.toBlob(async (blob) => {
           const writable = await fileHandler.createWritable();
@@ -841,7 +830,7 @@ btn_imgsave.addEventListener("click", async ()=>{
           await writable.close();
           resolve(fileHandler.name);
         });
-      } catch (error) {
+      } catch (error) {        
         reject(error);
       }
     });
@@ -850,15 +839,15 @@ btn_imgsave.addEventListener("click", async ()=>{
 });
 
 
-
 /*************** upload - загрузка на сервер imgbb.com ******************/
-const btn_imgbb = document.querySelector(".btn_imgbb"); 
+document.querySelector(".btn_imgbb").addEventListener("click", (event)=>{ ImgUpload(event) });
+const div_monitor_imgbb = document.querySelector(".monitor_imgbb");
 
-btn_imgbb.addEventListener("click", async () => {
+async function ImgUpload(e){  
   selected_color = null; //снять выделение выбора штаба
   drawScene();
-  canvas.classList.add("anim-copy");
-  btn_imgcopy.parentElement.style.display = "none"; //убрать выпавшее меню  
+  canvas.classList.add("transit_monitor_imgbb");
+  e.target.parentElement.style.display = "none"; //убрать выпавшее меню  
   LOG("Uploading image to server imgbb.com ... ", BLUE);
   NOTE(LANG.note.save_to_imgbb);
 
@@ -866,40 +855,38 @@ btn_imgbb.addEventListener("click", async () => {
   let frmdata = new FormData();
   frmdata.append("image", blob, "image.png");
  
-  const myRequest = new Request(
-    "https://api.imgbb.com/1/upload?key=26f6c3a3ce8d263ae81844d87abcd8ef", {
-      method: "POST",
-      body: frmdata
-    }
-  );
-
   try {
+    const myRequest = new Request(
+      "https://api.imgbb.com/1/upload?key=26f6c3a3ce8d263ae81844d87abcd8ef", {
+        method: "POST",
+        body: frmdata
+      }
+    );
     const response = await fetch(myRequest);
     if (!response.ok) {      
-      throw new Error("problem with imgbb.com response");
+      throw new Error("problem imgbb.com connection");
     }
     const result = await response.json(); 
     map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
     LOG("Imagemap uploaded to imgbb.com server.");
-    img_clipboard.src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-    div_clipboard.setAttribute("data-text", "image downloaded on imgbb.com      (click to copy link)");
+    document.querySelector(".monitor_imgbb img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+    div_monitor_imgbb.setAttribute("data-text", "image on imgbb.com      (click to copy link)");
     setTimeout(() => {
-      div_clipboard.style.display = "block";}, 800); 
-    div_clipboard.click(); //скопировать в буфер обмена
+      div_monitor_imgbb.style.display = "block";}, 800); 
+    div_monitor_imgbb.click(); //скопировать в буфер обмена
   } catch (error) {
     LOG("ERROR: " + error.message, RED);
     NOTE(LANG.note.error_img_download_to_imgbb, "red");
   }
   
   setTimeout(() => {      
-    canvas.classList.remove("anim-copy");
-    btn_imgcopy.parentElement.style.display = "flex"; //восстановить выпавшее меню  
-  }, 800);
-})
+    canvas.classList.remove("transit_monitor_imgbb");
+    e.target.parentElement.style.display = "flex"; //восстановить выпавшее меню  
+  }, 1000);
+}
 
-div_clipboard.addEventListener("click", ()=>{
-  if (!map_link) return; //если копировали в буфер обмена, то ничего не делать (map_link = NaN)
-  let short_link= map_link.slice(8); //короткая ссылка (без https://)
+div_monitor_imgbb.addEventListener("click", ()=>{  
+  let short_link = map_link.slice(8); //короткая ссылка (без https://)
   let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link +" </a>";
   writeClipboardText(short_link);
   LOG("Link " + short_link + " copied to clipboard.");  
@@ -918,43 +905,40 @@ function jsonUpload() { //upload to  https://jsonbin.io/
   curtain.style.display = "block";
   spinner.style.display = "block";
   
-  return new Promise((resolve, reject)=>{
-    const content = JSON.stringify(arrSector, null, "\t");
-    let request = new XMLHttpRequest();    
+  const content = JSON.stringify(arrSector, null, "\t");
+  let request = new XMLHttpRequest();    
     
-    if (!jsonbin_id){ //создание нового json
-      request.open("POST", "https://api.jsonbin.io/v3/b", true);
-      request.setRequestHeader("X-Bin-Name", genDateString()); //в принципе имя задавать нет смысла
-    } else { //если задан id то презапись того же самого
-      request.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
-    }
-    request.setRequestHeader("Content-Type", "application/json");
-    request.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
-    request.send(content);
+  if (!jsonbin_id){ //создание нового json
+    request.open("POST", "https://api.jsonbin.io/v3/b", true);
+    request.setRequestHeader("X-Bin-Name", genDateString()); //в принципе имя задавать нет смысла
+  } else { //если задан id то презапись того же самого
+    request.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
+  }
+  request.setRequestHeader("Content-Type", "application/json");
+  request.setRequestHeader("X-Master-Key", "$2a$10$2AS39h/1.QOdB8zw.VW9A.2Tm0RLqK9TH7Qes68PC.DpcG3ROYyEq");
+  request.send(content);
    
-    request.onreadystatechange = () => {
-      if (request.readyState == XMLHttpRequest.DONE) {
-        let responce = JSON.parse(request.responseText);
-        if (!jsonbin_id) jsonbin_id = responce.metadata.id;        
-        div_filename.textContent = jsonbin_id;
-        let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
-        let linkHTML = "<a target='_blank' href='" + link + "'> " + link +" </a>";
-        setLocation("?id="+jsonbin_id);
-        NOTE(LANG.note.map_uploaded_to_jsonbin + jsonbin_id, linkHTML);
-        LOG("Map uploaded to jsonbin.io");
-        curtain.style.display = "none";
-        spinner.style.display = "none";
-        resolve();
-      }
+  request.onreadystatechange = () => {
+    if (request.readyState == XMLHttpRequest.DONE) {
+      let responce = JSON.parse(request.responseText);
+      if (!jsonbin_id) jsonbin_id = responce.metadata.id;        
+      div_filename.textContent = jsonbin_id;
+      let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
+      let linkHTML = "<a target='_blank' href='" + link + "'> " + link +" </a>";
+      setLocation("?id="+jsonbin_id);
+      NOTE(LANG.note.map_uploaded_to_jsonbin + jsonbin_id, linkHTML);
+      LOG("Map uploaded to jsonbin.io");
+      curtain.style.display = "none";
+      spinner.style.display = "none";
     }
+  }
     
-    request.onerror = (error) => {
-      LOG("ERROR: " + error, RED);
-      NOTE(LANG.note.error_uploading_map_to + "jsonbin.io", "red"); 
-      reject();
-    }  
-  
-  })
+  request.onerror = (error) => {
+    LOG("ERROR: " + error, RED);
+    NOTE(LANG.note.error_uploading_map_to + "jsonbin.io", "red"); 
+    reject();
+  }  
+    
 }
 
 
@@ -973,7 +957,7 @@ btn_json_download.addEventListener("click", ()=>{
     ]);    
 })
 
-async function jsonDownload(){
+function jsonDownload(){
   LOG("Downloading map from jsonbin.io ...",BLUE)
   NOTE(LANG.fenster.download_from_jsonbin + "jsonbin.io ...");
   curtain.style.display = "block";
@@ -993,8 +977,7 @@ async function jsonDownload(){
         setLocation("?id="+jsonbin_id);      
         div_filename.textContent = jsonbin_id;
         
-        await idb.write_to_baze();      
-        
+        await idb.write_to_baze();        
         MapChoise(arrSector[0].os); //определяем вулкан или водопад
         await loadingImages();
         sceneFillSectorAll();

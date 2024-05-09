@@ -49,7 +49,7 @@ main {
 	aspect-ratio: 8/6 ;	
 	outline: 1px solid var(--dark);
 	border-radius: 1px;
-	box-shadow: -1px -1px 3px var(--light);
+	box-shadow: var(--shadow-light);
 	overflow: hidden;
 	display: grid;
 	place-items: center;	
@@ -237,7 +237,7 @@ button:hover::after {
 [data-text]:hover::after { 
 	content: attr(data-text);	
 	width: 80px;
-	min-height: 10px;
+	min-height: 20px;
 	padding: 3px;
 	z-index: 3;
 	font-size: 12px;
@@ -311,36 +311,75 @@ button:disabled {
 	}
 }
 
-.anim-copy {
-	transition-duration: 1000ms;
-	transition-timing-function: linear;
-	transform: scale(0.1);
-	transform-origin: 99.2% 0.8%;
-}
-
 
 /*************** монитор буфера обмена ***********************/
-.monitor {
+.clipboard {
 	display: none;
 	position: absolute;
 	top: 5px;
 	right: 5px;
 	width: 80px;
-	height: 60px;
-	background-color: var(--light);
-	border: 3px double var(--dark);
+	height: 60px;	
+	border: 1px solid var(--light);
 	border-radius: 2px;
+	box-shadow: var(--shadow-dark);
 }
-.monitor:hover::after { /* позиция заметки */
+.clipboard:hover{
+	width: 240px;
+	height: 180px;
+}
+.clipboard:hover::after { /* позиция заметки */
 	position: absolute;
-	top: 60px;
-	left: -30px;
-	width: 100px;
+	top: 5px;
+	left: 5px;
+	width: 100px;		
 }
-.monitor img {
+.clipboard img {
 	position: relative;
 	width: 100%;
 	height: 100%;
+}
+
+.transit_clipboard {
+	transition-duration: 1000ms;
+	transition-timing-function: linear;
+	transform: scale(0.08);
+	transform-origin: 99.2% 0.8%;
+}
+
+/*************** монитор imgbb ***********************/
+.monitor_imgbb {
+	display: none;
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+	width: 80px;
+	height: 60px;	
+	border: 1px solid var(--light);
+	border-radius: 2px;
+	box-shadow: var(--shadow-dark);
+}
+.monitor_imgbb:hover{
+	width: 240px;
+	height: 180px;
+}
+.monitor_imgbb:hover::after { /* позиция заметки */
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	width: 100px;		
+}
+.monitor_imgbb img {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+.transit_monitor_imgbb {
+	transition-duration: 1000ms;
+	transition-timing-function: linear;
+	transform: scale(0.08);
+	transform-origin: 99.2% 99.2%;
 }
 
 
