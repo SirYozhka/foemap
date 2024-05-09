@@ -5,7 +5,8 @@ class ModalFenster {
   m_controls = document.querySelector(".modal_controls"); //блок кнопок
   m_buttons = document.querySelectorAll(".modal_button"); //кнопки
   m_callbacks = []; //при инициализации создать пустые колбэки 
-  m_ctrl = false;  
+  m_ctrl = false;
+  closed = ()=>{};
 
   constructor() {
     for (let i = 0; i < this.m_buttons.length; i++) {
@@ -27,7 +28,7 @@ class ModalFenster {
     });
     this.m_curtain.addEventListener("click", () => { //клик по штоке - закрыть окно
       this.close();
-    });
+    });       
   }
 
   open(title, body, buttons) {
@@ -60,7 +61,8 @@ class ModalFenster {
     this.m_open = false;    
     this.m_curtain.style.display = "none";
     this.m_window.style.display = "none";
-    NOTE("");
+    NOTE("");    
+    this.closed();    
   }
 }
 

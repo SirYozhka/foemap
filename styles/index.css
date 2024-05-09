@@ -534,12 +534,12 @@ button:disabled {
 }
 
 
-/*************** модальное окно prompt ***********************/
+/*************** модальное окно ***********************/
 div.modal_window{	
 	width: auto;
 	min-width: 200px;
     height: auto;
-	min-height: 150px;
+	min-height: 100px;
 	position: absolute;
 	top: 50%;	
     left: 50%;
@@ -604,7 +604,33 @@ div.modal_controls button{
 	cursor: pointer;
 }
 
-
+/************* input range ***********************************/
+input[type="range"]{
+	appearance: none;
+	width: 100%;
+	height: 100px;	
+	background-color: transparent;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+	height: 20px;
+	appearance: none;		
+	background: linear-gradient(90deg, 
+	hsl(0, 90%, 10%), 
+	hsl(90, 90%, 10%), 
+	hsl(180, 90%, 10%), 
+	hsl(270, 90%, 10%), 
+	hsl(360, 90%, 10%));
+}
+input[type="range"]::-webkit-slider-thumb {	
+	appearance: none;
+	width: 10px;
+	height: 40px;
+	border-radius: 0%; 
+	background: var(--light);
+	border: 1px solid var(--dark);
+	cursor: pointer;
+	transform: translate(0px, -10px);
+}
 
 
 /********************* лог ********************************/

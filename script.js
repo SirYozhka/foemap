@@ -1054,20 +1054,16 @@ const Language = {
 
 /******************** установка цветовой схемы  *******************/
 document.querySelector(".btn_theme").addEventListener("click", ()=>{  
-  ColorTheme.change();
-  sceneDraw();
+  SetColorTheme();  
 });
 
 const ColorTheme = {
-  hue: Number(window.localStorage.getItem("pbgmap_theme")) || 20,
-  change(){        
-    this.hue +=20;
-    if (this.hue > 360) this.hue = 20; 
-    this.set();
+  hue: Number(window.localStorage.getItem("pbgmap_theme")) || 20,  
+  save(){
     window.localStorage.setItem("pbgmap_theme", this.hue);    
   },
-  set(){         
-    g_color = hslset(this.hue);
+  set(hue = this.hue){
+    g_color = hslset(hue);
     document.documentElement.style.setProperty("--dark", g_color.dark);
     document.documentElement.style.setProperty("--light", g_color.light);    
   }
@@ -1078,6 +1074,24 @@ const hslset = (hue) => ({
   dark: "hsl(" + hue + ", 90%, 10%)"
 })
 
+function SetColorTheme(){
+  fenster.open(
+    "Select color theme",
+    "<div style='text-align:center; width:300px;'> <input type='range' min='0' max='360' step='10' /> </div> "        
+  );
+  //todo fenster.m_window.style.transform = "translate(-50%, -50%)";
+  let inp_range = document.querySelector('input[type="range"]');
+  inp_range.value = ColorTheme.hue;
+  inp_range.oninput = (e) => {   
+    let hue = e.target.value;
+    ColorTheme.hue = hue;
+    ColorTheme.set(hue);
+  }
+  fenster.closed = () => {
+    ColorTheme.save();
+    sceneDraw();
+  };
+}
 
 /**************** подгрузка содержимого help.html (из скрытого фрейма) ********************/
 const div_helpbox = document.getElementById("helpbox");
@@ -1089,7 +1103,6 @@ div_helpbox.addEventListener("load", (event)=>{
 document.querySelector(".btn_help").addEventListener("click", ()=>{     // показать/скрыть help 
   fenster.open(LANG.fenster.help_message, helpHTML);
 })
-
 
 
 /******************************************************************
@@ -1163,10 +1176,7 @@ const test = document.querySelector(".btn_test");
 //test.style.visibility = "visible";  //todo закоментировать
 test.addEventListener("click", async ()=>{  
   DBG("Test start");  
-  fenster.open("DEBUG","Click OK to start test", [ { name:"OK", callback: ()=>{  
-    //тест после подтверждения
-    DBG("Test finish");    
-  }}]);
+  
 });
 
 //вывод в логи тестового сообщения
