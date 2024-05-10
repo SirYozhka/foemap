@@ -1029,6 +1029,7 @@ btn_language.addEventListener("click", ()=>{Language.change()});
 
 const Language = {  
   name: ["en","ru"],
+  fullname: ["English","Russian"],
   n: Number(window.localStorage.getItem("pbgmap_lang")) || 0,
   async change(){        
     this.n++;
@@ -1037,7 +1038,7 @@ const Language = {
     this.set();
   },
   async set(){            
-    btn_language.textContent = this.name[Language.n];
+    btn_language.textContent = this.fullname[Language.n];
     LANG = await loadJson("lang/" + this.name[this.n] + ".json");
     { //обновление сообщений и хэлпа
       document.querySelectorAll('button[class^="btn_"]').forEach((btn)=>{;   //https://www.w3.org/TR/selectors-3/#selectors
@@ -1047,6 +1048,7 @@ const Language = {
       });
       div_helpbox.src = "help_"+ this.name[this.n] +".html";         
       NOTE("..."); //просто очистить строку подсказок
+      LOG(this.fullname[Language.n]+ " language selected");
     }    
   }
 }
