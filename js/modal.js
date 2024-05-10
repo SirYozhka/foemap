@@ -62,7 +62,7 @@ class ModalFenster {
     this.m_curtain.style.display = "none";
     this.m_window.style.display = "none";
     NOTE("");    
-    this.closed();    
+    this.closed();   
   }
 }
 

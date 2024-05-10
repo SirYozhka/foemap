@@ -1077,10 +1077,10 @@ const hslset = (hue) => ({
 function SetColorTheme(){
   fenster.open(
     "Select color theme",
-    "<div style='text-align:center; width:300px;'> <input type='range' min='0' max='360' step='10' /> </div> "        
+    "<div style='text-align:center; width:300px;'> <input type='range' id='theme_clr' min='0' max='360' step='10' /> </div> "        
   );
-  //todo fenster.m_window.style.transform = "translate(-50%, -50%)";
-  let inp_range = document.querySelector('input[type="range"]');
+  //нельзя двигать - трудно восстановить! fenster.m_window.style.transform = "translate(100px, -300px)";
+  let inp_range = document.querySelector('#theme_clr');
   inp_range.value = ColorTheme.hue;
   inp_range.oninput = (e) => {   
     let hue = e.target.value;
@@ -1088,8 +1088,8 @@ function SetColorTheme(){
     ColorTheme.set(hue);
   }
   fenster.closed = () => {
-    ColorTheme.save();
-    sceneDraw();
+    ColorTheme.save();    
+    sceneDraw();    
   };
 }
 
@@ -1129,7 +1129,7 @@ function NOTE(message, clr="var(--dark)") {  //область вывода (дл
 //вывод логов на экран (цвет сообщений по умолчанию - жёлтый)
 function LOG(message, color=YELLOW) {
   let p_msg = document.createElement("p");
-  document.querySelector("#log-box").appendChild(p_msg);
+  document.querySelector("#log_box").appendChild(p_msg);
   setTimeout(()=>{ //чтобы предварительно сработала анимация затенения в css
     p_msg.textContent = message;
     p_msg.style.color = color;
@@ -1149,9 +1149,10 @@ async function writeClipboardText(text) {
 
 //добавить параметр id в строку запроса htpp
 function setLocation(state){  
-  let currentUrl = window.location.origin;
+  let origin = window.location.origin;
+  let pathname = window.location.pathname;
   try {    
-    window.history.replaceState({id: state}, null, currentUrl + '/' +state);
+    window.history.replaceState({id: state}, null, origin + pathname + state);
   } catch (error) {
     LOG("Error: state is illegal, ", error);
   }
