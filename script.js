@@ -1149,10 +1149,10 @@ async function writeClipboardText(text) {
 
 //добавить параметр id в строку запроса htpp
 function setLocation(state){  
-  let origin = window.location.origin;
-  let pathname = window.location.pathname;
+  let url = window.location.origin + window.location.pathname;
+  console.log(url);
   try {    
-    window.history.replaceState({id: state}, null, origin + pathname + state);
+    window.history.replaceState({id: state}, null, url + state);
   } catch (error) {
     LOG("Error: state is illegal, ", error);
   }
