@@ -4,11 +4,8 @@ html {
 	line-height: 1.2;
 }
 
-:root{
-	--container-height: max(calc(100vh - 65px), 600px);
-}
-
 body{
+	--container-height: max(calc(100vh - 65px), 600px);
 	height: max(calc(var(--container-height) + 59px), calc(100vh - 5px));
 	width: calc(var(--container-height) * 8 / 6);
 	margin: 2px auto;
@@ -538,8 +535,7 @@ button:disabled {
 div.modal_window{	
 	width: auto;
 	min-width: 200px;
-    height: auto;
-	min-height: 100px;
+    height: auto;	
 	position: absolute;
 	top: 50%;	
     left: 50%;
@@ -554,7 +550,7 @@ div.modal_window{
     justify-content: space-between; 
     align-items: center;
 	cursor: auto;	
-	font-size: 16px;
+	font-size: 14px;
 }
 
 div.modal_header{
@@ -630,6 +626,11 @@ div.modal_controls button{
 	border: 1px solid var(--dark);
 	cursor: pointer;
 	transform: translate(0px, -10px);
+}
+/******** выбор цветовой схемы input[type="range"] ******************/
+#bgr_clr{	
+	width: 100%;	
+	background-color: transparent;
 }
 
 

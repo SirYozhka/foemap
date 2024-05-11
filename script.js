@@ -205,18 +205,19 @@ var arrSector = []; //оперативное хранилище данных к�
 window.addEventListener("load", async () => {
   LOG("Initialization ..." , BLUE);
   dimension.set();
+  ColorTheme.set();
+  BackgroundFillColor.set();
+  
+  await Language.set();
 
   editor = new FormEditor(); //форма редактирования сектора
   await idb.open();  
-
-  ColorTheme.set();
-  await Language.set();  
   
   const searchParams = new URLSearchParams(window.location.search); //параметры строки запроса
   try {
     if (searchParams.has('id')) {
       jsonbin_id = searchParams.get('id');
-      await jsonDownload();    
+      jsonDownload();    
     } else {
       if (idb.empty) { //при первом запуске выбрать карту     
         btn_new.click();    
@@ -228,10 +229,10 @@ window.addEventListener("load", async () => {
         sceneDraw();    
       }  
     }
-    LOG("READY");
+    LOG(".".repeat(40));
     NOTE(LANG.note.common_message);
   } catch {    
-    NOTE("");
+    NOTE("...");
   }
    
 })
@@ -496,17 +497,18 @@ ctx.textRendering = "geometricPrecision";
 ctx.shadowBlur = 3;
 
 function sceneDraw() {    
-  ctx.fillStyle = "transparent";
-  ctx.shadowColor = "transparent";
-  
+  ctx.shadowColor = "transparent"; //иначе заливает фон тоже
+
   //фон
   ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = g_bgrfillcolor; // "rgba(250,250,250,0.3)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);  
   
   //карта секторов  
   bufer_ctx.putImageData(data_scene, 0, 0);
   ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
   
-  //границы секторов  
+  //границы секторов    
   ctx.shadowColor = g_color.light;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;  
@@ -518,7 +520,7 @@ function sceneDraw() {
     let y = arrSector[s].y;        
     if (arrSector[s].os==0)  //если это штаб то сместить к краю по вертикали
       y -= Math.floor((IMG_HEGHT/2-y)/15);
-    let osadki = (arrSector[s].os==0) ? "штаб" : "🞇".repeat(arrSector[s].os); //🞅🞇o
+    let osadki = (arrSector[s].os==0) ? "" : "O".repeat(arrSector[s].os); //🞅🞇o
     
     if (arrSector[s].color == selected_color) { //сектора выбранной гильдии
       ctx.fillStyle = g_color.light;
@@ -1056,13 +1058,29 @@ const Language = {
 
 /******************** установка цветовой схемы  *******************/
 document.querySelector(".btn_theme").addEventListener("click", ()=>{  
-  SetColorTheme();  
+  fenster.open(
+    "Select color theme",
+    "<div style='text-align:center; width:300px;'> <input type='range' id='theme_clr' min='0' max='360' step='10' /> </div> "        
+  );
+  let inp_range = document.querySelector('#theme_clr');
+  inp_range.value = ColorTheme.hue;
+  inp_range.oninput = (e) => {   
+    let hue = e.target.value;
+    ColorTheme.hue = hue;
+    ColorTheme.set(hue);
+  }
+  fenster.closed = () => {
+    ColorTheme.save();    
+    sceneDraw();    
+    fenster.closed = () => {}
+  }; 
 });
 
 const ColorTheme = {
   hue: Number(window.localStorage.getItem("pbgmap_theme")) || 20,  
   save(){
-    window.localStorage.setItem("pbgmap_theme", this.hue);    
+    window.localStorage.setItem("pbgmap_theme", this.hue);  
+    LOG("Color theme changed and saved.");
   },
   set(hue = this.hue){
     g_color = hslset(hue);
@@ -1076,24 +1094,40 @@ const hslset = (hue) => ({
   dark: "hsl(" + hue + ", 90%, 10%)"
 })
 
-function SetColorTheme(){
+
+/************************* цвет заливки фона *************************/
+var g_bgrfillcolor; // цвет заливки фона  "rgba(250,250,250,0.3)";
+
+document.querySelector(".btn_bgrclr").addEventListener("click", ()=>{  
   fenster.open(
-    "Select color theme",
-    "<div style='text-align:center; width:300px;'> <input type='range' id='theme_clr' min='0' max='360' step='10' /> </div> "        
+    "Select background color",
+    "<div style='text-align:center; width:300px;'> <input type='range' id='bgr_clr' min='0' max='1.0' step='0.1' /> </div> "
   );
-  //нельзя двигать - трудно восстановить! fenster.m_window.style.transform = "translate(100px, -300px)";
-  let inp_range = document.querySelector('#theme_clr');
-  inp_range.value = ColorTheme.hue;
+  let inp_range = document.querySelector('#bgr_clr');
+  inp_range.value = BackgroundFillColor.alpha;
   inp_range.oninput = (e) => {   
-    let hue = e.target.value;
-    ColorTheme.hue = hue;
-    ColorTheme.set(hue);
+    let alpha = e.target.value;
+    BackgroundFillColor.alpha = alpha;
+    BackgroundFillColor.set(alpha);
+    sceneDraw();
   }
   fenster.closed = () => {
-    ColorTheme.save();    
-    sceneDraw();    
-  };
-}
+    BackgroundFillColor.save();        
+    fenster.closed = () => {}
+  }; 
+});
+
+const BackgroundFillColor = {
+  alpha: Number(window.localStorage.getItem("pbgmap_alpha")) || 0.0,  
+  save(){
+    window.localStorage.setItem("pbgmap_alpha", this.alpha);  
+    LOG("Color of background changed and saved.");
+  },
+  set(alpha = this.alpha){
+    g_bgrfillcolor = `rgba(250,250,250,${alpha})`;    
+  }
+};
+
 
 /**************** подгрузка содержимого help.html (из скрытого фрейма) ********************/
 const div_helpbox = document.getElementById("helpbox");

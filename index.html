@@ -18,11 +18,12 @@
 
 <body>
   
-  <div class="curtain" style="display: none;">
-    <!-- затенённая штора на весь body с блокировкой нажатий при редактировании и других операциях -->
-  </div>
   
   <main>
+    <div class="curtain" style="display: none;">
+      <!-- затенённая штора на весь main с блокировкой нажатий при редактировании и других операциях -->
+    </div>
+
 
     <div class="button_controls" translate="no" class="notranslate">
       <div class="menu_line">
@@ -35,8 +36,8 @@
             <button class="btn_clear">Clear </button>
           </div>
         </div>
-        <div class="menu" style="display: none;">
-          <div class="menu_button">file</div>
+        <div class="menu" style="display: block;">
+          <div class="menu_button">File</div>
           <div class="menu_content">
             <button class="btn_save">Save</button>
             <button class="btn_load">Open</button>
@@ -63,6 +64,7 @@
           <div class="menu_content">
             <button class="btn_language">...</button>
             <button class="btn_theme">Theme</button>
+            <button class="btn_bgrclr">BgrColor</button>
             <button class="btn_help">About</button>
           </div>
         </div>
