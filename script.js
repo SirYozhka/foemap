@@ -49,8 +49,9 @@ var editor; // = new FormEditor(); //форма редактирования с�
 
 var map_link; //полная ссылка на загруженную карту на https://imgbb.com
 var jsonbin_id; //id файла карты для работы с https://jsonbin.io   "661f8a66ad19ca34f85b5e88";  
-var LANG;    //Object - языковый пакет
+var json_filename; //имя открытого последний раз файла
 var helpHTML; //содержимое help в формате html
+var LANG;    //Object - языковый пакет
 
 var g_color; //цветовая палитра
 
@@ -490,10 +491,13 @@ class FormEditor{
 
 
 /************************ отрисовка сцены *********************************/
+ctx.lineHeight = 14; //добавил своё свойство
 ctx.textAlign = "center";
-ctx.font = "bold 14px arial";
+ctx.font = `bold ${ctx.lineHeight}px sans-serif`;
 ctx.fontStretch = "ultra-condensed"; 
-ctx.textRendering = "geometricPrecision";
+ctx.textRendering = "optimizeLegibility";
+ctx.shadowOffsetX = 0;
+ctx.shadowOffsetY = 0; 
 ctx.shadowBlur = 3;
 
 function sceneDraw() {    
@@ -509,37 +513,55 @@ function sceneDraw() {
   ctx.drawImage(bufer_canvas, 0, 0, canvas.width, canvas.height);
   
   //границы секторов    
-  ctx.shadowColor = g_color.light;
-  ctx.shadowOffsetX = 0;
-  ctx.shadowOffsetY = 0;  
+  ctx.shadowColor = g_color.light;   
   ctx.drawImage(img_borders, 0, 0, canvas.width, canvas.height);  
   
   //подписи секторов
-  for (let s = 1; s <= nsec; s++) { 
-    let x = arrSector[s].x;
-    let y = arrSector[s].y;        
-    if (arrSector[s].os==0)  //если это штаб то сместить к краю по вертикали
-      y -= Math.floor((IMG_HEGHT/2-y)/15);
-    let osadki = (arrSector[s].os==0) ? "" : "O".repeat(arrSector[s].os); //🞅🞇o
-    
-    if (arrSector[s].color == selected_color) { //сектора выбранной гильдии
+  for (let s = 1; s <= nsec; s++) {     
+    if (arrSector[s].color == selected_color) { //сектора выбранной гильдии      
       ctx.fillStyle = g_color.light;
-      ctx.shadowColor = g_color.dark;
+      ctx.shadowColor = "black";
     } else { //остальные сектора
-      ctx.fillStyle = g_color.dark;
-      ctx.shadowColor = g_color.light;
+      ctx.fillStyle = g_color.dark; 
+      ctx.fillStyle = "black";      
+      ctx.shadowColor = "white";
     }
-    //подписи сектора (для "усиления" тени несколько прорисовок со смещением тени)
-    ctx.shadowOffsetX = 1;
-    ctx.shadowOffsetY = 1;
-    ctx.fillText(arrSector[s].name, x, y);    
-    ctx.fillText(osadki, x, y + 14);
-    ctx.shadowOffsetX = -1;
-    ctx.shadowOffsetY = -1;
-    ctx.fillText(arrSector[s].name, x, y);
-    ctx.fillText(osadki, x, y + 14);     
-  }
+        
+    let x = arrSector[s].x;
+    let y = arrSector[s].y;  
+    ctx.dy=0; //смещение строк при выводе  
+
+    if (arrSector[s].os ==0){ //штаб сместить
+      x+=(x-IMG_WITH)/20;
+      y+=(y-IMG_HEGHT)/20;
+    }
+        
+    let osadki = (arrSector[s].os==0) ? "" : "O".repeat(arrSector[s].os); //🞅🞇o
+    ctx.printText(arrSector[s].name, x, y);           
+    ctx.printText(osadki, x, y); //вывести в последней строке
+
+  }  
+}
+
+ctx.printText = (text, x, y)=>{   //доп. метод вывода текста построчно
+  let words = text.trim().split(/ +/g); //в массив (удаляя ВСЕ пробелы)  
+  let max = 50; //максимальная ширина надписи в пикселях
+  let line = words[0];
+  for(let i=1; i<words.length; i++) {    
+    let testline = line + " " +words[i];
+    if (ctx.measureText(testline).width > max){
+      prnLine(line, x, y);
+      line = words[i];
+    } else {
+      line = testline;
+    }
+  };
+  prnLine(line, x, y);
   
+  function prnLine(line, x, y){
+    for(let i=1; i<5; i++) ctx.fillText(line, x, y + ctx.dy); //для "усиления" контраста несколько прорисовок  
+    ctx.dy += ctx.lineHeight;
+  }
 }
 
 
@@ -669,7 +691,7 @@ async function FileSave() {
   curtain.style.display = "block";
   NOTE(LANG.note.save_map_to_file);  
   
-  let filename = genDateString();
+  let filename = json_filename || genDateString();
   let fileHandler;  
   try {
     const options = {
@@ -680,13 +702,15 @@ async function FileSave() {
         accept: {'text/plain': '.map'},
       }],
     };
-    fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла  
-    spinner.style.display = "block";
+    fileHandler = await window.showSaveFilePicker(options); //получение дескриптора файла 
     filename = fileHandler.name;
+
+    spinner.style.display = "block";
     const writable = await fileHandler.createWritable();
     const content = JSON.stringify(arrSector, null, "\t");
     await writable.write(content);
     await writable.close();
+    json_filename = filename;
     LOG("File "+filename+" saved.");
     NOTE('"' + filename + '" ' + LANG.note.can_send_another_player);    
   } catch (err) {     
@@ -716,13 +740,17 @@ async function FileLoad() {
   
   curtain.style.display = "block"; //шторка
   NOTE(LANG.note.select_file);
+  let fileHandler;
+  let filename;
   try{
     const options = {
       multiple: false,
       types: [{accept: {'text/plain': '.map' }}, ],
       excludeAcceptAllOption: true
     };
-    let fileHandler = await window.showOpenFilePicker(options); //окно для выбора клиентом локального файла
+    fileHandler = await window.showOpenFilePicker(options); //окно для выбора клиентом локального файла
+    filename = fileHandler[0].name;
+
     spinner.style.display = "block";
     LOG("Downloading map ...", BLUE);
     let file = await fileHandler[0].getFile();
@@ -739,6 +767,7 @@ async function FileLoad() {
     div_filename.textContent = "";
     setLocation("");
 
+    json_filename = filename;    
     LOG("Map loaded.");
     NOTE(LANG.note.map_loaded);
   } catch(err) { //если окно просто закрыли
@@ -1058,6 +1087,7 @@ const Language = {
 
 /******************** установка цветовой схемы  *******************/
 document.querySelector(".btn_theme").addEventListener("click", ()=>{  
+  document.documentElement.style.setProperty("--curtain-endopacity", 0);  //не затемнять фон
   fenster.open(
     "Select color theme",
     "<div style='text-align:center; width:300px;'> <input type='range' id='theme_clr' min='0' max='360' step='10' /> </div> "        
@@ -1072,7 +1102,8 @@ document.querySelector(".btn_theme").addEventListener("click", ()=>{
   fenster.closed = () => {
     ColorTheme.save();    
     sceneDraw();    
-    fenster.closed = () => {}
+    document.documentElement.style.setProperty("--curtain-endopacity", 0.7);  //восстановить
+    fenster.closed = () => {};
   }; 
 });
 
@@ -1090,8 +1121,8 @@ const ColorTheme = {
 };
 
 const hslset = (hue) => ({  
-  light: "hsl(" + hue + ", 90%, 90%)",
-  dark: "hsl(" + hue + ", 90%, 10%)"
+  light: "hsl(" + hue + ", 90%, 95%)",
+  dark: "hsl(" + hue + ", 90%, 5%)"
 })
 
 
@@ -1099,9 +1130,10 @@ const hslset = (hue) => ({
 var g_bgrfillcolor; // цвет заливки фона  "rgba(250,250,250,0.3)";
 
 document.querySelector(".btn_bgrclr").addEventListener("click", ()=>{  
+  document.documentElement.style.setProperty("--curtain-endopacity", 0);  //не затемнять фон
   fenster.open(
     "Select background color",
-    "<div style='text-align:center; width:300px;'> <input type='range' id='bgr_clr' min='0' max='1.0' step='0.1' /> </div> "
+    "<div style='text-align:center; width:300px;'> <input type='range' id='bgr_clr' min='0' max='0.5' step='0.02' /> </div> "
   );
   let inp_range = document.querySelector('#bgr_clr');
   inp_range.value = BackgroundFillColor.alpha;
@@ -1113,7 +1145,8 @@ document.querySelector(".btn_bgrclr").addEventListener("click", ()=>{
   }
   fenster.closed = () => {
     BackgroundFillColor.save();        
-    fenster.closed = () => {}
+    fenster.closed = () => {};
+    document.documentElement.style.setProperty("--curtain-endopacity", 0.7);  
   }; 
 });
 
@@ -1185,8 +1218,7 @@ async function writeClipboardText(text) {
 
 //добавить параметр id в строку запроса htpp
 function setLocation(state){  
-  let url = window.location.origin + window.location.pathname;
-  console.log(url);
+  let url = window.location.origin + window.location.pathname;  
   try {    
     window.history.replaceState({id: state}, null, url + state);
   } catch (error) {
