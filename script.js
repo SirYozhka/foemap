@@ -11,7 +11,7 @@ const RED = "rgb(255,150,150)"; // ошибки
 const container = document.querySelector(".container"); //контейнер сцены
 const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
 const spinner = document.querySelector(".spinner"); //индикатор загрузки
-const div_filename = document.querySelector(".file-name");
+const div_maintitle = document.querySelector(".main_title");
 
 const canvas = document.querySelector("canvas"); // "экранный" канвас
 const ctx = canvas.getContext("2d", { alpha: false });
@@ -500,7 +500,10 @@ ctx.shadowOffsetX = 0;
 ctx.shadowOffsetY = 0; 
 ctx.shadowBlur = 3;
 
-function sceneDraw() {    
+function sceneDraw() { 
+  let dx = (nmap==1? 10 : 30);
+  let dy = (nmap==1? 10 : 30)
+  
   ctx.shadowColor = "transparent"; //иначе заливает фон тоже
 
   //фон
@@ -529,23 +532,23 @@ function sceneDraw() {
         
     let x = arrSector[s].x;
     let y = arrSector[s].y;  
-    ctx.dy=0; //смещение строк при выводе  
-
-    if (arrSector[s].os ==0){ //штаб сместить
-      x+=(x-IMG_WITH)/20;
-      y+=(y-IMG_HEGHT)/20;
+    
+    if (arrSector[s].os ==0){ //штаб сместить к краю
+      x+=(x-IMG_WITH/2)/dx;
+      y+=(y-IMG_HEGHT/2)/dy;            
     }
-        
+    
     let osadki = (arrSector[s].os==0) ? "" : "O".repeat(arrSector[s].os); //🞅🞇o
+    ctx.dy = 0; //смещение строк при выводе  
     ctx.printText(arrSector[s].name, x, y);           
     ctx.printText(osadki, x, y); //вывести в последней строке
 
   }  
 }
 
-ctx.printText = (text, x, y)=>{   //доп. метод вывода текста построчно
-  let words = text.trim().split(/ +/g); //в массив (удаляя ВСЕ пробелы)  
-  let max = 50; //максимальная ширина надписи в пикселях
+ctx.printText = (text, x, y)=>{   //пользовательский метод вывода текста построчно
+  let words = text.trim().split(/ +/g); //в массив (удаляя все пробелы)  
+  let max = 100; //максимальная ширина надписи в пикселях
   let line = words[0];
   for(let i=1; i<words.length; i++) {    
     let testline = line + " " +words[i];
@@ -630,7 +633,7 @@ async function CreateNewMap(map) {
 
   jsonbin_id = null;
   setLocation("");
-  div_filename.textContent = "";  
+  div_maintitle.textContent = "";  
   
   setTimeout(() => { //перерисовать сцену в середине анимации (общая длительность 1000ms)
     selected_color=null; //снять выбор штаба
@@ -764,11 +767,11 @@ async function FileLoad() {
     sceneDraw();       
 
     jsonbin_id = NaN;
-    div_filename.textContent = "";
+    div_maintitle.textContent = "";
     setLocation("");
 
     json_filename = filename;    
-    LOG("Map loaded.");
+    LOG("Map loaded from file " + filename);
     NOTE(LANG.note.map_loaded);
   } catch(err) { //если окно просто закрыли
     if (err.name == 'AbortError') { //если окно просто закрыли
@@ -953,7 +956,7 @@ function jsonUpload() { //upload to  https://jsonbin.io/
     if (request.readyState == XMLHttpRequest.DONE) {
       let responce = JSON.parse(request.responseText);
       if (!jsonbin_id) jsonbin_id = responce.metadata.id;        
-      div_filename.textContent = jsonbin_id;
+      div_maintitle.textContent = jsonbin_id;
       let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
       let linkHTML = "<a target='_blank' href='" + link + "'> " + link +" </a>";
       setLocation("?id="+jsonbin_id);
@@ -1006,7 +1009,7 @@ function jsonDownload(){
         LOG("Map downloaded from jsonbin.io");
         NOTE(LANG.note.map_loaded);         
         setLocation("?id="+jsonbin_id);      
-        div_filename.textContent = jsonbin_id;
+        div_maintitle.textContent = jsonbin_id;
         
         await idb.write_to_baze();        
         MapChoise(arrSector[0].os); //определяем вулкан или водопад
@@ -1151,7 +1154,7 @@ document.querySelector(".btn_bgrclr").addEventListener("click", ()=>{
 });
 
 const BackgroundFillColor = {
-  alpha: Number(window.localStorage.getItem("pbgmap_alpha")) || 0.0,  
+  alpha: Number(window.localStorage.getItem("pbgmap_alpha")) || 0.3,  
   save(){
     window.localStorage.setItem("pbgmap_alpha", this.alpha);  
     LOG("Color of background changed and saved.");

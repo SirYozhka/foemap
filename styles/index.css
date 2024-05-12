@@ -117,11 +117,7 @@ div.spinner{
 }
 
 /******************** file name *************************/
-.file-name{
-	color: var(--light);
-	font-stretch: extra-expanded;
-}
-.file-name a{
+.main_title{
 	color: var(--light);
 	font-stretch: extra-expanded;
 }
