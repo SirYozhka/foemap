@@ -223,14 +223,11 @@ button:hover {
 	box-shadow: var(--shadow-light-strong);
 }
 
-button:hover::after { 	
-	position: absolute;
-	right: 15px;
-	top: 25px;
-}
-
 /********* выскакивающая заметка / примечание (медленно гаснет через 4 сек) **********/
-[data-text]:hover::after { 
+button[data-text]:hover::after { 
+	position: absolute;
+	right: 15px; /*todo слева справа ???????*/
+	top: 25px;
 	content: attr(data-text);	
 	width: 80px;
 	min-height: 20px;
@@ -252,6 +249,11 @@ button:hover::after {
 	animation-fill-mode: forwards;
 	animation-iteration-count: 1;
 } 
+
+.menu_line:last-of-type button[data-text]:hover::after { 	
+	left: -45px; 
+}
+
 
 @keyframes msg_close {
 	to {
