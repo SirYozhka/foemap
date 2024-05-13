@@ -226,7 +226,7 @@ button:hover {
 /********* выскакивающая заметка / примечание (медленно гаснет через 4 сек) **********/
 button[data-text]:hover::after { 
 	position: absolute;
-	right: 15px; /*todo слева справа ???????*/
+	right: 15px;
 	top: 25px;
 	content: attr(data-text);	
 	width: 80px;
@@ -250,7 +250,7 @@ button[data-text]:hover::after {
 	animation-iteration-count: 1;
 } 
 
-.menu_line:last-of-type button[data-text]:hover::after { 	
+.menu_line:last-of-type button[data-text]:hover::after { /* коррекция позиции примечания для правого меню */	
 	left: -45px; 
 }
 
@@ -602,32 +602,51 @@ div.modal_controls button{
 }
 
 /******** выбор цветовой схемы input[type="range"] ******************/
-#theme_clr{
+.form_colortheme{
+	width: 250px;
+	display: flex;
+	flex-direction: column;
+}
+
+.form_colortheme label{
+	margin-top: 10px;
+}
+
+.form_colortheme input[type="range"]{
 	appearance: none;
-	width: 100%;
-	height: 100px;	
+	width: 100%;	
 	background-color: transparent;
 }
-#theme_clr::-webkit-slider-runnable-track {
-	height: 20px;
+.form_colortheme input[type="range"]::-webkit-slider-runnable-track {
 	appearance: none;		
-	background: linear-gradient(90deg, 
-	hsl(0, 90%, 10%), 
-	hsl(90, 90%, 10%), 
-	hsl(180, 90%, 10%), 
-	hsl(270, 90%, 10%), 
-	hsl(360, 90%, 10%));
+	height: 20px;
+	border: 1px solid var(--dark);
 }
-#theme_clr::-webkit-slider-thumb {	
+.form_colortheme input[type="range"]::-webkit-slider-thumb {	
 	appearance: none;
 	width: 10px;
-	height: 40px;
-	border-radius: 0%; 
+	height: 100%;
+	border-radius: 2px; 
 	background: var(--light);
 	border: 1px solid var(--dark);
-	cursor: pointer;
-	transform: translate(0px, -10px);
+	cursor: pointer;	
 }
+
+.inp_clr_temperature::-webkit-slider-runnable-track {
+	background: linear-gradient(90deg, 
+	hsl(0, 100%, 25%), 
+	hsl(90, 100%, 25%), 
+	hsl(180, 100%, 25%), 
+	hsl(270, 100%, 25%))	
+}
+
+.inp_clr_background::-webkit-slider-runnable-track {
+	background: linear-gradient(90deg, #333, #ddd);
+}
+
+
+
+
 /******** выбор цветовой схемы input[type="range"] ******************/
 #bgr_clr{	
 	width: 100%;	

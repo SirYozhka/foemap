@@ -53,7 +53,7 @@ var json_filename; //имя открытого последний раз фай�
 var helpHTML; //содержимое help в формате html
 var LANG;    //Object - языковый пакет
 
-var g_color; //цветовая палитра
+var g_color = {light:0,dark:0}; //цветовая палитра
 
 
 /******************** выбор карты **************************************/
@@ -524,10 +524,9 @@ function sceneDraw() {
     if (arrSector[s].color == selected_color) { //сектора выбранной гильдии      
       ctx.fillStyle = g_color.light;
       ctx.shadowColor = "black";
-    } else { //остальные сектора
-      ctx.fillStyle = g_color.dark; 
+    } else { //остальные сектора       
       ctx.fillStyle = "black";      
-      ctx.shadowColor = "white";
+      ctx.shadowColor = g_color.light;
     }
         
     let x = arrSector[s].x;
@@ -1089,20 +1088,41 @@ const Language = {
 
 
 /******************** установка цветовой схемы  *******************/
+var g_bgrfillcolor; // цвет заливки фона  "rgba(250,250,250,0.3)";
+
 document.querySelector(".btn_theme").addEventListener("click", ()=>{  
   document.documentElement.style.setProperty("--curtain-endopacity", 0);  //не затемнять фон
   fenster.open(
-    "Select color theme",
-    "<div style='text-align:center; width:300px;'> <input type='range' id='theme_clr' min='0' max='360' step='10' /> </div> "        
+    LANG.fenster.form_title_colortheme,
+    `<div class='form_colortheme'> 
+    <label>${LANG.fenster.inp_clr_background}
+    <input type='range' class='inp_clr_background' min='0' max='0.5' step='0.02' />
+    </label>
+    <label>${LANG.fenster.inp_clr_temperature}
+    <input type='range' class='inp_clr_temperature' min='0' max='270' step='10' /> 
+    </label>
+    </div>`
   );
-  let inp_range = document.querySelector('#theme_clr');
-  inp_range.value = ColorTheme.hue;
-  inp_range.oninput = (e) => {   
+
+  let inp_clrbgr = document.querySelector('.inp_clr_background');
+  inp_clrbgr.value = BackgroundFillColor.alpha;
+  inp_clrbgr.oninput = (e) => {   
+    let alpha = e.target.value;
+    BackgroundFillColor.alpha = alpha;
+    BackgroundFillColor.set(alpha);
+    sceneDraw();
+  }
+  
+  let inp_clrtemp = document.querySelector('.inp_clr_temperature');
+  inp_clrtemp.value = ColorTheme.hue;
+  inp_clrtemp.oninput = (e) => {   
     let hue = e.target.value;
     ColorTheme.hue = hue;
     ColorTheme.set(hue);
   }
+
   fenster.closed = () => {
+    BackgroundFillColor.save(); 
     ColorTheme.save();    
     sceneDraw();    
     document.documentElement.style.setProperty("--curtain-endopacity", 0.7);  //восстановить
@@ -1116,42 +1136,13 @@ const ColorTheme = {
     window.localStorage.setItem("pbgmap_theme", this.hue);  
     LOG("Color theme changed and saved.");
   },
-  set(hue = this.hue){
-    g_color = hslset(hue);
+  set(hue = this.hue){    
+    g_color.light = "hsl(" + hue + ", 100%, 95%)";
+    g_color.dark = "hsl(" + hue + ", 100%, 5%)";
     document.documentElement.style.setProperty("--dark", g_color.dark);
     document.documentElement.style.setProperty("--light", g_color.light);    
   }
 };
-
-const hslset = (hue) => ({  
-  light: "hsl(" + hue + ", 90%, 95%)",
-  dark: "hsl(" + hue + ", 90%, 5%)"
-})
-
-
-/************************* цвет заливки фона *************************/
-var g_bgrfillcolor; // цвет заливки фона  "rgba(250,250,250,0.3)";
-
-document.querySelector(".btn_bgrclr").addEventListener("click", ()=>{  
-  document.documentElement.style.setProperty("--curtain-endopacity", 0);  //не затемнять фон
-  fenster.open(
-    "Select background color",
-    "<div style='text-align:center; width:300px;'> <input type='range' id='bgr_clr' min='0' max='0.5' step='0.02' /> </div> "
-  );
-  let inp_range = document.querySelector('#bgr_clr');
-  inp_range.value = BackgroundFillColor.alpha;
-  inp_range.oninput = (e) => {   
-    let alpha = e.target.value;
-    BackgroundFillColor.alpha = alpha;
-    BackgroundFillColor.set(alpha);
-    sceneDraw();
-  }
-  fenster.closed = () => {
-    BackgroundFillColor.save();        
-    fenster.closed = () => {};
-    document.documentElement.style.setProperty("--curtain-endopacity", 0.7);  
-  }; 
-});
 
 const BackgroundFillColor = {
   alpha: Number(window.localStorage.getItem("pbgmap_alpha")) || 0.3,  

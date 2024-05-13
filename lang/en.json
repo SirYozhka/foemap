@@ -10,8 +10,7 @@
         "btn_imgsave": "save image to file",
         "btn_imgbb": "upload image to server imgbb.com",        
         "btn_help": "help, about",
-        "btn_theme": "change color theme",
-        "btn_bgrclr": "change brightness of background",
+        "btn_theme": "colors theme settings",        
         "btn_language": "change language"
     },
     "note":{
@@ -40,17 +39,20 @@
         "select_color": "Select the color of the headquarters."
     },
     "fenster":{
-        "create_map_title": "Creating a new map.",
+        "create_map_title": "Creating a new map ...",
         "create_map_message": "<div style='text-align:center;'><h2>Select NEW map</h2> <br> WARNING! All changes you entered will be lost. </div>",
         "vulkan": "VOLCANO",
         "waterfall": "WATERFALL",
 
-        "confirm": "Confirm action.",
+        "confirm": "Confirm action :",
         "clear_support": "Remove marking of “support” provinces? <br> (all headquarters will remain)",
 
         "download_from_jsonbin": "Downloading map from ",
 
-        "help_message": "Description, contact."
-
+        "help_message": "Description, contacts.",
+        
+        "form_title_colortheme": "Select color theme...",
+        "inp_clr_background": "Brightness of background:",
+        "inp_clr_temperature": "Color temperature:"
     }
 }
