@@ -1,5 +1,7 @@
 "use strict";
 
+import { ModalFenster } from "./js/modal.js";
+
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
 
@@ -46,7 +48,7 @@ const colors = [
 const img_background = new Image(); //фоновое изображение водопада/вулкана
 const img_borders = new Image(); //границы секторов
 const fenster = new ModalFenster(); //модальное окно
-const idb = new IndexedDB("foesectors", 5); //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
+var idb; //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
 var editor; // = new FormEditor(); //форма редактирования сектора
 
 var map_link; //полная ссылка на загруженную карту на https://imgbb.com
@@ -213,6 +215,7 @@ window.addEventListener("load", async () => {
   await Language.set();
 
   editor = new FormEditor(); //форма редактирования сектора
+  idb = new IndexedDB("foesectors", 5); //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
   await idb.open();
 
   const searchParams = new URLSearchParams(window.location.search); //параметры строки запроса
@@ -386,6 +389,131 @@ function fillPoint(adr, { r, g, b, a }) {
   data_scene.data[adr + 2] = b; //blue
   data_scene.data[adr + 3] = a; //alfa
 }
+
+/************* IndexedDB (хранение данных у клиента) *************************/
+class IndexedDB {
+  baze; //экземпляр объекта базы
+  empty = false; //база пустая (true будет при первом запуске или изменении версии)
+
+  constructor(name, ver) {
+    this.name = name || "foesectors"; //название базы
+    this.version = ver || 1; //версия базы
+  }
+
+  open() {
+    let newbaze = false;
+    return new Promise((resolve, reject) => {
+      let dbRequest = window.indexedDB.open(this.name, this.version);
+
+      dbRequest.onupgradeneeded = (event) => {
+        //создание базы при первом запуске ( изменении версии )
+        LOG("Database version " + this.version + " setup ...", BLUE);
+        let db = event.target.result;
+        if (db.objectStoreNames.contains("sectors"))
+          //если есть хранилище "sectors"
+          db.deleteObjectStore("sectors"); //проще удалить хранилище "sectors" (и создать заново)
+        db.createObjectStore("sectors", {
+          keyPath: "id",
+          autoIncrement: false,
+        });
+        newbaze = true;
+      };
+
+      dbRequest.onsuccess = async (event) => {
+        this.baze = event.target.result; //this.baze = dbRequest.result //то же самое
+        if (newbaze) {
+          //если создание (первый запуск программы или новая версия)
+          await this.create_new(); //заполнить нулями
+          this.empty = true;
+        } else {
+          await this.check_empty(); //проверить если база заполнена нулями
+        }
+        LOG("Database opened successfully.");
+        resolve();
+      };
+
+      dbRequest.onerror = () => {
+        LOG("ERROR! Database failed to open. Please, contact developer.", RED);
+        reject();
+      };
+    });
+  }
+
+  create_new() {
+    //заполнение базы нулями
+    return new Promise((resolve) => {
+      let txn = this.baze.transaction("sectors", "readwrite");
+      let store = txn.objectStore("sectors");
+      let request;
+      for (
+        let sec = 0;
+        sec <= 61;
+        sec++ //универсальный размер 61 сектор (для вулкана 61-й сектор пустой )
+      )
+        request = store.add({ id: sec, name: "", os: 0, color: 0 }); //заполняем базу нулями
+      request.onsuccess = () => {
+        LOG("Created new empty database");
+        resolve();
+      };
+    });
+  }
+
+  check_empty() {
+    return new Promise((resolve) => {
+      let txn = this.baze.transaction("sectors", "readonly");
+      let store = txn.objectStore("sectors"); //работаем с хранилищем "sectors"
+      let request = store.getAll(0);
+      request.onsuccess = (e) => {
+        let map = e.target.result;
+        this.empty = !map[0].os; //проверяем нулевую запись (os содержит номер карты)
+        resolve();
+      };
+    });
+  }
+
+  read_to_arr() {
+    //считываем базу в arrSector
+    return new Promise((resolve) => {
+      let txn = this.baze.transaction("sectors", "readonly");
+      let store = txn.objectStore("sectors"); //работаем с хранилищем "sectors"
+      store.getAll().onsuccess = (e) => {
+        arrSector = e.target.result; //считываем сразу всю базу
+        LOG("Database loaded.");
+        resolve();
+      };
+    });
+  }
+
+  write_to_baze() {
+    //заполняем базу из массива arrSector
+    return new Promise((resolve) => {
+      let txn = this.baze.transaction("sectors", "readwrite");
+      let store = txn.objectStore("sectors");
+      let request;
+      for (let sec = 0; sec <= 61; sec++) {
+        //для вулкана 61-й сектор пустой (размер базы тот же)
+        request = store.put(arrSector[sec]); //заполняем базу
+      }
+      request.onsuccess = () => {
+        LOG("Database writed.");
+        resolve();
+      };
+      request.onerror = () => {
+        LOG("ERROR writing baze: " + request.error, RED);
+        reject();
+      };
+    });
+  }
+
+  save_sector(sec) {
+    //записать(изменить) запись сектора sec из arrSector[sec]
+    var txn = this.baze.transaction("sectors", "readwrite");
+    let request = txn.objectStore("sectors").put(arrSector[sec]);
+    request.onerror = () => {
+      LOG("ERROR saving: " + request.error, RED);
+    };
+  }
+} //end class IndexedDB
 
 /****************** РЕДАКТОР подписи сектора ****************************/
 class FormEditor {
@@ -641,21 +769,17 @@ canvas.addEventListener("click", (e) => {
   sceneDraw();
 });
 
-/*************** new - очистить всю карту ******************/
+/*************** new - создать новую карту ******************/
 const btn_new = document.querySelector(".btn_new");
 btn_new.addEventListener("click", () => {
   fenster.open(LANG.fenster.create_map_title, LANG.fenster.create_map_message, [
     {
       name: LANG.fenster.vulkan,
-      callback: () => {
-        CreateNewMap(1);
-      },
+      callback: () => CreateNewMap(1),
     },
     {
       name: LANG.fenster.waterfall,
-      callback: () => {
-        CreateNewMap(2);
-      },
+      callback: () => CreateNewMap(2),
     },
   ]);
 });
@@ -687,6 +811,7 @@ async function CreateNewMap(map) {
     //по окончании анимации
     container.classList.remove("anim-new");
     LOG("New map created.");
+    NOTE("...");
   };
 }
 
@@ -720,6 +845,7 @@ function ClearOsadki() {
     //todo постоянно создаётся новый листенер
     container.classList.remove("anim-clear");
     LOG("Map cleared.");
+    NOTE("...");
   };
 }
 
