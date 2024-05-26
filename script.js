@@ -1,6 +1,12 @@
 "use strict";
 
-import { ModalFenster } from "./js/modal.js";
+import ModalWindow from "./js/modal.js";
+//import * as lib from "./js/library.js"; //тогде придется обращаться lib.dateYYYYMMDD к тому же код не оптимизируется
+import {
+  dateYYYYMMDD,
+  writeClipboardText as text2ClipBorad,
+  loadJson,
+} from "./js/library.js";
 
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
@@ -47,7 +53,7 @@ const colors = [
 
 const img_background = new Image(); //фоновое изображение водопада/вулкана
 const img_borders = new Image(); //границы секторов
-const fenster = new ModalFenster(); //модальное окно
+const fenster = new ModalWindow(); //модальное окно
 var idb; //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
 var editor; // = new FormEditor(); //форма редактирования сектора
 
@@ -212,7 +218,12 @@ window.addEventListener("load", async () => {
   ColorTheme.set();
   BackgroundFillColor.set();
 
-  await Language.set();
+  await Language.set().catch((error) => {
+    LOG(error.message, RED);
+    LOG("Fault to set language support...", RED);
+    LOG("Programm aborted...", RED);
+    throw new Error();
+  });
 
   editor = new FormEditor(); //форма редактирования сектора
   idb = new IndexedDB("foesectors", 5); //локальная база даных IndexedDB (для автозагрузки предыдущей карты)
@@ -773,14 +784,8 @@ canvas.addEventListener("click", (e) => {
 const btn_new = document.querySelector(".btn_new");
 btn_new.addEventListener("click", () => {
   fenster.open(LANG.fenster.create_map_title, LANG.fenster.create_map_message, [
-    {
-      name: LANG.fenster.vulkan,
-      callback: () => CreateNewMap(1),
-    },
-    {
-      name: LANG.fenster.waterfall,
-      callback: () => CreateNewMap(2),
-    },
+    { name: LANG.fenster.vulkan, callback: () => CreateNewMap(1) },
+    { name: LANG.fenster.waterfall, callback: () => CreateNewMap(2) },
   ]);
 });
 
@@ -842,7 +847,6 @@ function ClearOsadki() {
   }, 500);
 
   container.onanimationend = () => {
-    //todo постоянно создаётся новый листенер
     container.classList.remove("anim-clear");
     LOG("Map cleared.");
     NOTE("...");
@@ -858,7 +862,7 @@ async function FileSave() {
   curtain.style.display = "block";
   NOTE(LANG.note.save_map_to_file);
 
-  let filename = json_filename || genDateString();
+  let filename = json_filename || "pbg-" + dateYYYYMMDD();
   let fileHandler;
   try {
     const options = {
@@ -1099,7 +1103,7 @@ div_monitor_imgbb.addEventListener("click", () => {
   let short_link = map_link.slice(8); //короткая ссылка (без https://)
   let full_link =
     "<a target='_blank' href='" + map_link + "' > " + short_link + " </a>";
-  writeClipboardText(short_link);
+  text2ClipBorad(short_link);
   LOG("Link " + short_link + " copied to clipboard.");
   NOTE('"' + full_link + '" ' + LANG.note.link_copied_to_clibboard);
 });
@@ -1123,7 +1127,7 @@ function jsonUpload() {
   if (!jsonbin_id) {
     //создание нового json
     request.open("POST", "https://api.jsonbin.io/v3/b", true);
-    request.setRequestHeader("X-Bin-Name", genDateString()); //в принципе имя задавать нет смысла
+    request.setRequestHeader("X-Bin-Name", dateYYYYMMDD()); //в принципе имя задавать нет смысла
   } else {
     //если задан id то презапись того же самого
     request.open("PUT", "https://api.jsonbin.io/v3/b/" + jsonbin_id, true);
@@ -1263,17 +1267,20 @@ const Language = {
   },
   async set() {
     btn_language.textContent = this.fullname[Language.n];
-    LANG = await loadJson("lang/" + this.name[this.n] + ".json");
-    {
+    let fname = this.name[this.n] + ".json";
+    try {
+      LANG = await loadJson("lang/" + fname);
       //обновление сообщений и хэлпа
       document.querySelectorAll('button[class^="btn_"]').forEach((btn) => {
-        //https://www.w3.org/TR/selectors-3/#selectors
         let s = btn.className;
         if (LANG.btn_tips[s]) btn.setAttribute("data-text", LANG.btn_tips[s]);
       });
       div_helpbox.src = "help_" + this.name[this.n] + ".html";
-      NOTE("..."); //просто очистить строку подсказок
       LOG(this.fullname[Language.n] + " language selected");
+      NOTE("..."); //просто очистить строку подсказок
+    } catch (error) {
+      LOG(error + ` - unable to read file "${fname}"`, RED);
+      throw new Error("Critical Error!");
     }
   },
 };
@@ -1361,22 +1368,9 @@ document.querySelector(".btn_help").addEventListener("click", () => {
  ******************* СЕРВИСНЫЕ ФУНКЦИИ *****************************
  *******************************************************************/
 
-//генератор строки с датой YYYYMMDD
-function genDateString() {
-  let addZero = (value) => {
-    return (value <= 9 ? "0" : "") + value;
-  };
-  let date = new Date(Date.now());
-  let y = date.getFullYear();
-  let m = addZero(date.getMonth() + 1);
-  let d = addZero(date.getDay());
-  return "pbg-" + y + m + d;
-}
-
-// вывод в строку состояния
-const note_box = document.querySelector(".label-box");
+// вывод в строку состояния (для второй строки в message вставить <br>)
 function NOTE(message, clr = "var(--dark)") {
-  //область вывода (для второй строки вставить <br>)
+  const note_box = document.querySelector(".label-box");
   note_box.innerHTML = message;
   note_box.style.color = clr;
 }
@@ -1394,15 +1388,6 @@ function LOG(message, color = YELLOW) {
   }, 100);
 }
 
-// запись текста в буфер обмена
-async function writeClipboardText(text) {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (error) {
-    LOG(error.message, RED);
-  }
-}
-
 //добавить параметр id в строку запроса htpp
 function setLocation(state) {
   let url = window.location.origin + window.location.pathname;
@@ -1413,20 +1398,7 @@ function setLocation(state) {
   }
 }
 
-//загрузка json файла - возвращает Object
-async function loadJson(url) {
-  let response = await fetch(url);
-  if (response.ok) {
-    // если HTTP-статус в диапазоне 200-299
-    let json = await response.json();
-    return json;
-  } else {
-    LOG("ERROR file reading: " + response.status);
-    NOTE(LANG.note.error_file_read + url);
-    return {};
-  }
-}
-
+/********************** DEBUG функции ***************************/
 // кнопка для отладки DEBUG
 const test = document.querySelector(".btn_test");
 //test.style.visibility = "visible";  //todo закоментировать

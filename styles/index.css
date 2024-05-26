@@ -143,11 +143,12 @@ div.spinner {
   color: var(--light);
   padding: 1px 15px 1px 5px;
   cursor: pointer;
+  background-color: transparent;
   border-radius: 2px;
-  border-top: var(--border-light);
+  border-top: 1px solid rgb(140, 140, 140);
   border-left: var(--border-light);
   border-right: 1px solid rgb(140, 140, 140);
-  border-bottom: 1px solid rgb(140, 140, 140);
+  border-bottom: var(--border-light);
 }
 
 .menu_button::after {
