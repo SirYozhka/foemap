@@ -1,5 +1,5 @@
 //*********************** модальное окно *************************/
-export default class {
+class ModalWindow {
   m_window = document.querySelector(".modal_window"); //окно
   m_curtain = document.querySelector(".curtain"); //шторка
   m_controls = document.querySelector(".modal_controls"); //блок кнопок
@@ -66,5 +66,6 @@ export default class {
     this.m_curtain.style.display = "none";
     this.m_window.style.display = "none";
     this.closed();
+    this.closed = () => {};
   }
 }

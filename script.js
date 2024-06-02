@@ -1,20 +1,7 @@
 "use strict";
 
-import ModalWindow from "./js/modal.js";
-//import * as lib from "./js/library.js"; //тогде придется обращаться lib.dateYYYYMMDD к тому же код не оптимизируется
-import {
-  dateYYYYMMDD,
-  writeClipboardText as text2ClipBorad,
-  loadJson,
-} from "./js/library.js";
-
 const IMG_WITH = 800; // (px)
 const IMG_HEGHT = 600; // (px)
-
-//цвета для заметок NOTE(string, COLOR);
-const YELLOW = "rgb(255,255,200)"; //готово (цвет по умолчанию)
-const BLUE = "rgb(200,255,255)"; // процесс
-const RED = "rgb(255,150,150)"; // ошибки
 
 const container = document.querySelector(".container"); //контейнер сцены
 const curtain = document.querySelector(".curtain"); //штора блокировки на весь экран
@@ -214,9 +201,10 @@ var arrSector = []; //оперативное хранилище данных к�
 /*********************** запуск инициализация *************************/
 window.addEventListener("load", async () => {
   LOG("Initialization ...", BLUE);
+
   dimension.set();
-  ColorTheme.set();
-  BackgroundFillColor.set();
+  Theme.setAlpha();
+  Theme.setHue();
 
   await Language.set().catch((error) => {
     LOG(error.message, RED);
@@ -250,7 +238,7 @@ window.addEventListener("load", async () => {
     LOG(".".repeat(40));
     NOTE(LANG.note.common_message);
   } catch {
-    NOTE("...");
+    NOTE("unknown error...");
   }
 });
 
@@ -662,9 +650,12 @@ class FormEditor {
 } //end class FormEditor
 
 /************************ отрисовка сцены *********************************/
-ctx.lineHeight = 14; //добавил своё свойство
+//ctx.lineHeight = 14; //высота строки (добавил своё свойство - опасно!!!)
+let lineHeight = Symbol.for("lineHeight"); //безопасное добавление свойства lineHeight
+ctx[lineHeight] = 14;
+
 ctx.textAlign = "center";
-ctx.font = `bold ${ctx.lineHeight}px sans-serif`;
+ctx.font = `bold ${ctx[lineHeight]}px sans-serif`;
 ctx.fontStretch = "ultra-condensed";
 ctx.textRendering = "optimizeLegibility";
 ctx.shadowOffsetX = 0;
@@ -679,7 +670,7 @@ function sceneDraw() {
 
   //фон
   ctx.drawImage(img_background, 0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = g_bgrfillcolor; // "rgba(250,250,250,0.3)";
+  ctx.fillStyle = Theme.bgrcolor; // притушить фон
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   //карта секторов
@@ -736,7 +727,7 @@ ctx.printText = (text, x, y) => {
 
   function prnLine(line, x, y) {
     for (let i = 1; i < 5; i++) ctx.fillText(line, x, y + ctx.dy); //для "усиления" контраста несколько прорисовок
-    ctx.dy += ctx.lineHeight;
+    ctx.dy += ctx[lineHeight];
   }
 };
 
@@ -1249,7 +1240,7 @@ function cursorStyle(e) {
   }
 }
 
-/****************** выбор языка **************************/
+/********************************** выбор языка *******************************/
 const btn_language = document.querySelector(".btn_language");
 btn_language.addEventListener("click", () => {
   Language.change();
@@ -1269,6 +1260,7 @@ const Language = {
     btn_language.textContent = this.fullname[Language.n];
     let fname = this.name[this.n] + ".json";
     try {
+      var { loadJson } = await import("./js/library.mjs");
       LANG = await loadJson("lang/" + fname);
       //обновление сообщений и хэлпа
       document.querySelectorAll('button[class^="btn_"]').forEach((btn) => {
@@ -1286,15 +1278,13 @@ const Language = {
 };
 
 /******************** установка цветовой схемы  *******************/
-var g_bgrfillcolor; // цвет заливки фона  "rgba(250,250,250,0.3)";
-
 document.querySelector(".btn_theme").addEventListener("click", () => {
   document.documentElement.style.setProperty("--curtain-endopacity", 0); //не затемнять фон
   fenster.open(
     LANG.fenster.form_title_colortheme,
     `<div class='form_colortheme'> 
     <label>${LANG.fenster.inp_clr_background}
-    <input type='range' class='inp_clr_background' min='0' max='0.5' step='0.02' />
+    <input type='range' class='inp_clr_background' min='0' max='0.5' step='0.05' />
     </label>
     <label>${LANG.fenster.inp_clr_temperature}
     <input type='range' class='inp_clr_temperature' min='0' max='270' step='10' /> 
@@ -1303,52 +1293,44 @@ document.querySelector(".btn_theme").addEventListener("click", () => {
   );
 
   let inp_clrbgr = document.querySelector(".inp_clr_background");
-  inp_clrbgr.value = BackgroundFillColor.alpha;
+  inp_clrbgr.value = Theme.alpha;
   inp_clrbgr.oninput = (e) => {
-    let alpha = e.target.value;
-    BackgroundFillColor.alpha = alpha;
-    BackgroundFillColor.set(alpha);
+    Theme.setAlpha(e.target.value);
     sceneDraw();
   };
 
   let inp_clrtemp = document.querySelector(".inp_clr_temperature");
-  inp_clrtemp.value = ColorTheme.hue;
+  inp_clrtemp.value = Theme.hue;
   inp_clrtemp.oninput = (e) => {
-    let hue = e.target.value;
-    ColorTheme.hue = hue;
-    ColorTheme.set(hue);
+    Theme.setHue(e.target.value);
   };
 
   fenster.closed = () => {
-    BackgroundFillColor.save();
-    ColorTheme.save();
+    Theme.save();
     LOG("Color theme saved.");
     sceneDraw();
     document.documentElement.style.setProperty("--curtain-endopacity", 0.7); //восстановить
-    fenster.closed = () => {};
   };
 });
 
-const ColorTheme = {
-  hue: Number(window.localStorage.getItem("pbgmap_theme")) || 20,
+const Theme = {
+  hue: Number(window.localStorage.getItem("pbgmap_theme")),
+  alpha: Number(window.localStorage.getItem("pbgmap_alpha")),
+  bgrcolor: "rgba(250,250,250,0.3)",
   save() {
+    window.localStorage.setItem("pbgmap_alpha", this.alpha);
     window.localStorage.setItem("pbgmap_theme", this.hue);
   },
-  set(hue = this.hue) {
+  setAlpha(alpha = this.alpha) {
+    this.alpha = alpha;
+    this.bgrcolor = `rgba(250,250,250,${alpha})`;
+  },
+  setHue(hue = this.hue) {
+    this.hue = hue;
     g_color.light = "hsl(" + hue + ", 100%, 95%)";
     g_color.dark = "hsl(" + hue + ", 100%, 5%)";
     document.documentElement.style.setProperty("--dark", g_color.dark);
     document.documentElement.style.setProperty("--light", g_color.light);
-  },
-};
-
-const BackgroundFillColor = {
-  alpha: Number(window.localStorage.getItem("pbgmap_alpha")) || 0.3,
-  save() {
-    window.localStorage.setItem("pbgmap_alpha", this.alpha);
-  },
-  set(alpha = this.alpha) {
-    g_bgrfillcolor = `rgba(250,250,250,${alpha})`;
   },
 };
 
@@ -1368,26 +1350,6 @@ document.querySelector(".btn_help").addEventListener("click", () => {
  ******************* СЕРВИСНЫЕ ФУНКЦИИ *****************************
  *******************************************************************/
 
-// вывод в строку состояния (для второй строки в message вставить <br>)
-function NOTE(message, clr = "var(--dark)") {
-  const note_box = document.querySelector(".label-box");
-  note_box.innerHTML = message;
-  note_box.style.color = clr;
-}
-
-//вывод логов на экран (цвет сообщений по умолчанию - жёлтый)
-function LOG(message, color = YELLOW) {
-  let p_msg = document.createElement("p");
-  document.querySelector("#log_box").appendChild(p_msg);
-  setTimeout(() => {
-    //чтобы предварительно сработала анимация затенения в css
-    p_msg.textContent = message;
-    p_msg.style.color = color;
-    p_msg.style.opacity = "0.3";
-    p_msg.scrollIntoView();
-  }, 100);
-}
-
 //добавить параметр id в строку запроса htpp
 function setLocation(state) {
   let url = window.location.origin + window.location.pathname;
@@ -1399,13 +1361,6 @@ function setLocation(state) {
 }
 
 /********************** DEBUG функции ***************************/
-// кнопка для отладки DEBUG
-const test = document.querySelector(".btn_test");
-//test.style.visibility = "visible";  //todo закоментировать
-test.addEventListener("click", async () => {
-  DBG("Test start");
-});
-
 //вывод в логи тестового сообщения
 function DBG(msg = "") {
   //todo вычислять время между запусками
@@ -1414,3 +1369,8 @@ function DBG(msg = "") {
     "rgb(200,255,200)"
   );
 }
+
+// кнопка для отладки DEBUG
+const btn_test = document.querySelector(".btn_test");
+//btn_test.style.visibility = "visible"; //todo закоментировать
+btn_test.addEventListener("click", async () => {});

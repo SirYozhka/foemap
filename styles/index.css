@@ -642,12 +642,6 @@ div.modal_controls button {
   background: linear-gradient(90deg, #333, #ddd);
 }
 
-/******** выбор цветовой схемы input[type="range"] ******************/
-#bgr_clr {
-  width: 100%;
-  background-color: transparent;
-}
-
 /********************* лог ********************************/
 #log_box {
   position: absolute;
@@ -659,6 +653,10 @@ div.modal_controls button {
   padding: 2px;
   cursor: auto;
   overflow: hidden;
+}
+
+#log_box:empty {
+  display: none;
 }
 
 #log_box p {

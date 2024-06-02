@@ -4,8 +4,8 @@
 <head>
   <title>Map editor PBG</title>
   <meta charset="utf-8" />  
-  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width" />
+  <meta name="google" content="notranslate">
 
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -14,8 +14,14 @@
   <link rel="stylesheet" href="./styles/index.css">
   <link rel="stylesheet" href="./styles/help.css">
   
-  <!-- <script type="module" src="./js/modal.js" ></script> -->
-  <script type="module" src="./script.js" defer></script>
+  <script>     
+    const YELLOW = "rgb(255,255,200)"; //готово (цвет по умолчанию)
+    const BLUE = "rgb(200,255,255)"; // процесс
+    const RED = "rgb(255,150,150)"; // ошибки
+  </script>
+  <script src="./js/library.js"></script>  
+  <script src="./js/modal.js" defer></script>
+  <script src="./script.js" defer></script>
     
 </head>
 
@@ -118,13 +124,26 @@
         <img>
       </div>
       
-      <!-- монитор imgbb (для отображения скопированой карты) -->
+      <!-- монитор imgbb (для отображения карты отправленой на imgbb.com) -->
       <div class="monitor_imgbb" data-text="image" style="display: none;">
         <img>
       </div>
 
-      <!-- log area -->
+      <!-- вывод логов на экран (цвет сообщений по умолчанию - жёлтый) -->
       <div id="log_box">
+        <script>
+          function LOG(message, color = YELLOW) {
+            let p_msg = document.createElement("p");
+            document.querySelector("#log_box").appendChild(p_msg);
+            setTimeout(() => {
+              //чтобы предварительно сработала анимация затенения в css
+              p_msg.textContent = message;
+              p_msg.style.color = color;
+              p_msg.style.opacity = "0.3";
+              p_msg.scrollIntoView();
+            }, 100);
+          }
+        </script>
       </div>
 
       <!-- модальное окно -->
@@ -145,14 +164,22 @@
 
     </div>
 
-    <!-- область вывода подсказок -->
+    <!-- область вывода в строку состояния (для второй строки в message вставить <br>) -->
     <div class="label-box">      
+      <script>
+        function NOTE(message, color = "var(--dark)") {
+          const note_box = document.querySelector(".label-box");
+          note_box.innerHTML = message;
+          note_box.style.color = color;
+         }
+      </script>
     </div>
     
   </main>
 
   
 </body>
+
 <iframe id="helpbox" style="display: none;"></iframe> <!-- hidden frame for downloading help_[lang].html --> 
 
 </html>
