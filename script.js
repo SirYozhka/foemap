@@ -202,9 +202,8 @@ var arrSector = []; //оперативное хранилище данных к�
 window.addEventListener("load", async () => {
   LOG("Initialization ...", BLUE);
 
-  dimension.set();
-  Theme.setAlpha();
-  Theme.setHue();
+  container.set();
+  Theme.setup();
 
   await Language.set().catch((error) => {
     LOG(error.message, RED);
@@ -243,22 +242,18 @@ window.addEventListener("load", async () => {
 });
 
 window.addEventListener("resize", () => {
-  dimension.set();
+  container.set();
 });
 
-/********************** коэффициент масштаба *****************************/
-const dimension = {
-  x: null,
-  y: null,
-  set() {
-    this.x = container.clientWidth / IMG_WITH;
-    this.y = container.clientHeight / IMG_HEGHT;
-  },
-  offset(e) {
-    let Y = ~~(e.offsetY / this.y);
-    let X = ~~(e.offsetX / this.x);
-    return (Y * IMG_WITH + X) * 4;
-  },
+/*************** масштабирование canvas/container ************************/
+container.set = () => {
+  container.Mx = container.clientWidth / IMG_WITH;
+  container.My = container.clientHeight / IMG_HEGHT;
+};
+container.offset = (e) => {
+  let Y = ~~(e.offsetY / container.My);
+  let X = ~~(e.offsetX / container.Mx);
+  return (Y * IMG_WITH + X) * 4;
 };
 
 /****************** быстрые клавиши *********************************/
@@ -535,7 +530,7 @@ class FormEditor {
       //клик правой кнопкой - редактор надписи
       event.preventDefault();
       event.stopPropagation();
-      let offset = dimension.offset(event);
+      let offset = container.offset(event);
       this.adr = data_address.data[offset]; // number of address (red component)
       if (this.adr < 1 || this.adr > nsec) return; //клик не на секторе
       selected_color = null; //снять выбор штаба
@@ -733,8 +728,7 @@ ctx.printText = (text, x, y) => {
 
 /***************** клики по сектору *********************************/
 canvas.addEventListener("click", (e) => {
-  //let offset = (e.offsetY * IMG_WITH + e.offsetX) * 4;
-  let offset = dimension.offset(e);
+  let offset = container.offset(e);
   let adr = data_address.data[offset]; //red component = number of address
   if (adr > nsec) {
     //клик не по сектору
@@ -1217,7 +1211,7 @@ function cursorStyle(e) {
   let adr;
   try {
     //чтобы не проверять offset в границах data_address
-    let offset = dimension.offset(e);
+    let offset = container.offset(e);
     adr = data_address.data[offset]; //получить red component = number of address
   } catch {
     return;
@@ -1286,8 +1280,11 @@ document.querySelector(".btn_theme").addEventListener("click", () => {
     <label>${LANG.fenster.inp_clr_background}
     <input type='range' class='inp_clr_background' min='0' max='0.5' step='0.05' />
     </label>
-    <label>${LANG.fenster.inp_clr_temperature}
-    <input type='range' class='inp_clr_temperature' min='0' max='270' step='10' /> 
+    <label>${LANG.fenster.inp_clr_light}
+    <input type='range' class='inp_clr_light' min='0' max='270' step='10' /> 
+    </label>
+    <label>${LANG.fenster.inp_clr_dark}
+    <input type='range' class='inp_clr_dark' min='0' max='270' step='10' /> 
     </label>
     </div>`
   );
@@ -1299,10 +1296,16 @@ document.querySelector(".btn_theme").addEventListener("click", () => {
     sceneDraw();
   };
 
-  let inp_clrtemp = document.querySelector(".inp_clr_temperature");
-  inp_clrtemp.value = Theme.hue;
-  inp_clrtemp.oninput = (e) => {
-    Theme.setHue(e.target.value);
+  let inp_clr_ligtht = document.querySelector(".inp_clr_light");
+  inp_clr_ligtht.value = Theme.hueLight;
+  inp_clr_ligtht.oninput = (e) => {
+    Theme.setHueLight(e.target.value);
+  };
+
+  let inp_clr_dark = document.querySelector(".inp_clr_dark");
+  inp_clr_dark.value = Theme.hueDark;
+  inp_clr_dark.oninput = (e) => {
+    Theme.setHueDark(e.target.value);
   };
 
   fenster.closed = () => {
@@ -1314,23 +1317,33 @@ document.querySelector(".btn_theme").addEventListener("click", () => {
 });
 
 const Theme = {
-  hue: Number(window.localStorage.getItem("pbgmap_theme")),
+  hueLight: Number(window.localStorage.getItem("pbgmap_hue_light")),
+  hueDark: Number(window.localStorage.getItem("pbgmap_hue_dark")),
   alpha: Number(window.localStorage.getItem("pbgmap_alpha")),
   bgrcolor: "rgba(250,250,250,0.3)",
   save() {
     window.localStorage.setItem("pbgmap_alpha", this.alpha);
-    window.localStorage.setItem("pbgmap_theme", this.hue);
+    window.localStorage.setItem("pbgmap_hue_light", this.hueLight);
+    window.localStorage.setItem("pbgmap_hue_dark", this.hueDark);
   },
   setAlpha(alpha = this.alpha) {
     this.alpha = alpha;
     this.bgrcolor = `rgba(250,250,250,${alpha})`;
   },
-  setHue(hue = this.hue) {
-    this.hue = hue;
+  setHueLight(hue = this.hueLight) {
+    this.hueLight = hue;
     g_color.light = "hsl(" + hue + ", 100%, 95%)";
+    document.documentElement.style.setProperty("--light", g_color.light);
+  },
+  setHueDark(hue = this.hueDark) {
+    this.hueDark = hue;
     g_color.dark = "hsl(" + hue + ", 100%, 5%)";
     document.documentElement.style.setProperty("--dark", g_color.dark);
-    document.documentElement.style.setProperty("--light", g_color.light);
+  },
+  setup() {
+    this.setAlpha();
+    this.setHueDark();
+    this.setHueLight();
   },
 };
 

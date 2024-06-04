@@ -628,7 +628,21 @@ div.modal_controls button {
   cursor: pointer;
 }
 
-.inp_clr_temperature::-webkit-slider-runnable-track {
+.inp_clr_background::-webkit-slider-runnable-track {
+  background: linear-gradient(90deg, #333, #ddd);
+}
+
+.inp_clr_light::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    90deg,
+    hsl(0, 37%, 73%),
+    hsl(89, 39%, 72%),
+    hsl(180, 45%, 72%),
+    hsl(269, 34%, 72%)
+  );
+}
+
+.inp_clr_dark::-webkit-slider-runnable-track {
   background: linear-gradient(
     90deg,
     hsl(0, 100%, 25%),
@@ -636,10 +650,6 @@ div.modal_controls button {
     hsl(180, 100%, 25%),
     hsl(270, 100%, 25%)
   );
-}
-
-.inp_clr_background::-webkit-slider-runnable-track {
-  background: linear-gradient(90deg, #333, #ddd);
 }
 
 /********************* лог ********************************/

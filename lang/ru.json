@@ -1,60 +1,59 @@
 {
-    "btn_tips": {
-        "btn_new": "создать новую карту",
-        "btn_upload": "сохранить карту на сервер jsonbin.io",
-        "btn_download": "загрузить карту c сервера jsonbin.io",
-        "btn_clear": "очистить опорники",
-        "btn_save": "записать карту в файл",
-        "btn_load": "загрузить карту из файла",
-        "btn_imgcopy": "копировать изображение карты в буфер обмена",
-        "btn_imgsave": "записать изображение карты в файл",
-        "btn_imgbb": "загрузить изображение карты на сайт imgbb.com",        
-        "btn_help": "описание",
-        "btn_theme": "настроить цветовую тему",        
-        "btn_language": "выбор языка"
-    },
-    "note":{
-        "common_message": "Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). <br> Редактор (правая кнопка).",
-        "choose_support_for": "Кликните любой сектор, чтобы выбрать опорники для гильдии: ",
-        "error_file_read": "Ошибка чтения файла: ",
-        "error_file_save": "Ошибка записи: ",
-        "error_img_download_to_imgbb": "Ошибка загрузки изображения карты на сайт imgbb.com",
-        "error_uploading_map_to": "Ошибка загрузки карты на сайт ",
-        "error_downloading_map_from": "Ошибка загрузки карты c сайта ",
-        "can_send_another_player": "Файл можно переслать другому игроку.",
-        "img_saved_to_file": "Изображение записано в файл: ",
-        "save_map_to_file": "Сохранение карты в файл ...",
-        "select_file": "Выбор файла карты ...",
-        "save_to_imgbb": "Загрузка карты на сервер imgbb.com ...",
-        "save_to_jsonbin": "Загрузка карты на сервер jsonbin.io ...",
-        "save_img_to_file": "Запись изображения карты в файл ... ",
-        "map_loaded": "Карта загружена.",        
-        "deprecated_operation": "Это невозможно выполнить в вашем браузере.",
-        "map_copied_to_clipboard": "Карта скопирована в буфер обмена. <br> Нажмите Ctr+V, чтобы вставить изображение карты в сообщение. ",
-        "link_copied_to_clibboard": " ссылка на карту скопирована в буфер обмена. <br> Нажмите Ctr+V, чтобы вставить ссылку в сообщение.",
-        "map_uploaded_to_jsonbin": "Карта загружена на сервер jsonbin.io , ID карты: ",
-        "edit_sector": "Редактирование данных сектора: ",
-        "save_esc": "<br>Сохранить - ENTER, выход - ESC.",
-        "validate_title": "Пустое название недопустимо.",
-        "select_color": "Выберите цвет штаба."
-    },
-    "fenster":{
-        "create_map_title": "Создание новой карты ...",
-        "create_map_message": "<div style='text-align:center;'><h2>Выберите карту</h2> <br> ВНИМАНИЕ! <br> Текущие изменения не сохраняются! </div>",
-        "vulkan": "ВУЛКАН",
-        "waterfall": "ВОДОПАД",
+  "btn_tips": {
+    "btn_new": "создать новую карту",
+    "btn_upload": "сохранить карту на сервер jsonbin.io",
+    "btn_download": "загрузить карту c сервера jsonbin.io",
+    "btn_clear": "очистить опорники",
+    "btn_save": "записать карту в файл",
+    "btn_load": "загрузить карту из файла",
+    "btn_imgcopy": "копировать изображение карты в буфер обмена",
+    "btn_imgsave": "записать изображение карты в файл",
+    "btn_imgbb": "загрузить изображение карты на сайт imgbb.com",
+    "btn_help": "описание",
+    "btn_theme": "настроить цветовую тему",
+    "btn_language": "выбор языка"
+  },
+  "note": {
+    "common_message": "Выбор гильдии (клик по штабу). Выбор опорника (клик по сектору). <br> Редактор (правая кнопка).",
+    "choose_support_for": "Кликните любой сектор, чтобы выбрать опорники для гильдии: ",
+    "error_file_read": "Ошибка чтения файла: ",
+    "error_file_save": "Ошибка записи: ",
+    "error_img_download_to_imgbb": "Ошибка загрузки изображения карты на сайт imgbb.com",
+    "error_uploading_map_to": "Ошибка загрузки карты на сайт ",
+    "error_downloading_map_from": "Ошибка загрузки карты c сайта ",
+    "can_send_another_player": "Файл можно переслать другому игроку.",
+    "img_saved_to_file": "Изображение записано в файл: ",
+    "save_map_to_file": "Сохранение карты в файл ...",
+    "select_file": "Выбор файла карты ...",
+    "save_to_imgbb": "Загрузка карты на сервер imgbb.com ...",
+    "save_to_jsonbin": "Загрузка карты на сервер jsonbin.io ...",
+    "save_img_to_file": "Запись изображения карты в файл ... ",
+    "map_loaded": "Карта загружена.",
+    "deprecated_operation": "Это невозможно выполнить в вашем браузере.",
+    "map_copied_to_clipboard": "Карта скопирована в буфер обмена. <br> Нажмите Ctr+V, чтобы вставить изображение карты в сообщение. ",
+    "link_copied_to_clibboard": " ссылка на карту скопирована в буфер обмена. <br> Нажмите Ctr+V, чтобы вставить ссылку в сообщение.",
+    "map_uploaded_to_jsonbin": "Карта загружена на сервер jsonbin.io , ID карты: ",
+    "edit_sector": "Редактирование данных сектора: ",
+    "save_esc": "<br>Сохранить - ENTER, выход - ESC.",
+    "validate_title": "Пустое название недопустимо.",
+    "select_color": "Выберите цвет штаба."
+  },
+  "fenster": {
+    "create_map_title": "Создание новой карты ...",
+    "create_map_message": "<div style='text-align:center;'><h2>Выберите карту</h2> <br> ВНИМАНИЕ! <br> Текущие изменения не сохраняются! </div>",
+    "vulkan": "ВУЛКАН",
+    "waterfall": "ВОДОПАД",
 
-        "confirm": "Подтвердите действие :",
-        "clear_support": "Удалить выбор опорников? <br> (штабы останутся на местах)",
+    "confirm": "Подтвердите действие :",
+    "clear_support": "Удалить выбор опорников? <br> (штабы останутся на местах)",
 
-        "download_from_jsonbin": "Загрузка карты c сервера ",
+    "download_from_jsonbin": "Загрузка карты c сервера ",
 
-        "help_message": "Описание, контакты.",
+    "help_message": "Описание, контакты.",
 
-        "form_title_colortheme": "Выбор цветовой схемы ...",
-        "inp_clr_background": "Яркость фона:",
-        "inp_clr_temperature": "Цветовая температура:"
-
-    }
+    "form_title_colortheme": "Выбор цветовой схемы ...",
+    "inp_clr_background": "Яркость фона:",
+    "inp_clr_light": "Светлый цвет:",
+    "inp_clr_dark": "Темный цвет:"
+  }
 }
-

@@ -1,58 +1,59 @@
 {
-    "btn_tips": {
-        "btn_new": "create new map",
-        "btn_upload": "save map on server jsonbin.io",
-        "btn_download": "open map from server jsonbin.io",
-        "btn_clear": "clear all “support” provinces",
-        "btn_save": "save map to file",
-        "btn_load": "load map from file",
-        "btn_imgcopy": "copy image into clipboard",
-        "btn_imgsave": "save image to file",
-        "btn_imgbb": "upload image to server imgbb.com",        
-        "btn_help": "help, about",
-        "btn_theme": "colors theme settings",        
-        "btn_language": "change language"
-    },
-    "note":{
-        "common_message": "Select the Guild. Mark “support” provinces. <br> Editor (right mouse button). ",
-        "choose_support_for": "Click any province to set “support” for Guild: ",
-        "save_map_to_file": "Save map to file. ",
-        "error_file_read": "Error reading file: ",
-        "error_file_save": "Error saving file: ",
-        "error_img_download_to_imgbb": "Error downloading image to imgbb.com",
-        "error_uploading_map_to": "Error uploading map to ",
-        "error_downloading_map_from": "Error downloading map from ",
-        "can_send_another_player": " file you can send to another player.",
-        "img_saved_to_file": "Image saved to file: ",
-        "select_file": "Map file selection ...",
-        "save_to_imgbb": "Uploading image to imgbb.com ...",
-        "save_to_jsonbin": "Uploading map to jsonbin.io ... ",
-        "save_img_to_file": "Save image to file ... ",
-        "map_loaded": "Map loaded.",
-        "deprecated_operation": "This operation cannot be done in your browser. ",
-        "map_copied_to_clipboard": "Map image copied into clipboard. <br> Press Ctr+V to insert image into messenger.",
-        "link_copied_to_clibboard": " link to mat copied to clipboard. <br> Press Ctr+V to insert ling into message.",
-        "map_uploaded_to_jsonbin": "Map uploaded to jsonbin.io , Map ID: ",
-        "edit_sector": "Edit sector: ",
-        "save_esc": "<br>Save - ENTER, exit - ESC.",
-        "validate_title": "An empty title is not allowed.",
-        "select_color": "Select the color of the headquarters."
-    },
-    "fenster":{
-        "create_map_title": "Creating a new map ...",
-        "create_map_message": "<div style='text-align:center;'><h2>Select NEW map</h2> <br> WARNING! All changes you entered will be lost. </div>",
-        "vulkan": "VOLCANO",
-        "waterfall": "WATERFALL",
+  "btn_tips": {
+    "btn_new": "create new map",
+    "btn_upload": "save map on server jsonbin.io",
+    "btn_download": "open map from server jsonbin.io",
+    "btn_clear": "clear all “support” provinces",
+    "btn_save": "save map to file",
+    "btn_load": "load map from file",
+    "btn_imgcopy": "copy image into clipboard",
+    "btn_imgsave": "save image to file",
+    "btn_imgbb": "upload image to server imgbb.com",
+    "btn_help": "help, about",
+    "btn_theme": "colors theme settings",
+    "btn_language": "change language"
+  },
+  "note": {
+    "common_message": "Select the Guild. Mark “support” provinces. <br> Editor (right mouse button). ",
+    "choose_support_for": "Click any province to set “support” for Guild: ",
+    "save_map_to_file": "Save map to file. ",
+    "error_file_read": "Error reading file: ",
+    "error_file_save": "Error saving file: ",
+    "error_img_download_to_imgbb": "Error downloading image to imgbb.com",
+    "error_uploading_map_to": "Error uploading map to ",
+    "error_downloading_map_from": "Error downloading map from ",
+    "can_send_another_player": " file you can send to another player.",
+    "img_saved_to_file": "Image saved to file: ",
+    "select_file": "Map file selection ...",
+    "save_to_imgbb": "Uploading image to imgbb.com ...",
+    "save_to_jsonbin": "Uploading map to jsonbin.io ... ",
+    "save_img_to_file": "Save image to file ... ",
+    "map_loaded": "Map loaded.",
+    "deprecated_operation": "This operation cannot be done in your browser. ",
+    "map_copied_to_clipboard": "Map image copied into clipboard. <br> Press Ctr+V to insert image into messenger.",
+    "link_copied_to_clibboard": " link to mat copied to clipboard. <br> Press Ctr+V to insert ling into message.",
+    "map_uploaded_to_jsonbin": "Map uploaded to jsonbin.io , Map ID: ",
+    "edit_sector": "Edit sector: ",
+    "save_esc": "<br>Save - ENTER, exit - ESC.",
+    "validate_title": "An empty title is not allowed.",
+    "select_color": "Select the color of the headquarters."
+  },
+  "fenster": {
+    "create_map_title": "Creating a new map ...",
+    "create_map_message": "<div style='text-align:center;'><h2>Select NEW map</h2> <br> WARNING! All changes you entered will be lost. </div>",
+    "vulkan": "VOLCANO",
+    "waterfall": "WATERFALL",
 
-        "confirm": "Confirm action :",
-        "clear_support": "Remove marking of “support” provinces? <br> (all headquarters will remain)",
+    "confirm": "Confirm action :",
+    "clear_support": "Remove marking of “support” provinces? <br> (all headquarters will remain)",
 
-        "download_from_jsonbin": "Downloading map from ",
+    "download_from_jsonbin": "Downloading map from ",
 
-        "help_message": "Description, contacts.",
-        
-        "form_title_colortheme": "Select color theme...",
-        "inp_clr_background": "Brightness of background:",
-        "inp_clr_temperature": "Color temperature:"
-    }
+    "help_message": "Description, contacts.",
+
+    "form_title_colortheme": "Select color theme...",
+    "inp_clr_background": "Brightness of background:",
+    "inp_clr_light": "Light color:",
+    "inp_clr_dark": "Dark color:"
+  }
 }
