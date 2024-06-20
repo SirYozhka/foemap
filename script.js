@@ -202,7 +202,7 @@ var arrSector = []; //оперативное хранилище данных к�
 window.addEventListener("load", async () => {
   LOG("Initialization ...", BLUE);
 
-  container.set();
+  canvas.set();
   Theme.setup();
 
   await Language.set().catch((error) => {
@@ -242,18 +242,18 @@ window.addEventListener("load", async () => {
 });
 
 window.addEventListener("resize", () => {
-  container.set();
+  canvas.set();
 });
 
-/*************** масштабирование canvas/container ************************/
-container.set = () => {
-  container.Mx = container.clientWidth / IMG_WITH;
-  container.My = container.clientHeight / IMG_HEGHT;
+/*************** масштабирование в canvas ************************/
+canvas.set = () => {
+  canvas.Mx = canvas.clientWidth / canvas.width;
+  canvas.My = canvas.clientHeight / canvas.height;
 };
-container.offset = (e) => {
-  let Y = ~~(e.offsetY / container.My);
-  let X = ~~(e.offsetX / container.Mx);
-  return (Y * IMG_WITH + X) * 4;
+canvas.offset = (e) => {
+  let Y = ~~(e.offsetY / canvas.My);
+  let X = ~~(e.offsetX / canvas.Mx);
+  return (Y * canvas.width + X) * 4;
 };
 
 /****************** быстрые клавиши *********************************/
@@ -530,7 +530,7 @@ class FormEditor {
       //клик правой кнопкой - редактор надписи
       event.preventDefault();
       event.stopPropagation();
-      let offset = container.offset(event);
+      let offset = canvas.offset(event);
       this.adr = data_address.data[offset]; // number of address (red component)
       if (this.adr < 1 || this.adr > nsec) return; //клик не на секторе
       selected_color = null; //снять выбор штаба
@@ -728,7 +728,7 @@ ctx.printText = (text, x, y) => {
 
 /***************** клики по сектору *********************************/
 canvas.addEventListener("click", (e) => {
-  let offset = container.offset(e);
+  let offset = canvas.offset(e);
   let adr = data_address.data[offset]; //red component = number of address
   if (adr > nsec) {
     //клик не по сектору
@@ -1211,7 +1211,7 @@ function cursorStyle(e) {
   let adr;
   try {
     //чтобы не проверять offset в границах data_address
-    let offset = container.offset(e);
+    let offset = canvas.offset(e);
     adr = data_address.data[offset]; //получить red component = number of address
   } catch {
     return;
@@ -1321,11 +1321,6 @@ const Theme = {
   hueDark: Number(window.localStorage.getItem("pbgmap_hue_dark")),
   alpha: Number(window.localStorage.getItem("pbgmap_alpha")),
   bgrcolor: "rgba(250,250,250,0.3)",
-  save() {
-    window.localStorage.setItem("pbgmap_alpha", this.alpha);
-    window.localStorage.setItem("pbgmap_hue_light", this.hueLight);
-    window.localStorage.setItem("pbgmap_hue_dark", this.hueDark);
-  },
   setAlpha(alpha = this.alpha) {
     this.alpha = alpha;
     this.bgrcolor = `rgba(250,250,250,${alpha})`;
@@ -1339,6 +1334,11 @@ const Theme = {
     this.hueDark = hue;
     g_color.dark = "hsl(" + hue + ", 100%, 5%)";
     document.documentElement.style.setProperty("--dark", g_color.dark);
+  },
+  save() {
+    window.localStorage.setItem("pbgmap_alpha", this.alpha);
+    window.localStorage.setItem("pbgmap_hue_light", this.hueLight);
+    window.localStorage.setItem("pbgmap_hue_dark", this.hueDark);
   },
   setup() {
     this.setAlpha();

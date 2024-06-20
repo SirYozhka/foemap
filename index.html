@@ -1,185 +1,179 @@
 <!DOCTYPE html>
 <html lang="en-us">
+  <head>
+    <title>Map editor PBG</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="google" content="notranslate" />
 
-<head>
-  <title>Map editor PBG</title>
-  <meta charset="utf-8" />  
-  <meta name="viewport" content="width=device-width" />
-  <meta name="google" content="notranslate">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
 
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  
-  <link rel="stylesheet" href="./styles/style.css">
-  <link rel="stylesheet" href="./styles/index.css">
-  <link rel="stylesheet" href="./styles/help.css">
-  
-  <script>     
-    const YELLOW = "rgb(255,255,200)"; //готово (цвет по умолчанию)
-    const BLUE = "rgb(200,255,255)"; // процесс
-    const RED = "rgb(255,150,150)"; // ошибки
-  </script>
-  <script src="./js/library.js"></script>  
-  <script src="./js/modal.js" defer></script>
-  <script src="./script.js" defer></script>
-    
-</head>
+    <link rel="stylesheet" href="./styles/style.css" />
+    <link rel="stylesheet" href="./styles/index.css" />
+    <link rel="stylesheet" href="./styles/help.css" />
 
-<body>
-  
-  
-  <main>
-    <div class="curtain" style="display: none;">
-      <!-- затенённая штора на весь main с блокировкой нажатий при редактировании и других операциях -->
-    </div>
+    <script>
+      const YELLOW = "rgb(255,255,200)"; //готово (цвет по умолчанию)
+      const BLUE = "rgb(200,255,255)"; // процесс
+      const RED = "rgb(255,150,150)"; // ошибки
+    </script>
+    <script src="./js/library.js"></script>
+    <script src="./js/modal.js" defer></script>
+    <script src="./script.js" defer></script>
+  </head>
 
-
-    <div class="button_controls" translate="no" class="notranslate">
-      <div class="menu_line">
-        <div class="menu">
-          <div class="menu_button">Map </div>
-          <div class="menu_content">
-            <button class="btn_new">New </button>
-            <button class="btn_download">Open </button>
-            <button class="btn_upload">Save </button>
-            <button class="btn_clear">Clear </button>
-          </div>
-        </div>
-        <div class="menu" style="display: block;">
-          <div class="menu_button">File</div>
-          <div class="menu_content">
-            <button class="btn_load">Open</button>
-            <button class="btn_save">Save</button>
-          </div>
-        </div>
-        <div class="menu">
-          <div class="menu_button">Image</div>
-          <div class="menu_content">
-            <button class="btn_imgbb">Upload </button>
-            <button class="btn_imgcopy">Copy </button>
-            <button class="btn_imgsave">Save </button>
-          </div>
-        </div>
+  <body>
+    <main>
+      <div class="curtain" style="display: none">
+        <!-- затенённая штора на весь main с блокировкой нажатий при редактировании и других операциях -->
       </div>
 
-      <div class="main_title">
-        <!-- name -->
-      </div>
-      
-      <div class="menu_line">        
-        <button class="btn_test" data-text="DEBUG" style="visibility: hidden;">test</button>
-        <div class="menu">
-          <div class="menu_button">Help</div>
-          <div class="menu_content">
-            <button class="btn_language">...</button>
-            <button class="btn_theme">Theme</button>            
-            <button class="btn_help">About</button>
+      <div class="button_controls" translate="no" class="notranslate">
+        <div class="menu_line">
+          <div class="menu">
+            <div class="menu_button">Map</div>
+            <div class="menu_content">
+              <button class="btn_new">New</button>
+              <button class="btn_download">Open</button>
+              <button class="btn_upload">Save</button>
+              <button class="btn_clear">Clear</button>
+            </div>
+          </div>
+          <div class="menu" style="display: none">
+            <div class="menu_button">File</div>
+            <div class="menu_content">
+              <button class="btn_load">Open</button>
+              <button class="btn_save">Save</button>
+            </div>
+          </div>
+          <div class="menu">
+            <div class="menu_button">Image</div>
+            <div class="menu_content">
+              <button class="btn_imgbb">Upload</button>
+              <button class="btn_imgcopy">Copy</button>
+              <button class="btn_imgsave">Save</button>
+            </div>
           </div>
         </div>
 
-
-      </div>
-      
-
-    </div>
-    
-    <div class="container">
-
-      <div class="spinner" style="display: none;">
-        <!-- spinner загрузок/отправок -->         
-      </div>
-
-      <!-- отображение сцены -->
-      <canvas>
-      </canvas>
-
-      <!-- редактор секторов -->
-      <form class="sector_editor" style="display: none;" onsubmit="return false" >
-        <input type="text" class="input_name" name="name" autocomplete="off"/>
-        <div class="input_osad">
-          <input type="radio" name="os" value="штаб" />
-          <input type="radio" name="os" value="o" />
-          <input type="radio" name="os" value="oo" />
-          <input type="radio" name="os" value="ooo" />
-				</div>
-        <div class="input_color">
-          <input type="radio" name="clr" value="0" style="display: none;"/> <!--прозрачный-->
-          <input type="radio" name="clr" value="1" /> <!--розовый-->
-          <input type="radio" name="clr" value="2" /> <!--фиолетовый-->
-          <input type="radio" name="clr" value="3" /> <!--синий-->
-          <input type="radio" name="clr" value="4" /> <!--оранжевый-->
-          <input type="radio" name="clr" value="5" /> <!--голубой-->
-          <input type="radio" name="clr" value="6" /> <!--желтый-->
-          <input type="radio" name="clr" value="7" /> <!--зеленый-->
-          <input type="radio" name="clr" value="8" /> <!--красный-->
+        <div class="main_title">
+          <!-- name -->
         </div>
-        <div>
-          <button class="btn_edit_save" >SAVE</button>
-          <button class="btn_edit_cancel" >CANCEL</button>
+
+        <div class="menu_line">
+          <button class="btn_test" data-text="DEBUG" style="visibility: hidden">test</button>
+          <div class="menu">
+            <div class="menu_button">Help</div>
+            <div class="menu_content">
+              <button class="btn_language">...</button>
+              <button class="btn_theme">Theme</button>
+              <button class="btn_help">About</button>
+            </div>
+          </div>
         </div>
-      </form>
-
-      <!-- монитор буфера обмена (для отображения скопированой карты) -->
-      <div class="clipboard" data-text="clipboard image" style="display: none;">
-        <img>
-      </div>
-      
-      <!-- монитор imgbb (для отображения карты отправленой на imgbb.com) -->
-      <div class="monitor_imgbb" data-text="image" style="display: none;">
-        <img>
       </div>
 
-      <!-- вывод логов на экран (цвет сообщений по умолчанию - жёлтый) -->
-      <div id="log_box">
+      <div class="container">
+        <div class="spinner" style="display: none">
+          <!-- spinner загрузок/отправок -->
+        </div>
+
+        <!-- отображение сцены -->
+        <canvas> </canvas>
+
+        <!-- редактор секторов -->
+        <form class="sector_editor" style="display: none" onsubmit="return false">
+          <input type="text" class="input_name" name="name" autocomplete="off" />
+          <div class="input_osad">
+            <input type="radio" name="os" value="штаб" />
+            <input type="radio" name="os" value="o" />
+            <input type="radio" name="os" value="oo" />
+            <input type="radio" name="os" value="ooo" />
+          </div>
+          <div class="input_color">
+            <input type="radio" name="clr" value="0" style="display: none" />
+            <!--прозрачный-->
+            <input type="radio" name="clr" value="1" />
+            <!--розовый-->
+            <input type="radio" name="clr" value="2" />
+            <!--фиолетовый-->
+            <input type="radio" name="clr" value="3" />
+            <!--синий-->
+            <input type="radio" name="clr" value="4" />
+            <!--оранжевый-->
+            <input type="radio" name="clr" value="5" />
+            <!--голубой-->
+            <input type="radio" name="clr" value="6" />
+            <!--желтый-->
+            <input type="radio" name="clr" value="7" />
+            <!--зеленый-->
+            <input type="radio" name="clr" value="8" />
+            <!--красный-->
+          </div>
+          <div>
+            <button class="btn_edit_save">SAVE</button>
+            <button class="btn_edit_cancel">CANCEL</button>
+          </div>
+        </form>
+
+        <!-- монитор буфера обмена (для отображения скопированой карты) -->
+        <div class="clipboard" data-text="clipboard image" style="display: none">
+          <img />
+        </div>
+
+        <!-- монитор imgbb (для отображения карты отправленой на imgbb.com) -->
+        <div class="monitor_imgbb" data-text="image" style="display: none">
+          <img />
+        </div>
+
+        <!-- вывод логов на экран (цвет сообщений по умолчанию - жёлтый) -->
+        <div id="log_box">
+          <script>
+            function LOG(message, color = YELLOW) {
+              let p_msg = document.createElement("p");
+              document.querySelector("#log_box").appendChild(p_msg);
+              setTimeout(() => {
+                //чтобы предварительно сработала анимация затенения в css
+                p_msg.textContent = message;
+                p_msg.style.color = color;
+                p_msg.style.opacity = "0.3";
+                p_msg.scrollIntoView();
+              }, 100);
+            }
+          </script>
+        </div>
+
+        <!-- модальное окно -->
+        <div class="modal_window" style="display: none">
+          <div class="modal_header">
+            <div class="modal_title"><!-- Заголовок окна --></div>
+            <div class="modal_close">🞫</div>
+          </div>
+          <div class="modal_body">
+            <!-- Содержимое окна -->
+          </div>
+          <div class="modal_controls" style="visibility: hidden">
+            <!-- Кнопки окна (при наличии) -->
+            <button type="button" class="modal_button"></button>
+            <button type="button" class="modal_button"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- область вывода в строку состояния (для второй строки в message вставить <br>) -->
+      <div class="label-box">
         <script>
-          function LOG(message, color = YELLOW) {
-            let p_msg = document.createElement("p");
-            document.querySelector("#log_box").appendChild(p_msg);
-            setTimeout(() => {
-              //чтобы предварительно сработала анимация затенения в css
-              p_msg.textContent = message;
-              p_msg.style.color = color;
-              p_msg.style.opacity = "0.3";
-              p_msg.scrollIntoView();
-            }, 100);
+          function NOTE(message, color = "var(--dark)") {
+            const note_box = document.querySelector(".label-box");
+            note_box.innerHTML = message;
+            note_box.style.color = color;
           }
         </script>
       </div>
+    </main>
+  </body>
 
-      <!-- модальное окно -->
-      <div class="modal_window" style="display: none;">
-        <div class="modal_header">
-          <div class="modal_title"> <!-- Заголовок окна --> </div>
-          <div class="modal_close">🞫</div>
-        </div>
-        <div class="modal_body">
-          <!-- Содержимое окна -->
-        </div>     
-        <div class="modal_controls" style="visibility: hidden;">          
-          <!-- Кнопки окна (при наличии) -->   
-          <button type="button" class="modal_button"></button>    
-          <button type="button" class="modal_button"></button>
-        </div>                
-      </div>
-
-    </div>
-
-    <!-- область вывода в строку состояния (для второй строки в message вставить <br>) -->
-    <div class="label-box">      
-      <script>
-        function NOTE(message, color = "var(--dark)") {
-          const note_box = document.querySelector(".label-box");
-          note_box.innerHTML = message;
-          note_box.style.color = color;
-         }
-      </script>
-    </div>
-    
-  </main>
-
-  
-</body>
-
-<iframe id="helpbox" style="display: none;"></iframe> <!-- hidden frame for downloading help_[lang].html --> 
-
+  <iframe id="helpbox" style="display: none"></iframe>
+  <!-- hidden frame for downloading help_[lang].html -->
 </html>
