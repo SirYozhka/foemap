@@ -65,62 +65,62 @@ function MapChoise(map) {
     { id: 3, name: "C1N", os: 3, color: 0 },
     { id: 4, name: "D1B", os: 3, color: 0 },
     { id: 5, name: "A2S", os: 2, color: 0 },
-    { id: 6, name: "A2T", os: 2, color: 0 },
+    { id: 6, name: "A2T", os: 3, color: 0 },
     { id: 7, name: "B2S", os: 2, color: 0 },
     { id: 8, name: "B2T", os: 2, color: 0 },
-    { id: 9, name: "C2S", os: 2, color: 0 },
+    { id: 9, name: "C2S", os: 3, color: 0 },
     { id: 10, name: "C2T", os: 2, color: 0 }, // 10
-    { id: 11, name: "D2S", os: 2, color: 0 },
+    { id: 11, name: "D2S", os: 3, color: 0 },
     { id: 12, name: "D2T", os: 2, color: 0 },
-    { id: 13, name: "A3V", os: 1, color: 0 },
-    { id: 14, name: "A3X", os: 1, color: 0 },
-    { id: 15, name: "A3Y", os: 1, color: 0 },
-    { id: 16, name: "A3Z", os: 1, color: 0 },
-    { id: 17, name: "B3V", os: 1, color: 0 },
-    { id: 18, name: "B3X", os: 1, color: 0 },
-    { id: 19, name: "B3Y", os: 1, color: 0 }, //19
-    { id: 20, name: "B3Z", os: 1, color: 0 },
-    { id: 21, name: "C3V", os: 1, color: 0 },
-    { id: 22, name: "C3X", os: 1, color: 0 },
-    { id: 23, name: "C3Y", os: 1, color: 0 },
-    { id: 24, name: "C3Z", os: 1, color: 0 },
-    { id: 25, name: "D3V", os: 1, color: 0 },
-    { id: 26, name: "D3X", os: 1, color: 0 },
-    { id: 27, name: "D3Y", os: 1, color: 0 },
-    { id: 28, name: "D3Z", os: 1, color: 0 },
-    { id: 29, name: "A4A", os: 1, color: 0 },
-    { id: 30, name: "A4B", os: 1, color: 0 },
-    { id: 31, name: "A4C", os: 1, color: 0 },
-    { id: 32, name: "A4D", os: 1, color: 0 },
-    { id: 33, name: "A4E", os: 1, color: 0 },
-    { id: 34, name: "A4F", os: 1, color: 0 },
-    { id: 35, name: "A4G", os: 1, color: 0 },
-    { id: 36, name: "A4H", os: 1, color: 0 },
-    { id: 37, name: "B4A", os: 1, color: 0 },
-    { id: 38, name: "B4B", os: 1, color: 0 },
-    { id: 39, name: "B4C", os: 1, color: 0 },
-    { id: 40, name: "B4D", os: 1, color: 0 },
-    { id: 41, name: "B4E", os: 1, color: 0 },
-    { id: 42, name: "B4F", os: 1, color: 0 },
-    { id: 43, name: "B4G", os: 1, color: 0 },
-    { id: 44, name: "B4H", os: 1, color: 0 },
-    { id: 45, name: "C4A", os: 1, color: 0 },
-    { id: 46, name: "C4B", os: 1, color: 0 },
-    { id: 47, name: "C4C", os: 1, color: 0 },
-    { id: 48, name: "C4D", os: 1, color: 0 },
-    { id: 49, name: "C4E", os: 1, color: 0 },
-    { id: 50, name: "C4F", os: 1, color: 0 },
-    { id: 51, name: "C4G", os: 1, color: 0 },
-    { id: 52, name: "C4H", os: 1, color: 0 },
-    { id: 53, name: "D4A", os: 1, color: 0 },
-    { id: 54, name: "D4B", os: 1, color: 0 },
-    { id: 55, name: "D4C", os: 1, color: 0 },
-    { id: 56, name: "D4D", os: 1, color: 0 },
-    { id: 57, name: "D4E", os: 1, color: 0 },
-    { id: 58, name: "D4F", os: 1, color: 0 },
-    { id: 59, name: "D4G", os: 1, color: 0 },
-    { id: 60, name: "D4H", os: 1, color: 0 },
-    { id: 61, name: "0", os: 1, color: 0 },
+    { id: 13, name: "A3V", os: 2, color: 0 },
+    { id: 14, name: "A3X", os: 2, color: 0 },
+    { id: 15, name: "A3Y", os: 2, color: 0 },
+    { id: 16, name: "A3Z", os: 2, color: 0 },
+    { id: 17, name: "B3V", os: 2, color: 0 },
+    { id: 18, name: "B3X", os: 2, color: 0 },
+    { id: 19, name: "B3Y", os: 2, color: 0 }, //19
+    { id: 20, name: "B3Z", os: 2, color: 0 },
+    { id: 21, name: "C3V", os: 2, color: 0 },
+    { id: 22, name: "C3X", os: 2, color: 0 },
+    { id: 23, name: "C3Y", os: 2, color: 0 },
+    { id: 24, name: "C3Z", os: 2, color: 0 },
+    { id: 25, name: "D3V", os: 2, color: 0 },
+    { id: 26, name: "D3X", os: 2, color: 0 },
+    { id: 27, name: "D3Y", os: 2, color: 0 },
+    { id: 28, name: "D3Z", os: 2, color: 0 },
+    { id: 29, name: "A4A", os: 2, color: 0 },
+    { id: 30, name: "A4B", os: 2, color: 0 },
+    { id: 31, name: "A4C", os: 2, color: 0 },
+    { id: 32, name: "A4D", os: 2, color: 0 },
+    { id: 33, name: "A4E", os: 2, color: 0 },
+    { id: 34, name: "A4F", os: 2, color: 0 },
+    { id: 35, name: "A4G", os: 2, color: 0 },
+    { id: 36, name: "A4H", os: 2, color: 0 },
+    { id: 37, name: "B4A", os: 2, color: 0 },
+    { id: 38, name: "B4B", os: 2, color: 0 },
+    { id: 39, name: "B4C", os: 2, color: 0 },
+    { id: 40, name: "B4D", os: 2, color: 0 },
+    { id: 41, name: "B4E", os: 2, color: 0 },
+    { id: 42, name: "B4F", os: 2, color: 0 },
+    { id: 43, name: "B4G", os: 2, color: 0 },
+    { id: 44, name: "B4H", os: 2, color: 0 },
+    { id: 45, name: "C4A", os: 2, color: 0 },
+    { id: 46, name: "C4B", os: 2, color: 0 },
+    { id: 47, name: "C4C", os: 2, color: 0 },
+    { id: 48, name: "C4D", os: 2, color: 0 },
+    { id: 49, name: "C4E", os: 2, color: 0 },
+    { id: 50, name: "C4F", os: 2, color: 0 },
+    { id: 51, name: "C4G", os: 2, color: 0 },
+    { id: 52, name: "C4H", os: 2, color: 0 },
+    { id: 53, name: "D4A", os: 2, color: 0 },
+    { id: 54, name: "D4B", os: 2, color: 0 },
+    { id: 55, name: "D4C", os: 2, color: 0 },
+    { id: 56, name: "D4D", os: 2, color: 0 },
+    { id: 57, name: "D4E", os: 2, color: 0 },
+    { id: 58, name: "D4F", os: 2, color: 0 },
+    { id: 59, name: "D4G", os: 2, color: 0 },
+    { id: 60, name: "D4H", os: 2, color: 0 },
+    { id: 61, name: "0", os: 2, color: 0 },
   ];
   const def_sec2 = [
     { id: 0, name: "waterfall", os: 2, color: 0 }, // os = 2 - флаг для используемой базы
@@ -256,6 +256,15 @@ canvas.offset = (e) => {
   return (Y * canvas.width + X) * 4;
 };
 
+class ExtendedMode {
+  mode = false;
+  static change() {
+    this.mode = !this.mode;
+    if (this.mode) document.querySelector(".menu_file").style.display = "block";
+    else document.querySelector(".menu_file").style.display = "none";
+  }
+}
+
 /****************** быстрые клавиши *********************************/
 document.addEventListener("keydown", (e) => {
   keypressed(e);
@@ -267,9 +276,13 @@ function keypressed(e) {
     FileSave();
   }
   if (e.code == "KeyO" && e.ctrlKey) {
-    // Ctrl+S - считать карту из файла
+    // Ctrl+O - считать карту из файла
     e.preventDefault();
     FileLoad();
+  }
+  if (e.code == "KeyM" && e.ctrlKey) {
+    e.preventDefault();
+    ExtendedMode.change();
   }
 }
 
@@ -289,23 +302,13 @@ function loadingImages() {
           LOG("Calculation scene ...", BLUE);
           bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
           bufer_ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-          data_scene = bufer_ctx.getImageData(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-          );
+          data_scene = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
           image.src = "images/addresses" + nmap + ".bmp";
           image.onload = async () => {
             LOG("Calculation addresses ...", BLUE);
             bufer_ctx.clearRect(0, 0, canvas.width, canvas.height);
             bufer_ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            data_address = bufer_ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
+            data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
             await calcSectorsCenters();
             div_clipboard.style.display = "none";
             div_monitor_imgbb.style.display = "none";
@@ -332,8 +335,7 @@ async function calcSectorsCenters() {
   let n = data_address.data.length;
   for (let i = 0; i < n; i += 4) {
     let r = data_address.data[i]; //red компонента содержит порядковый номер сектора
-    if (data_address.data[i + 1] != 0 || data_address.data[i + 2] != 0)
-      continue; //случайные пиксели (todo надо бы улучшить address.bmp)
+    if (data_address.data[i + 1] != 0 || data_address.data[i + 2] != 0) continue; //случайные пиксели (todo надо бы улучшить address.bmp)
     if (r <= nsec) {
       let y = ~~(i / 4 / IMG_WITH);
       let x = i / 4 - y * IMG_WITH;
@@ -516,13 +518,9 @@ class FormEditor {
   constructor() {
     this.form = document.querySelector(".sector_editor");
     this.inp_name = document.querySelector(".input_name");
-    this.nodes_osadki = document.querySelectorAll(
-      ".input_osad input[type='radio']"
-    );
+    this.nodes_osadki = document.querySelectorAll(".input_osad input[type='radio']");
     this.div_inp_color = document.querySelector(".input_color");
-    this.nodes_color = document.querySelectorAll(
-      ".input_color input[type='radio']"
-    );
+    this.nodes_color = document.querySelectorAll(".input_color input[type='radio']");
     this.btn_save = document.querySelector(".btn_edit_save");
     this.btn_canc = document.querySelector(".btn_edit_cancel");
 
@@ -583,20 +581,16 @@ class FormEditor {
   } //end constructor
 
   edit() {
-    NOTE(
-      LANG.note.edit_sector + defSectors[this.adr].name + LANG.note.save_esc
-    );
+    NOTE(LANG.note.edit_sector + defSectors[this.adr].name + LANG.note.save_esc);
     curtain.style.display = "block";
     this.form.style.display = "flex";
     //позиционирование формы
     let dx = arrSector[this.adr].x - this.form.clientWidth / 2;
     if (dx < 0) dx = 2;
-    if (dx + this.form.clientWidth > IMG_WITH)
-      dx = IMG_WITH - this.form.clientWidth - 2;
+    if (dx + this.form.clientWidth > IMG_WITH) dx = IMG_WITH - this.form.clientWidth - 2;
     let dy = arrSector[this.adr].y - this.form.clientHeight / 2;
     if (dy < 0) dy = 2;
-    if (dy + this.form.clientHeight > IMG_HEGHT)
-      dy = IMG_HEGHT - this.form.clientHeight - 2;
+    if (dy + this.form.clientHeight > IMG_HEGHT) dy = IMG_HEGHT - this.form.clientHeight - 2;
     this.form.style.left = dx + "px";
     this.form.style.top = dy + "px";
     //заполнение полей формы текущими данными из arrSector
@@ -935,9 +929,7 @@ async function FileLoad() {
       NOTE("...");
     } else {
       LOG("Error reading map file!", RED);
-      NOTE(
-        LANG.note.error_file_read + +"(" + err.name + " , " + err.message + ")"
-      );
+      NOTE(LANG.note.error_file_read + +"(" + err.name + " , " + err.message + ")");
     }
   } finally {
     curtain.style.display = "none";
@@ -958,8 +950,7 @@ btn_imgcopy.addEventListener("click", () => {
     let data = [new ClipboardItem({ "image/png": blob })]; //работает только по протоколу https или localhost !
     navigator.clipboard.write(data).then(
       () => {
-        document.querySelector(".clipboard img").src =
-          URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+        document.querySelector(".clipboard img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
         NOTE(LANG.note.map_copied_to_clipboard);
         LOG("Image copied into clipboard.");
       },
@@ -1042,9 +1033,7 @@ async function ImgUpload(e) {
   LOG("Uploading image to server imgbb.com ... ", BLUE);
   NOTE(LANG.note.save_to_imgbb);
 
-  let blob = await new Promise((resolve) =>
-    canvas.toBlob(resolve, "image/png")
-  );
+  let blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   let frmdata = new FormData();
   frmdata.append("image", blob, "image.png");
 
@@ -1063,12 +1052,8 @@ async function ImgUpload(e) {
     const result = await response.json();
     map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
     LOG("Imagemap uploaded to imgbb.com server.");
-    document.querySelector(".monitor_imgbb img").src =
-      URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-    div_monitor_imgbb.setAttribute(
-      "data-text",
-      "image on imgbb.com      (click to copy link)"
-    );
+    document.querySelector(".monitor_imgbb img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+    div_monitor_imgbb.setAttribute("data-text", "image on imgbb.com      (click to copy link)");
     setTimeout(() => {
       div_monitor_imgbb.style.display = "block";
     }, 800);
@@ -1086,8 +1071,7 @@ async function ImgUpload(e) {
 
 div_monitor_imgbb.addEventListener("click", () => {
   let short_link = map_link.slice(8); //короткая ссылка (без https://)
-  let full_link =
-    "<a target='_blank' href='" + map_link + "' > " + short_link + " </a>";
+  let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link + " </a>";
   text2ClipBorad(short_link);
   LOG("Link " + short_link + " copied to clipboard.");
   NOTE('"' + full_link + '" ' + LANG.note.link_copied_to_clibboard);
@@ -1130,8 +1114,7 @@ function jsonUpload() {
       if (!jsonbin_id) jsonbin_id = responce.metadata.id;
       div_maintitle.textContent = jsonbin_id;
       let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
-      let linkHTML =
-        "<a target='_blank' href='" + link + "'> " + link + " </a>";
+      let linkHTML = "<a target='_blank' href='" + link + "'> " + link + " </a>";
       setLocation("?id=" + jsonbin_id);
       NOTE(LANG.note.map_uploaded_to_jsonbin + jsonbin_id, linkHTML);
       LOG("Map uploaded to jsonbin.io");
@@ -1377,10 +1360,7 @@ function setLocation(state) {
 //вывод в логи тестового сообщения
 function DBG(msg = "") {
   //todo вычислять время между запусками
-  LOG(
-    "DEBUG (" + Math.ceil(performance.now()) + ") " + msg,
-    "rgb(200,255,200)"
-  );
+  LOG("DEBUG (" + Math.ceil(performance.now()) + ") " + msg, "rgb(200,255,200)");
 }
 
 // кнопка для отладки DEBUG
