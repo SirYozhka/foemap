@@ -26,6 +26,7 @@
     "save_map_to_file": "Сохранение карты в файл ...",
     "select_file": "Выбор файла карты ...",
     "save_to_imgbb": "Загрузка карты на сервер imgbb.com ...",
+    "uploaded_to_imgbb": "изображение карты загружено на сайт imgbb.com",
     "save_to_jsonbin": "Загрузка карты на сервер jsonbin.io ...",
     "save_img_to_file": "Запись изображения карты в файл ... ",
     "map_loaded": "Карта загружена.",

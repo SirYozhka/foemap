@@ -1045,6 +1045,7 @@ async function ImgUpload(e) {
         body: frmdata,
       }
     );
+    //TODO
     const response = await fetch(myRequest);
     if (!response.ok) {
       throw new Error("problem imgbb.com connection");
@@ -1052,8 +1053,9 @@ async function ImgUpload(e) {
       const result = await response.json();
       map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
       LOG("Imagemap uploaded to imgbb.com server.");
+      NOTE(LANG.note.uploaded_to_imgbb);
       document.querySelector(".monitor_imgbb img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-      div_monitor_imgbb.setAttribute("data-text", "image on imgbb.com      (click to copy link)");
+      div_monitor_imgbb.setAttribute("data-text", "image on imgbb.com (click to copy link)");
       setTimeout(() => {
         div_monitor_imgbb.style.display = "block";
       }, 800);

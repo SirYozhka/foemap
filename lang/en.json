@@ -26,6 +26,7 @@
     "img_saved_to_file": "Image saved to file: ",
     "select_file": "Map file selection ...",
     "save_to_imgbb": "Uploading image to imgbb.com ...",
+    "uploaded_to_imgbb": "Image uploaded to imgbb.com",
     "save_to_jsonbin": "Uploading map to jsonbin.io ... ",
     "save_img_to_file": "Save image to file ... ",
     "map_loaded": "Map loaded.",
