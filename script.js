@@ -1048,16 +1048,17 @@ async function ImgUpload(e) {
     const response = await fetch(myRequest);
     if (!response.ok) {
       throw new Error("problem imgbb.com connection");
+    } else {
+      const result = await response.json();
+      map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
+      LOG("Imagemap uploaded to imgbb.com server.");
+      document.querySelector(".monitor_imgbb img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+      div_monitor_imgbb.setAttribute("data-text", "image on imgbb.com      (click to copy link)");
+      setTimeout(() => {
+        div_monitor_imgbb.style.display = "block";
+      }, 800);
+      div_monitor_imgbb.click(); //скопировать в буфер обмена
     }
-    const result = await response.json();
-    map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
-    LOG("Imagemap uploaded to imgbb.com server.");
-    document.querySelector(".monitor_imgbb img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-    div_monitor_imgbb.setAttribute("data-text", "image on imgbb.com      (click to copy link)");
-    setTimeout(() => {
-      div_monitor_imgbb.style.display = "block";
-    }, 800);
-    div_monitor_imgbb.click(); //скопировать в буфер обмена
   } catch (error) {
     LOG("ERROR: " + error.message, RED);
     NOTE(LANG.note.error_img_download_to_imgbb, "red");
