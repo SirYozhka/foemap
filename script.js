@@ -1118,7 +1118,7 @@ function jsonUpload() {
     if (request.readyState == XMLHttpRequest.DONE) {
       let responce = JSON.parse(request.responseText);
       if (!jsonbin_id) jsonbin_id = responce.metadata.id;
-      div_maintitle.textContent = jsonbin_id;
+      div_maintitle.textContent = "Map ID: " + jsonbin_id;
       let link = "https://siryozhka.github.io/foemap?id=" + jsonbin_id;
       let linkHTML = "<a target='_blank' href='" + link + "'> " + link + " </a>";
       setLocation("?id=" + jsonbin_id);
@@ -1176,7 +1176,7 @@ function jsonDownload() {
         LOG("Map downloaded from jsonbin.io");
         NOTE(LANG.note.map_loaded);
         setLocation("?id=" + jsonbin_id);
-        div_maintitle.textContent = jsonbin_id;
+        div_maintitle.textContent = "Map ID: " + jsonbin_id;
 
         await idb.write_to_baze();
         MapChoise(arrSector[0].os); //определяем вулкан или водопад
