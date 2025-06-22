@@ -1058,7 +1058,8 @@ async function ImgUpload(e) {
       );
       setTimeout(() => {
         div_monitor_imgbb.style.display = "block";
-        LOG("Imagemap uploaded to imgbb.com server.");
+        LOG("Image uploaded to imgbb.com server.");
+        LOG("Link to image: " + map_link);
       }, 1000);
       div_monitor_imgbb.click(); //скопировать в буфер обмена
     }
@@ -1077,8 +1078,9 @@ div_monitor_imgbb.addEventListener("click", () => {
   let short_link = map_link.slice(8); //короткая ссылка (без https://)
   let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link + " </a>";
   writeClipboardText(short_link);
-  LOG("Link " + short_link + " copied to clipboard.");
-  NOTE("<b>" + full_link + "</b> " + LANG.note.link_copied_to_clibboard);
+  NOTE(
+    LANG.note.link_to_map + "<b>" + full_link + "</b> <br> " + LANG.note.link_copied_to_clibboard
+  );
 });
 
 /************* отправка карты на  https://jsonbin.io/ ************************/

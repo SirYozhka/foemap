@@ -313,8 +313,8 @@ div.monitor {
   display: none;
   position: absolute;
   width: 80px;
-  height: fit-content;
-  border: 1px solid var(--light);
+  height: 60px;
+  outline: 1px solid var(--light);
   border-radius: 2px;
   box-shadow: var(--shadow-dark);
   cursor: pointer;
