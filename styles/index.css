@@ -223,18 +223,13 @@ button:hover {
 }
 
 /********* выскакивающая заметка / примечание (медленно гаснет через 4 сек) **********/
-button[data-text]:hover::after {
-  position: absolute;
-  right: 15px;
-  top: 25px;
+*[data-text]:hover::after {
   content: attr(data-text);
-  width: 80px;
-  min-height: 20px;
-  padding: 3px;
   z-index: 3;
+  padding: 3px;
   font-size: 12px;
   font-weight: 300;
-
+  min-height: 20px;
   color: white;
   border: 0.5px solid var(--light);
   background-color: var(--dark);
@@ -249,15 +244,22 @@ button[data-text]:hover::after {
   animation-iteration-count: 1;
 }
 
-.menu_line:last-of-type button[data-text]:hover::after {
-  /* коррекция позиции примечания для правого меню */
-  left: -45px;
-}
-
 @keyframes msg_close {
   to {
     opacity: 0.01;
   }
+}
+
+button[data-text]:hover::after {
+  position: absolute;
+  right: 15px;
+  top: 25px;
+  width: 80px;
+}
+
+.menu_line:last-of-type button[data-text]:hover::after {
+  /* коррекция позиции примечания для правого меню */
+  left: -45px;
 }
 
 button:active {
@@ -306,35 +308,36 @@ button:disabled {
   }
 }
 
-/*************** монитор буфера обмена ***********************/
-.clipboard {
+/*************** монитор буфера обмена и сервера imgbb.com ***********************/
+div.monitor {
   display: none;
   position: absolute;
-  top: 5px;
-  right: 5px;
   width: 80px;
-  height: 60px;
+  height: fit-content;
   border: 1px solid var(--light);
   border-radius: 2px;
   box-shadow: var(--shadow-dark);
+  cursor: pointer;
 }
-.clipboard:hover {
+.monitor:hover {
   width: 240px;
   height: 180px;
 }
-.clipboard:hover::after {
-  /* позиция заметки */
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  width: 100px;
-}
-.clipboard img {
-  position: relative;
+.monitor img {
   width: 100%;
   height: 100%;
 }
+.monitor::after {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
 
+/* clipboard */
+.clipboard {
+  top: 5px;
+  right: 5px;
+}
 .transit_clipboard {
   transition-duration: 1000ms;
   transition-timing-function: linear;
@@ -342,35 +345,11 @@ button:disabled {
   transform-origin: 99.2% 0.8%;
 }
 
-/*************** монитор imgbb ***********************/
-.monitor_imgbb {
-  display: none;
-  position: absolute;
+/* imgbb */
+.imgbb {
   bottom: 5px;
   right: 5px;
-  width: 80px;
-  height: 60px;
-  border: 1px solid var(--light);
-  border-radius: 2px;
-  box-shadow: var(--shadow-dark);
 }
-.monitor_imgbb:hover {
-  width: 240px;
-  height: 180px;
-}
-.monitor_imgbb:hover::after {
-  /* позиция заметки */
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  width: 100px;
-}
-.monitor_imgbb img {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
 .transit_monitor_imgbb {
   transition-duration: 1000ms;
   transition-timing-function: linear;

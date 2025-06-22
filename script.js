@@ -310,8 +310,8 @@ function loadingImages() {
             bufer_ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
             data_address = bufer_ctx.getImageData(0, 0, canvas.width, canvas.height);
             await calcSectorsCenters();
-            div_clipboard.style.display = "none";
-            div_monitor_imgbb.style.display = "none";
+            //div_clipboard.style.display = "none";
+            //div_monitor_imgbb.style.display = "none";
             resolve();
           };
         };
@@ -1023,7 +1023,7 @@ document.querySelector(".btn_imgsave").addEventListener("click", async () => {
 document.querySelector(".btn_imgbb").addEventListener("click", (event) => {
   ImgUpload(event);
 });
-const div_monitor_imgbb = document.querySelector(".monitor_imgbb");
+const div_monitor_imgbb = document.querySelector(".imgbb");
 
 async function ImgUpload(e) {
   selected_color = null; //снять выделение выбора штаба
@@ -1045,20 +1045,21 @@ async function ImgUpload(e) {
         body: frmdata,
       }
     );
-    //TODO
     const response = await fetch(myRequest);
     if (!response.ok) {
       throw new Error("problem imgbb.com connection");
     } else {
       const result = await response.json();
       map_link = result.data.url_viewer; //ссылка на загруженную карту на imgbb.com
-      LOG("Imagemap uploaded to imgbb.com server.");
-      NOTE(LANG.note.uploaded_to_imgbb);
-      document.querySelector(".monitor_imgbb img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
-      div_monitor_imgbb.setAttribute("data-text", "image on imgbb.com (click to copy link)");
+      document.querySelector(".imgbb img").src = URL.createObjectURL(blob); //установить картинку в "монитор" (правый-верхний угол)
+      div_monitor_imgbb.setAttribute(
+        "data-text",
+        "image on imgbb.com " + map_link + " (click to copy link)"
+      );
       setTimeout(() => {
         div_monitor_imgbb.style.display = "block";
-      }, 800);
+        LOG("Imagemap uploaded to imgbb.com server.");
+      }, 1000);
       div_monitor_imgbb.click(); //скопировать в буфер обмена
     }
   } catch (error) {
@@ -1075,9 +1076,9 @@ async function ImgUpload(e) {
 div_monitor_imgbb.addEventListener("click", () => {
   let short_link = map_link.slice(8); //короткая ссылка (без https://)
   let full_link = "<a target='_blank' href='" + map_link + "' > " + short_link + " </a>";
-  text2ClipBorad(short_link);
+  writeClipboardText(short_link);
   LOG("Link " + short_link + " copied to clipboard.");
-  NOTE('"' + full_link + '" ' + LANG.note.link_copied_to_clibboard);
+  NOTE("<b>" + full_link + "</b> " + LANG.note.link_copied_to_clibboard);
 });
 
 /************* отправка карты на  https://jsonbin.io/ ************************/
